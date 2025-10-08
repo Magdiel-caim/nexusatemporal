@@ -1,0 +1,29 @@
+# Dynamic configuration for Traefik
+http:
+  routers:
+    nexus-frontend:
+      rule: "Host(`one.nexusatemporal.com.br`)"
+      service: nexus-frontend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+
+    nexus-backend:
+      rule: "Host(`api.nexusatemporal.com.br`)"
+      service: nexus-backend-service
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+
+  services:
+    nexus-frontend-service:
+      loadBalancer:
+        servers:
+          - url: "http://172.20.0.6:3000"
+
+    nexus-backend-service:
+      loadBalancer:
+        servers:
+          - url: "http://172.20.0.3:3001"

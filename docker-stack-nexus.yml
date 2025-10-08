@@ -1,0 +1,73 @@
+version: '3.8'
+
+networks:
+  nexusatnet:
+    external: true
+    name: nexusatnet
+  nexus-bridge:
+    external: true
+    name: nexus-bridge
+
+services:
+  # Frontend
+  frontend:
+    image: nexus_frontend:latest
+    networks:
+      - nexusatnet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.nexusfrontend.rule=Host(`one.nexusatemporal.com.br`)"
+        - "traefik.http.routers.nexusfrontend.entrypoints=websecure"
+        - "traefik.http.routers.nexusfrontend.tls.certresolver=letsencrypt"
+        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=3000"
+
+  # Backend
+  backend:
+    image: nexus_backend:leads
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=nexus_postgres
+      - DB_PORT=5432
+      - DB_USERNAME=nexus_admin
+      - DB_PASSWORD=6uyJZdc0xsCe7ymief3x2Izi9QubcTYP
+      - DB_DATABASE=nexus_master
+      - REDIS_HOST=nexus_redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=86Bj2r94OyfxdVqklbvKNAiSVgYRJvUg
+      - RABBITMQ_HOST=nexus_rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=nexus_mq
+      - RABBITMQ_PASSWORD=ZSGbN3hQJnl3Rnq6TE1wsFVQCi47EJgR
+      - RABBITMQ_VHOST=/
+      - JWT_SECRET=7Kp9mNqR4tXwZaB2cDeF5gHj8kLnMpQrStUvWxYz1A3bCdEf6GhI0JkLmNo
+      - JWT_REFRESH_SECRET=9TuVwXyZ2aBcDeFgHiJkLmNoPqRsTuVwXyZ1AbCdEfGhIjKlMnOpQr3StU
+      - SMTP_HOST=smtp.zoho.com
+      - SMTP_PORT=587
+      - SMTP_USER=contato@nexusatemporal.com.br
+      - SMTP_PASSWORD=fBYXkRUBaNmQ
+      - S3_ENDPOINT=https://c1k7.va.idrivee2-46.com
+      - S3_ACCESS_KEY_ID=ZaIdY59FGaL8BdtRjZtL
+      - S3_SECRET_ACCESS_KEY=wrytdsWINH8tXbedBl4LaxmvSDGqnbsZCFQP6iy
+      - BACKEND_URL=https://api.nexusatemporal.com.br
+      - FRONTEND_URL=https://one.nexusatemporal.com.br
+    networks:
+      - nexusatnet
+      - nexus-bridge
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.nexusbackend.rule=Host(`api.nexusatemporal.com.br`)"
+        - "traefik.http.routers.nexusbackend.entrypoints=websecure"
+        - "traefik.http.routers.nexusbackend.tls.certresolver=letsencrypt"
+        - "traefik.http.services.nexusbackend.loadbalancer.server.port=3001"

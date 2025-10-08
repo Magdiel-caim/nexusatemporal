@@ -1,0 +1,170 @@
+version: '3.8'
+
+networks:
+  nexusatnet:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  rabbitmq_data:
+  traefik_certs:
+
+services:
+  # Traefik Reverse Proxy
+  traefik:
+    image: traefik:v2.10
+    container_name: nexus_traefik
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=nexusatnet"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=contato@nexusatemporal.com.br"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    networks:
+      - nexusatnet
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/letsencrypt
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.nexusatemporal.com.br`)"
+      - "traefik.http.routers.dashboard.service=api@internal"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls.certresolver=letsencrypt"
+    restart: unless-stopped
+
+  # PostgreSQL 16
+  postgres:
+    image: postgres:16-alpine
+    container_name: nexus_postgres
+    environment:
+      POSTGRES_USER: nexus_admin
+      POSTGRES_PASSWORD: 6uyJZdc0xsCe7ymief3x2Izi9QubcTYP
+      POSTGRES_DB: nexus_master
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - nexusatnet
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nexus_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    container_name: nexus_redis
+    command: redis-server --requirepass 86Bj2r94OyfxdVqklbvKNAiSVgYRJvUg
+    volumes:
+      - redis_data:/data
+    networks:
+      - nexusatnet
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # RabbitMQ
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: nexus_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: nexus_mq
+      RABBITMQ_DEFAULT_PASS: ZSGbN3hQJnl3Rnq6TE1wsFVQCi47EJgR
+      RABBITMQ_DEFAULT_VHOST: /
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - nexusatnet
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+
+  # Backend API
+  backend:
+    image: nexus_backend:field_tracking
+    container_name: nexus_backend
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=nexus_admin
+      - DB_PASSWORD=6uyJZdc0xsCe7ymief3x2Izi9QubcTYP
+      - DB_DATABASE=nexus_master
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=86Bj2r94OyfxdVqklbvKNAiSVgYRJvUg
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USER=nexus_mq
+      - RABBITMQ_PASSWORD=ZSGbN3hQJnl3Rnq6TE1wsFVQCi47EJgR
+      - RABBITMQ_VHOST=/
+      - JWT_SECRET=7Kp9mNqR4tXwZaB2cDeF5gHj8kLnMpQrStUvWxYz1A3bCdEf6GhI0JkLmNo
+      - JWT_REFRESH_SECRET=9TuVwXyZ2aBcDeFgHiJkLmNoPqRsTuVwXyZ1AbCdEfGhIjKlMnOpQr3StU
+      - SMTP_HOST=smtp.zoho.com
+      - SMTP_PORT=587
+      - SMTP_USER=contato@nexusatemporal.com.br
+      - SMTP_PASSWORD=fBYXkRUBaNmQ
+      - S3_ENDPOINT=https://c1k7.va.idrivee2-46.com
+      - S3_ACCESS_KEY_ID=ZaIdY59FGaL8BdtRjZtL
+      - S3_SECRET_ACCESS_KEY=wrytdsWINH8tXbedBl4LaxmvSDGqnbsZCFQP6iy
+      - BACKEND_URL=https://api.nexusatemporal.com.br
+      - FRONTEND_URL=https://one.nexusatemporal.com.br
+    networks:
+      - nexusatnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=Host(`api.nexusatemporal.com.br`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=3001"
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    image: nexus_frontend:v29
+    container_name: nexus_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://72.60.5.29:3001/api
+    networks:
+      - nexusatnet
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`one.nexusatemporal.com.br`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.frontend.loadbalancer.server.port=3000"
+    restart: unless-stopped
