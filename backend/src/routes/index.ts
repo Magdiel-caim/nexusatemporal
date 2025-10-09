@@ -2,9 +2,9 @@ import { Router } from 'express';
 import authRoutes from '@/modules/auth/auth.routes';
 import dataRoutes from '@/modules/config/data.routes';
 import leadsRoutes from '@/modules/leads/leads.routes';
+import chatRoutes from '@/modules/chat/chat.routes';
 // Import other module routes as they are created
 // import agendaRoutes from '@/modules/agenda/agenda.routes';
-// import chatRoutes from '@/modules/chat/chat.routes';
 // import prontuariosRoutes from '@/modules/prontuarios/prontuarios.routes';
 // import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
 // import estoqueRoutes from '@/modules/estoque/estoque.routes';
@@ -28,10 +28,10 @@ router.get('/health', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/data', dataRoutes); // Required /api/data endpoint
 router.use('/leads', leadsRoutes);
+router.use('/chat', chatRoutes);
 
 // Uncomment as modules are implemented
 // router.use('/agenda', agendaRoutes);
-// router.use('/chat', chatRoutes);
 // router.use('/prontuarios', prontuariosRoutes);
 // router.use('/financeiro', financeiroRoutes);
 // router.use('/estoque', estoqueRoutes);

@@ -12,6 +12,7 @@ import { errorHandler } from '@/shared/middleware/error-handler';
 import { rateLimiter } from '@/shared/middleware/rate-limiter';
 import { logger } from '@/shared/utils/logger';
 import routes from '@/routes';
+import { initializeWebSocketService } from '@/modules/chat/websocket.service';
 
 dotenv.config();
 
@@ -58,14 +59,8 @@ app.get('/health', (req, res) => {
 // Error handler (must be last)
 app.use(errorHandler);
 
-// Socket.IO connection handler
-io.on('connection', (socket) => {
-  logger.info(`Socket connected: ${socket.id}`);
-
-  socket.on('disconnect', () => {
-    logger.info(`Socket disconnected: ${socket.id}`);
-  });
-});
+// Initialize WebSocket service for Chat module
+initializeWebSocketService(io);
 
 const PORT = process.env.API_PORT || 3001;
 

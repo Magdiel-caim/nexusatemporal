@@ -5,6 +5,118 @@ Sistema de CRM completo para gestão de leads, pacientes e procedimentos estéti
 
 ---
 
+## [v30] - 2025-10-08
+
+### Added
+- **Módulo de Chat/WhatsApp Completo + Integração WAHA**: Sistema completo de mensageria com integração WhatsApp direta via WAHA API
+  - **Backend**:
+    - 5 Entidades do banco de dados:
+      - `conversation.entity.ts`: Conversas com leads/clientes
+      - `message.entity.ts`: Mensagens com status de entrega
+      - `attachment.entity.ts`: Anexos (áudio, imagem, vídeo, documento)
+      - `tag.entity.ts`: Etiquetas personalizadas para conversas
+      - `quick-reply.entity.ts`: Templates de respostas rápidas
+    - `chat.service.ts`: Serviço principal de gerenciamento de conversas e mensagens
+    - `whatsapp.service.ts`: Integração completa com WhatsApp API (WAHA)
+    - `websocket.service.ts`: Serviço de WebSocket para mensagens em tempo real
+    - `chat.controller.ts`: REST API para operações de chat
+    - `whatsapp.controller.ts`: Webhook para receber mensagens do WhatsApp
+    - `chat.routes.ts`: Rotas configuradas em `/api/chat`
+  - **Frontend**:
+    - `ChatPage.tsx`: Interface completa de chat com 3 painéis
+      - Painel esquerdo: Lista de conversas com busca e filtros
+      - Painel central: Mensagens em tempo real
+      - Suporte a badges de mensagens não lidas
+    - `chatService.ts`: Service para comunicação com API de chat
+    - WebSocket integrado com Socket.IO para mensagens em tempo real
+  - **Integração WAHA (WhatsApp API)**:
+    - `waha-session.service.ts`: Gerenciamento completo de sessões WAHA
+    - `waha-session.controller.ts`: Endpoints para criar/iniciar sessões e obter QR Code
+    - `WhatsAppConnectionPanel.tsx`: Componente React para conectar WhatsApp
+    - Fluxo completo de conexão:
+      1. Usuário clica em "Conectar WhatsApp"
+      2. Digita nome da sessão
+      3. Sistema cria sessão na WAHA
+      4. QR Code é exibido em tempo real
+      5. Usuário escaneia com WhatsApp
+      6. WebSocket detecta conexão automaticamente
+      7. Sistema fica pronto para enviar/receber mensagens
+    - Suporte a múltiplas conexões WhatsApp simultâneas
+    - Webhook para receber status de conexão em tempo real
+    - Gerenciamento de sessões: criar, iniciar, parar, desconectar, deletar
+  - **Funcionalidades do Chat**:
+    - Chat em tempo real via WebSocket
+    - Integração direta com WhatsApp (sem Chatwoot necessário)
+    - Sistema de tags/etiquetas para conversas
+    - Respostas rápidas (quick replies)
+    - Status de mensagens (enviado, entregue, lido)
+    - Suporte a múltiplos tipos de mídia (texto, áudio, imagem, vídeo, documento)
+    - Busca e filtros de conversas
+    - Atribuição de conversas a usuários
+    - Indicadores de digitação (typing indicators)
+    - Webhooks para receber mensagens
+    - Painel visual para conectar WhatsApp com QR Code
+  - **Arquivos criados/modificados**:
+    - Backend: `backend/src/modules/chat/` (13 arquivos novos):
+      - Entidades: conversation, message, attachment, tag, quick-reply
+      - Serviços: chat.service, whatsapp.service, waha-session.service, websocket.service
+      - Controllers: chat.controller, whatsapp.controller, waha-session.controller
+      - Routes: chat.routes (com endpoints WAHA)
+    - Frontend:
+      - `frontend/src/pages/ChatPage.tsx` (interface completa + modal de conexão)
+      - `frontend/src/services/chatService.ts` (service de API)
+      - `frontend/src/components/chat/WhatsAppConnectionPanel.tsx` (painel de conexão)
+    - Routes: `backend/src/routes/index.ts` (adicionada rota /api/chat)
+    - Server: `backend/src/server.ts` (inicialização do WebSocketService)
+    - App: `frontend/src/App.tsx` (rota /chat ativada)
+  - **Configuração**:
+    - WAHA URL: https://apiwts.nexusatemporal.com.br
+    - Variáveis de ambiente configuradas (.env)
+    - Webhook endpoint: `/api/chat/webhook/waha/status`
+
+### Fixed
+- **🚨 CRÍTICO: Recuperação Total do Sistema após Perda de Dados**: Sistema completamente restaurado
+  - **Problema**: Deploy criou novo volume PostgreSQL vazio, perdendo todos os dados (usuários, leads, pipelines)
+  - **Causa**: docker-compose.yml criando volume local ao invés de usar volume externo existente
+  - **Solução**:
+    1. Identificado volume antigo: `nexusatemporal_postgres_data`
+    2. Atualizado docker-compose.yml para usar volume externo
+    3. Resetada senha PostgreSQL via container temporário com trust auth
+    4. Resolvido conflito de 2 serviços PostgreSQL simultâneos
+  - **Resultado**: ✅ Todos os dados recuperados (usuários, leads, atividades)
+  - **Arquivo modificado**: `/root/nexusatemporal/docker-compose.yml:9-11`
+  - **Documentação**: Ver `/root/nexusatemporal/prompt/TROUBLESHOOTING.md#problema-critico-1`
+
+- **🚨 CRÍTICO: Login Travando após Update**: Senha não mudava mais após login
+  - **Problema**: Senha resetada manualmente não funcionava; login falhava mesmo com senha correta
+  - **Causa**: Hook `@BeforeUpdate()` re-hashava senha a cada login (ao atualizar lastLoginAt)
+  - **Sintoma**: Hook só aceitava formato `$2a$`, rejeitava `$2y$` e `$2b$`
+  - **Solução**: Atualizado hook para aceitar todos os formatos bcrypt válidos
+  - **Arquivo modificado**: `/root/nexusatemporal/backend/src/modules/auth/user.entity.ts:97-111`
+  - **Documentação**: Ver `/root/nexusatemporal/prompt/TROUBLESHOOTING.md#problema-critico-2`
+
+- **Sistema de Backup Automático**: Criado para prevenir perda de dados
+  - **Scripts criados**:
+    - `scripts/backup-database.sh`: Backup manual com upload para IDrive E2
+    - `scripts/pre-deploy.sh`: Verificações + backup obrigatório antes de deploy
+    - `scripts/deploy.sh`: Deploy seguro (aborta se backup falhar)
+  - **Configuração IDrive E2**:
+    - Endpoint: https://c1k7.va.idrivee2-46.com
+    - Bucket: onenexus
+    - Path: backups/database/
+    - Retenção local: 7 dias
+  - **Documentação completa**: `/root/nexusatemporal/BACKUP.md`
+
+- **Frontend em Modo Produção**: Substituído Vite dev server por Nginx
+  - **Antes**: Frontend rodava em modo desenvolvimento (VITE v5.4.20)
+  - **Depois**: Build otimizado servido por Nginx Alpine
+  - **Arquivos criados**:
+    - `frontend/Dockerfile.prod`: Multi-stage build
+    - `frontend/nginx.conf`: Configuração SPA com cache
+  - **Mudanças**: docker-compose.yml agora usa Dockerfile.prod e porta 80
+
+---
+
 ## [v29] - 2025-10-08
 
 ### Added
@@ -209,16 +321,20 @@ Sistema de CRM completo para gestão de leads, pacientes e procedimentos estéti
 - **Drag & Drop**: @dnd-kit/core
 - **Ícones**: lucide-react
 - **Notificações**: react-hot-toast
+- **WebSocket**: Socket.IO Client
+- **Datas**: date-fns
 - **Containerização**: Docker
 
 ### Backend
-- **Framework**: Node.js + NestJS (presumido)
-- **Banco de Dados**: PostgreSQL 16
+- **Framework**: Node.js + Express + TypeScript
+- **Banco de Dados**: PostgreSQL 16 + TypeORM
 - **Cache**: Redis 7
 - **Mensageria**: RabbitMQ 3
+- **WebSocket**: Socket.IO Server
 - **Autenticação**: JWT
 - **Storage**: S3 (iDrive)
 - **Email**: SMTP Zoho
+- **WhatsApp**: WAHA API Integration
 
 ### Infraestrutura
 - **Reverse Proxy**: Traefik v2.10
@@ -232,11 +348,11 @@ Sistema de CRM completo para gestão de leads, pacientes e procedimentos estéti
 
 Baseado em `/root/nexusatemporal/prompt/Especificacoesdosistema.pdf`:
 
-### 1. Chat Nexus Atemporal
-- Integração com WhatsApp Business API
-- Chat em tempo real
-- Templates de mensagens
-- Histórico de conversas
+### 1. Chat Nexus Atemporal ✅ (Implementado em v30)
+- ✅ Integração com WhatsApp Business API
+- ✅ Chat em tempo real
+- ✅ Templates de mensagens (respostas rápidas)
+- ✅ Histórico de conversas
 
 ### 2. Agenda
 - Calendário de agendamentos
@@ -404,10 +520,10 @@ frontend/src/
 
 ## Últimas Modificações em Destaque
 
-1. **DraggableLeadCard.tsx** (v28): Sistema de detecção de drag com useRef
-2. **LeadsPage.tsx** (v27): Sincronização de arrays leads/filteredLeads
-3. **DashboardPage.tsx** (v24-25): Dashboard completa com navegação
-4. **LeadsFilter.tsx** (v23): Sistema de filtros avançado
+1. **ChatPage.tsx + Backend Chat Module** (v30): Módulo completo de Chat/WhatsApp com WebSocket
+2. **DraggableLeadCard.tsx** (v28): Sistema de detecção de drag com useRef
+3. **LeadsPage.tsx** (v27): Sincronização de arrays leads/filteredLeads
+4. **DashboardPage.tsx** (v24-25): Dashboard completa com navegação
 
 ---
 

@@ -16,7 +16,7 @@ const baseConfig: DataSourceOptions = {
   entities: [path.join(__dirname, '..', 'modules', '**', '*.entity{.ts,.js}')],
   migrations: [path.join(__dirname, 'migrations', '*{.ts,.js}')],
   subscribers: [],
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 };
 
 export const AppDataSource = new DataSource(baseConfig);

@@ -1,57 +1,85 @@
 #!/bin/bash
 
-# Deploy script for One Nexus Atemporal
-# Usage: ./scripts/deploy.sh [environment]
+# ====================================
+# NEXUS ATEMPORAL - DEPLOY SCRIPT
+# ====================================
+# Script de deploy seguro com backup automático
 
 set -e
 
-ENVIRONMENT=${1:-production}
-STACK_NAME="nexus"
+# Cores
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
 
-echo "🚀 Deploying One Nexus Atemporal to $ENVIRONMENT..."
+echo -e "${BLUE}=====================================${NC}"
+echo -e "${BLUE}🚀 NEXUS ATEMPORAL - DEPLOY v30${NC}"
+echo -e "${BLUE}=====================================${NC}"
+echo ""
 
-# Check if Docker Swarm is initialized
-if ! docker info | grep -q "Swarm: active"; then
-    echo "⚠️  Docker Swarm is not initialized. Initializing..."
-    docker swarm init
-fi
+# 1. Executar pre-deploy (backup automático)
+echo -e "${YELLOW}📋 Executando verificações pré-deploy...${NC}"
+bash /root/nexusatemporal/scripts/pre-deploy.sh
 
-# Check if network exists
-if ! docker network inspect nexusatnet >/dev/null 2>&1; then
-    echo "📡 Creating nexusatnet network..."
-    docker network create --driver overlay nexusatnet
-fi
-
-# Load environment variables
-if [ -f .env ]; then
-    echo "✅ Loading environment variables..."
-    source .env
-else
-    echo "❌ .env file not found!"
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ DEPLOY ABORTADO: Falha nas verificações pré-deploy!${NC}"
     exit 1
 fi
 
-# Create necessary directories
-mkdir -p docker/traefik/letsencrypt
-chmod 600 docker/traefik/letsencrypt
-
-# Deploy the stack
-echo "🐳 Deploying Docker Stack..."
-docker stack deploy -c docker-compose.yml $STACK_NAME
-
-echo "⏳ Waiting for services to start..."
-sleep 10
-
-# Show service status
-echo "📊 Service Status:"
-docker stack services $STACK_NAME
-
-echo "✅ Deployment complete!"
 echo ""
-echo "📍 Access your application at:"
-echo "   Frontend: https://${FRONTEND_DOMAIN}"
-echo "   Backend:  https://${BACKEND_DOMAIN}"
+echo -e "${GREEN}✅ Verificações pré-deploy concluídas!${NC}"
 echo ""
-echo "📝 To view logs:"
-echo "   docker service logs -f ${STACK_NAME}_backend"
-echo "   docker service logs -f ${STACK_NAME}_frontend"
+
+# 2. Build das imagens
+echo -e "${YELLOW}🔨 Buildando imagens Docker...${NC}"
+cd /root/nexusatemporal
+
+echo -e "${BLUE}  → Buildando backend...${NC}"
+docker compose build backend
+
+echo -e "${BLUE}  → Buildando frontend...${NC}"
+docker compose build frontend
+
+echo -e "${GREEN}✅ Imagens buildadas com sucesso!${NC}"
+echo ""
+
+# 3. Deploy usando Docker Stack
+echo -e "${YELLOW}🚢 Fazendo deploy no Docker Swarm...${NC}"
+
+# Remove stack antigo
+echo -e "${BLUE}  → Removendo stack antigo...${NC}"
+docker stack rm nexus 2>/dev/null || true
+sleep 15
+
+# Deploy novo stack
+echo -e "${BLUE}  → Deployando novo stack...${NC}"
+docker stack deploy -c docker-compose.yml nexus
+
+echo ""
+echo -e "${GREEN}✅ Deploy iniciado!${NC}"
+echo ""
+
+# 4. Aguardar serviços ficarem prontos
+echo -e "${YELLOW}⏳ Aguardando serviços ficarem prontos...${NC}"
+sleep 20
+
+# Verificar status
+echo ""
+echo -e "${YELLOW}📊 Status dos serviços:${NC}"
+docker stack ps nexus --filter "desired-state=running" --format "table {{.Name}}\t{{.CurrentState}}"
+
+echo ""
+echo -e "${GREEN}=====================================${NC}"
+echo -e "${GREEN}✅ DEPLOY CONCLUÍDO!${NC}"
+echo -e "${GREEN}=====================================${NC}"
+echo ""
+echo -e "🌐 Frontend: ${BLUE}https://one.nexusatemporal.com.br${NC}"
+echo -e "🔗 Backend:  ${BLUE}https://api.nexusatemporal.com.br${NC}"
+echo ""
+echo -e "${YELLOW}📝 Próximos passos:${NC}"
+echo -e "  1. Testar login no frontend"
+echo -e "  2. Verificar logs: ${BLUE}docker service logs nexus_backend${NC}"
+echo -e "  3. Verificar backups: ${BLUE}ls -lh /root/nexusatemporal/backups/${NC}"
+echo ""

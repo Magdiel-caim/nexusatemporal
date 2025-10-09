@@ -1,0 +1,210 @@
+import api from './api';
+
+export interface Conversation {
+  id: string;
+  leadId?: string;
+  contactName: string;
+  phoneNumber: string;
+  whatsappInstanceId?: string;
+  assignedUserId?: string;
+  status: 'active' | 'archived' | 'closed' | 'waiting';
+  isUnread: boolean;
+  unreadCount: number;
+  lastMessageAt?: string;
+  lastMessagePreview?: string;
+  tags?: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  direction: 'incoming' | 'outgoing';
+  type: 'text' | 'audio' | 'image' | 'video' | 'document' | 'location' | 'contact';
+  content?: string;
+  senderId?: string;
+  senderName?: string;
+  whatsappMessageId?: string;
+  status: 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
+  sentAt?: string;
+  deliveredAt?: string;
+  readAt?: string;
+  metadata?: Record<string, any>;
+  attachments?: Attachment[];
+  createdAt: string;
+}
+
+export interface Attachment {
+  id: string;
+  messageId: string;
+  type: 'audio' | 'image' | 'video' | 'document';
+  fileName: string;
+  fileUrl: string;
+  mimeType?: string;
+  fileSize?: number;
+  duration?: number;
+  thumbnailUrl?: string;
+  createdAt: string;
+}
+
+export interface ChatTag {
+  id: string;
+  name: string;
+  color: string;
+  description?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface QuickReply {
+  id: string;
+  title: string;
+  content: string;
+  shortcut?: string;
+  category?: string;
+  createdBy?: string;
+  isActive: boolean;
+  isGlobal: boolean;
+  createdAt: string;
+}
+
+class ChatService {
+  // ===== CONVERSATIONS =====
+
+  async getConversations(filters?: {
+    status?: string;
+    assignedUserId?: string;
+    search?: string;
+    tags?: string[];
+    unreadOnly?: boolean;
+  }): Promise<Conversation[]> {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.assignedUserId) params.append('assignedUserId', filters.assignedUserId);
+    if (filters?.search) params.append('search', filters.search);
+    if (filters?.tags) params.append('tags', filters.tags.join(','));
+    if (filters?.unreadOnly) params.append('unreadOnly', 'true');
+
+    const { data } = await api.get(`/chat/conversations?${params.toString()}`);
+    return data;
+  }
+
+  async getConversation(id: string): Promise<Conversation> {
+    const { data } = await api.get(`/chat/conversations/${id}`);
+    return data;
+  }
+
+  async createConversation(conversationData: Partial<Conversation>): Promise<Conversation> {
+    const { data } = await api.post('/chat/conversations', conversationData);
+    return data;
+  }
+
+  async updateConversation(id: string, updates: Partial<Conversation>): Promise<Conversation> {
+    const { data } = await api.put(`/chat/conversations/${id}`, updates);
+    return data;
+  }
+
+  async markAsRead(conversationId: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/mark-read`);
+    return data;
+  }
+
+  async markAsUnread(conversationId: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/mark-unread`);
+    return data;
+  }
+
+  async assignConversation(conversationId: string, userId: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/assign`, { userId });
+    return data;
+  }
+
+  async addTag(conversationId: string, tagName: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/tags`, { tagName });
+    return data;
+  }
+
+  async removeTag(conversationId: string, tagName: string): Promise<Conversation> {
+    const { data } = await api.delete(`/chat/conversations/${conversationId}/tags`, {
+      data: { tagName }
+    });
+    return data;
+  }
+
+  // ===== MESSAGES =====
+
+  async getMessages(conversationId: string): Promise<Message[]> {
+    const { data } = await api.get(`/chat/conversations/${conversationId}/messages`);
+    return data;
+  }
+
+  async sendMessage(conversationId: string, messageData: {
+    type: 'text' | 'audio' | 'image' | 'video' | 'document';
+    content?: string;
+    senderId?: string;
+    senderName?: string;
+  }): Promise<Message> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/messages`, messageData);
+    return data;
+  }
+
+  async deleteMessage(messageId: string): Promise<void> {
+    await api.delete(`/chat/messages/${messageId}`);
+  }
+
+  // ===== TAGS =====
+
+  async getTags(): Promise<ChatTag[]> {
+    const { data } = await api.get('/chat/tags');
+    return data;
+  }
+
+  async createTag(tagData: Partial<ChatTag>): Promise<ChatTag> {
+    const { data } = await api.post('/chat/tags', tagData);
+    return data;
+  }
+
+  async updateTag(id: string, updates: Partial<ChatTag>): Promise<ChatTag> {
+    const { data } = await api.put(`/chat/tags/${id}`, updates);
+    return data;
+  }
+
+  async deleteTag(id: string): Promise<void> {
+    await api.delete(`/chat/tags/${id}`);
+  }
+
+  // ===== QUICK REPLIES =====
+
+  async getQuickReplies(filters?: { category?: string; search?: string }): Promise<QuickReply[]> {
+    const params = new URLSearchParams();
+    if (filters?.category) params.append('category', filters.category);
+    if (filters?.search) params.append('search', filters.search);
+
+    const { data} = await api.get(`/chat/quick-replies?${params.toString()}`);
+    return data;
+  }
+
+  async createQuickReply(replyData: Partial<QuickReply>): Promise<QuickReply> {
+    const { data } = await api.post('/chat/quick-replies', replyData);
+    return data;
+  }
+
+  async updateQuickReply(id: string, updates: Partial<QuickReply>): Promise<QuickReply> {
+    const { data } = await api.put(`/chat/quick-replies/${id}`, updates);
+    return data;
+  }
+
+  async deleteQuickReply(id: string): Promise<void> {
+    await api.delete(`/chat/quick-replies/${id}`);
+  }
+
+  // ===== STATISTICS =====
+
+  async getStats(): Promise<any> {
+    const { data } = await api.get('/chat/stats');
+    return data;
+  }
+}
+
+export default new ChatService();
