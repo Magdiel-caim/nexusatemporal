@@ -75,37 +75,57 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
     try {
       setStatus('creating');
+      setCurrentSessionName(sessionName.toLowerCase());
 
-      // Criar sessão
-      const { data: createData } = await api.post('/chat/whatsapp/sessions/create', {
-        sessionName: sessionName.toLowerCase(),
+      // Chamar N8N Workflow simplificado para criar sessão
+      const n8nResponse = await fetch('https://workflow.nexusatemporal.com/webhook/waha-create-session-v2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionName: sessionName.toLowerCase(),
+        }),
       });
 
-      console.log('Session created:', createData);
-      setCurrentSessionName(sessionName.toLowerCase());
-      setStatus('starting');
+      if (!n8nResponse.ok) {
+        throw new Error('Erro ao criar sessão no N8N');
+      }
 
-      // Iniciar sessão e obter QR Code
-      const { data: startData } = await api.post(
-        `/chat/whatsapp/sessions/${sessionName.toLowerCase()}/start`
-      );
+      const n8nData = await n8nResponse.json();
+      console.log('N8N Response:', n8nData);
 
-      console.log('Session started:', startData);
+      if (n8nData.success && n8nData.sessionName) {
+        // Buscar QR Code via proxy do backend (com autenticação)
+        const token = localStorage.getItem('token');
+        const qrCodeProxyUrl = `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br'}/api/chat/whatsapp/qrcode-proxy?session=${n8nData.sessionName}`;
 
-      if (startData.qrCode) {
-        setQrCodeData(startData.qrCode.value);
+        // Fetch com Authorization header e converter para blob URL
+        const qrResponse = await fetch(qrCodeProxyUrl, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (!qrResponse.ok) {
+          throw new Error('Erro ao buscar QR Code');
+        }
+
+        const qrBlob = await qrResponse.blob();
+        const qrBlobUrl = URL.createObjectURL(qrBlob);
+
+        setQrCodeData(qrBlobUrl);
         setStatus('qr_ready');
         toast.success('QR Code gerado! Escaneie com seu WhatsApp');
 
         // Poll para verificar se conectou
         startPollingForConnection(sessionName.toLowerCase());
       } else {
-        // Se não veio QR Code, aguardar e tentar obter
-        setTimeout(() => fetchQRCode(sessionName.toLowerCase()), 2000);
+        throw new Error('QR Code não retornado pelo N8N');
       }
     } catch (error: any) {
       console.error('Error creating session:', error);
-      toast.error(error.response?.data?.error || 'Erro ao criar conexão');
+      toast.error(error.message || 'Erro ao criar conexão');
       setStatus('failed');
     }
   };
@@ -155,6 +175,11 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
   };
 
   const handleReset = () => {
+    // Cleanup blob URL se existir
+    if (qrCodeData && qrCodeData.startsWith('blob:')) {
+      URL.revokeObjectURL(qrCodeData);
+    }
+
     setStatus('idle');
     setSessionName('');
     setQrCodeData(null);

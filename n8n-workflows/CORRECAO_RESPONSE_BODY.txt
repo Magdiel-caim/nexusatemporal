@@ -1,0 +1,54 @@
+CORREÇÃO - Response Body do nó "Responder com QR Code"
+==========================================================
+
+COPIE EXATAMENTE ESTE CÓDIGO (tudo em uma linha única):
+
+={{ { "success": true, "sessionName": $('1. Criar Sessão WAHA').item.json.name, "status": $('2. Iniciar Sessão').item.json.status, "qrCodeUrl": "https://apiwts.nexusatemporal.com.br/api/screenshot?session=" + $('1. Criar Sessão WAHA').item.json.name + "&screenshotType=qr&api_key=bd0c416348b2f04d198ff8971b608a87" } }}
+
+
+PASSO A PASSO:
+==============
+
+1. No N8N, abra o workflow "criar_sessao_waha"
+
+2. Clique no nó "Responder com QR Code"
+
+3. No campo "Response Body", DELETE todo o conteúdo atual
+
+4. COLE exatamente a linha acima (começando com ={{ e terminando com }})
+
+5. Clique em "Save" (salvar o workflow)
+
+6. Teste criando uma nova sessão
+
+
+ALTERNATIVA (se não funcionar):
+================================
+
+Use este formato mais simples:
+
+={{
+  {
+    "success": true,
+    "sessionName": $json.name,
+    "qrCodeUrl": "https://apiwts.nexusatemporal.com.br/api/screenshot?session=" + $json.name + "&screenshotType=qr&api_key=bd0c416348b2f04d198ff8971b608a87"
+  }
+}}
+
+
+TESTE APÓS SALVAR:
+==================
+
+curl -X POST "https://workflow.nexusatemporal.com/webhook/waha-create-session" \
+  -H "Content-Type: application/json" \
+  -d '{"sessionName":"teste_correcao"}'
+
+
+RESPOSTA ESPERADA:
+==================
+
+{
+  "success": true,
+  "sessionName": "session_...",
+  "qrCodeUrl": "https://apiwts.nexusatemporal.com.br/api/screenshot?session=session_...&screenshotType=qr&api_key=bd0c416348b2f04d198ff8971b608a87"
+}

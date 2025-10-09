@@ -1,0 +1,138 @@
+{
+  "name": "WAHA - Enviar Mensagens",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "waha-send-message",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-send",
+      "name": "Webhook Enviar",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "waha-send-message"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apiwts.nexusatemporal.com.br/api/sendText",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "bd0c416348b2f04d198ff8971b608a87"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {},
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"session\": \"{{ $json.body.sessionName }}\",\n  \"chatId\": \"{{ $json.body.phoneNumber }}@c.us\",\n  \"text\": \"{{ $json.body.content }}\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "send-to-waha",
+      "name": "Enviar via WAHA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.nexusatemporal.com.br/api/chat/webhook/n8n/message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {},
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"sessionName\": $('Webhook Enviar').item.json.body.sessionName,\n  \"phoneNumber\": $('Webhook Enviar').item.json.body.phoneNumber,\n  \"content\": $('Webhook Enviar').item.json.body.content,\n  \"messageType\": \"text\",\n  \"direction\": \"outgoing\",\n  \"wahaMessageId\": $json.id,\n  \"status\": \"sent\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "save-to-nexus",
+      "name": "Salvar no Nexus",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"messageId\": $('Enviar via WAHA').item.json.id,\n  \"status\": \"sent\"\n} }}"
+      },
+      "id": "respond-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [910, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Enviar": {
+      "main": [
+        [
+          {
+            "node": "Enviar via WAHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar via WAHA": {
+      "main": [
+        [
+          {
+            "node": "Salvar no Nexus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar no Nexus": {
+      "main": [
+        [
+          {
+            "node": "Responder Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -259,6 +259,35 @@ class ChatController {
             res.status(400).json({ error: error.message });
         }
     };
+    // ===== WHATSAPP QR CODE PROXY =====
+    getQRCodeProxy = async (req, res) => {
+        try {
+            const { session } = req.query;
+            if (!session) {
+                return res.status(400).json({ error: 'Session name is required' });
+            }
+            // Fetch QR Code from WAHA with authentication
+            const wahaUrl = `https://apiwts.nexusatemporal.com.br/api/screenshot?session=${session}&screenshotType=qr`;
+            const wahaApiKey = 'bd0c416348b2f04d198ff8971b608a87';
+            const response = await fetch(wahaUrl, {
+                headers: {
+                    'X-Api-Key': wahaApiKey,
+                },
+            });
+            if (!response.ok) {
+                return res.status(response.status).json({ error: 'Failed to fetch QR Code from WAHA' });
+            }
+            const imageBuffer = await response.arrayBuffer();
+            // Set proper headers for image
+            res.set('Content-Type', 'image/jpeg');
+            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.send(Buffer.from(imageBuffer));
+        }
+        catch (error) {
+            console.error('Error fetching QR Code:', error);
+            res.status(500).json({ error: error.message });
+        }
+    };
 }
 exports.ChatController = ChatController;
 //# sourceMappingURL=chat.controller.js.map

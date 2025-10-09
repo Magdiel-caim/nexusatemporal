@@ -20,7 +20,7 @@ const baseConfig = {
     entities: [path_1.default.join(__dirname, '..', 'modules', '**', '*.entity{.ts,.js}')],
     migrations: [path_1.default.join(__dirname, 'migrations', '*{.ts,.js}')],
     subscribers: [],
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,
 };
 exports.AppDataSource = new typeorm_1.DataSource(baseConfig);
 /**

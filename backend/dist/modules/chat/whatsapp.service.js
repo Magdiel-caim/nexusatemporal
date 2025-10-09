@@ -11,7 +11,7 @@ class WhatsAppService {
     wahaBaseUrl;
     wahaApiKey;
     constructor() {
-        this.wahaBaseUrl = process.env.WAHA_BASE_URL || 'http://localhost:3000';
+        this.wahaBaseUrl = process.env.WAHA_URL || 'http://localhost:3000';
         this.wahaApiKey = process.env.WAHA_API_KEY || '';
     }
     // ===== SEND MESSAGES =====

@@ -2,16 +2,21 @@ import { Router } from 'express';
 import { ChatController } from './chat.controller';
 import { WhatsAppController } from './whatsapp.controller';
 import { WAHASessionController } from './waha-session.controller';
+import { N8NWebhookController } from './n8n-webhook.controller';
 import { authenticate } from '@/shared/middleware/auth.middleware';
 
 const router = Router();
 const chatController = new ChatController();
 const whatsappController = new WhatsAppController();
 const wahaSessionController = new WAHASessionController();
+const n8nWebhookController = new N8NWebhookController();
 
 // WhatsApp webhooks (no authentication required)
 router.post('/webhook/whatsapp', whatsappController.handleWebhook);
 router.post('/webhook/waha/status', wahaSessionController.handleStatusWebhook);
+
+// N8N webhooks (no authentication required)
+router.post('/webhook/n8n/message', (req, res) => n8nWebhookController.receiveMessage(req, res));
 
 // All other routes require authentication
 router.use(authenticate);
@@ -46,6 +51,13 @@ router.delete('/quick-replies/:id', chatController.deleteQuickReply);
 
 // Statistics
 router.get('/stats', chatController.getStats);
+
+// QR Code Proxy (authenticated)
+router.get('/whatsapp/qrcode-proxy', chatController.getQRCodeProxy);
+
+// N8N Chat Routes (authenticated)
+router.get('/n8n/messages/:sessionName', (req, res) => n8nWebhookController.getMessages(req, res));
+router.get('/n8n/conversations', (req, res) => n8nWebhookController.getConversations(req, res));
 
 // WAHA Session Management (WhatsApp Connection)
 router.post('/whatsapp/sessions/create', wahaSessionController.createSession);

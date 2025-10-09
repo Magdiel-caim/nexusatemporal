@@ -52,7 +52,11 @@ let User = class User {
     createdAt;
     updatedAt;
     async hashPassword() {
-        if (this.password && !this.password.startsWith('$2a$')) {
+        // Accept both $2a$ (bcryptjs) and $2y$ (bcrypt) formats
+        const isAlreadyHashed = this.password && (this.password.startsWith('$2a$') ||
+            this.password.startsWith('$2y$') ||
+            this.password.startsWith('$2b$'));
+        if (this.password && !isAlreadyHashed) {
             const rounds = parseInt(process.env.BCRYPT_ROUNDS || '12');
             this.password = await bcryptjs_1.default.hash(this.password, rounds);
         }

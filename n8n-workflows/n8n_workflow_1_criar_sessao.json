@@ -1,0 +1,193 @@
+{
+  "name": "WAHA - Criar Sessão WhatsApp",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "waha-create-session",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-create-session",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "waha-create-session"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apiwts.nexusatemporal.com.br/api/sessions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "bd0c416348b2f04d198ff8971b608a87"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {},
+        "jsonParameters": true,
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        },
+        "bodyParametersJson": "={\n  \"name\": \"{{ $json.body.sessionName }}\",\n  \"config\": {\n    \"engine\": \"GOWS\",\n    \"webhooks\": [\n      {\n        \"url\": \"https://workflow.nexusatemporal.com/webhook/waha-receive-message\",\n        \"events\": [\"message\", \"session.status\"]\n      }\n    ]\n  }\n}"
+      },
+      "id": "create-session-waha",
+      "name": "1. Criar Sessão WAHA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://apiwts.nexusatemporal.com.br/api/sessions/{{ $json.name }}/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "bd0c416348b2f04d198ff8971b608a87"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "start-session",
+      "name": "2. Iniciar Sessão",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "seconds"
+      },
+      "id": "wait-qr",
+      "name": "Aguardar 3s",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [910, 300],
+      "webhookId": "waha-create-session"
+    },
+    {
+      "parameters": {
+        "url": "=https://apiwts.nexusatemporal.com.br/api/sessions/{{ $('1. Criar Sessão WAHA').item.json.name }}/auth/qr",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "bd0c416348b2f04d198ff8971b608a87"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "get-qr-code",
+      "name": "3. Obter QR Code",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"sessionName\": $('1. Criar Sessão WAHA').item.json.name,\n  \"status\": $('2. Iniciar Sessão').item.json.status,\n  \"qrCode\": $json.value\n} }}"
+      },
+      "id": "response-qr",
+      "name": "Responder com QR Code",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1350, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "1. Criar Sessão WAHA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. Criar Sessão WAHA": {
+      "main": [
+        [
+          {
+            "node": "2. Iniciar Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Iniciar Sessão": {
+      "main": [
+        [
+          {
+            "node": "Aguardar 3s",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aguardar 3s": {
+      "main": [
+        [
+          {
+            "node": "3. Obter QR Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3. Obter QR Code": {
+      "main": [
+        [
+          {
+            "node": "Responder com QR Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

@@ -41,6 +41,25 @@ export class WAHASessionService {
    */
   async createSession(sessionName: string, userId: string): Promise<WAHASession> {
     try {
+      // Verificar se a sessão já existe
+      let sessionExists = false;
+      try {
+        await this.getSessionStatus(sessionName);
+        sessionExists = true;
+        console.log(`Session ${sessionName} already exists, deleting it first...`);
+
+        // Deletar sessão existente
+        await this.deleteSession(sessionName);
+
+        // Aguardar um pouco para garantir que foi deletada
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } catch (error: any) {
+        // Sessão não existe, pode criar
+        if (error.response?.status !== 404) {
+          console.log('Session does not exist, creating new one...');
+        }
+      }
+
       const webhookUrl = `${process.env.BACKEND_URL}/api/chat/webhook/waha/status`;
 
       const response = await axios.post(
@@ -48,6 +67,7 @@ export class WAHASessionService {
         {
           name: sessionName,
           config: {
+            engine: 'GOWS', // Usando engine GO (mais rápida e estável)
             webhooks: [
               {
                 url: webhookUrl,
@@ -59,18 +79,40 @@ export class WAHASessionService {
         { headers: this.getHeaders() }
       );
 
-      // Criar conversation no nosso banco
-      await this.conversationRepository.save({
-        contactName: `WhatsApp - ${sessionName}`,
-        phoneNumber: sessionName,
-        whatsappInstanceId: sessionName,
-        assignedUserId: userId,
-        status: 'waiting',
-        metadata: {
-          wahaSessionName: sessionName,
-          createdBy: userId,
-        },
+      // Criar ou atualizar conversation no nosso banco
+      const existingConversation = await this.conversationRepository.findOne({
+        where: { whatsappInstanceId: sessionName },
       });
+
+      if (existingConversation) {
+        // Atualizar conversation existente
+        await this.conversationRepository.update(
+          { whatsappInstanceId: sessionName },
+          {
+            status: 'waiting',
+            assignedUserId: userId,
+            metadata: {
+              wahaSessionName: sessionName,
+              updatedBy: userId,
+              lastUpdate: new Date(),
+            } as any,
+          }
+        );
+      } else {
+        // Criar nova conversation
+        await this.conversationRepository.save({
+          contactName: `WhatsApp - ${sessionName}`,
+          phoneNumber: sessionName,
+          whatsappInstanceId: sessionName,
+          assignedUserId: userId,
+          status: 'waiting',
+          metadata: {
+            wahaSessionName: sessionName,
+            createdBy: userId,
+            engine: 'GOWS',
+          },
+        });
+      }
 
       return response.data;
     } catch (error: any) {

@@ -1,0 +1,129 @@
+{
+  "name": "WAHA - Receber Mensagens",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "waha-receive-message",
+        "options": {}
+      },
+      "id": "webhook-receive",
+      "name": "Webhook WAHA",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "waha-receive-message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "message-event",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "message",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-messages",
+      "name": "Filtrar Mensagens",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Processar dados da mensagem WAHA\nconst payload = $input.item.json.body.payload;\nconst session = $input.item.json.body.session;\n\nreturn {\n  sessionName: session,\n  wahaMessageId: payload.id,\n  phoneNumber: payload.from.replace('@c.us', ''),\n  contactName: payload._data?.notifyName || payload.from,\n  messageType: payload.type || 'text',\n  content: payload.body || '',\n  mediaUrl: payload._data?.mediaUrl || null,\n  direction: payload.fromMe ? 'outgoing' : 'incoming',\n  timestamp: payload.timestamp || Date.now(),\n  rawPayload: payload\n};"
+      },
+      "id": "process-message",
+      "name": "Processar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.nexusatemporal.com.br/api/chat/webhook/n8n/message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "bodyParameters": {},
+        "jsonParameters": true,
+        "bodyParametersJson": "={{ $json }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "send-to-nexus",
+      "name": "Enviar para Nexus Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300]
+    }
+  ],
+  "connections": {
+    "Webhook WAHA": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Mensagens": {
+      "main": [
+        [
+          {
+            "node": "Processar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Enviar para Nexus Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

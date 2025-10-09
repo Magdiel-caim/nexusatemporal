@@ -1,0 +1,120 @@
+{
+  "name": "WAHA - Criar Sessão SIMPLES",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "waha-create-session-v2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "waha-create-v2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://apiwts.nexusatemporal.com.br/api/sessions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "bd0c416348b2f04d198ff8971b608a87"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "jsonParameters": true,
+        "bodyParametersJson": "={\n  \"name\": \"{{ $json.body.sessionName }}\",\n  \"config\": {\n    \"engine\": \"GOWS\"\n  }\n}",
+        "options": {}
+      },
+      "id": "create-session",
+      "name": "Criar Sessão",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://apiwts.nexusatemporal.com.br/api/sessions/{{ $json.name }}/start",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Api-Key",
+              "value": "bd0c416348b2f04d198ff8971b608a87"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "start-session",
+      "name": "Iniciar Sessão",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"sessionName\": \"{{ $('Criar Sessão').item.json.name }}\",\n  \"status\": \"SCAN_QR_CODE\",\n  \"qrCodeUrl\": \"https://apiwts.nexusatemporal.com.br/api/screenshot?session={{ $('Criar Sessão').item.json.name }}&screenshotType=qr&api_key=bd0c416348b2f04d198ff8971b608a87\"\n}"
+      },
+      "id": "respond",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [900, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Criar Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Sessão": {
+      "main": [
+        [
+          {
+            "node": "Iniciar Sessão",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Iniciar Sessão": {
+      "main": [
+        [
+          {
+            "node": "Responder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
