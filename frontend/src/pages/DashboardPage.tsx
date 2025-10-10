@@ -4,10 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { leadsService } from '@/services/leadsService';
 import {
   Users,
-  Calendar,
   DollarSign,
-  TrendingUp,
-  Clock,
   AlertCircle,
   CheckCircle,
   UserCheck,
@@ -101,7 +98,7 @@ export default function DashboardPage() {
       });
 
       // Calcular conversão (leads que viraram fechado)
-      const closedLeads = leads.filter(lead => lead.stage?.name === 'Fechado');
+      const closedLeads = leads.filter(lead => lead.state === 'won');
       const conversionRate = leads.length > 0 ? (closedLeads.length / leads.length) * 100 : 0;
 
       // Calcular ticket médio
@@ -109,7 +106,7 @@ export default function DashboardPage() {
       const avgTicket = closedLeads.length > 0 ? totalValue / closedLeads.length : 0;
 
       // Separar por clínica
-      const moemaClinics = leads.filter(l => l.attendanceLocation === 'clinic' || l.city?.toLowerCase().includes('moema'));
+      const moemaClinics = leads.filter(l => l.attendanceLocation === 'moema' || l.city?.toLowerCase().includes('moema'));
       const avPaulistaLeads = leads.filter(l => l.city?.toLowerCase().includes('paulista'));
 
       setStats({

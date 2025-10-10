@@ -231,6 +231,32 @@ class ChatService {
   async deleteWhatsAppMessage(messageId: string): Promise<void> {
     await api.delete(`/chat/n8n/messages/${messageId}`);
   }
+
+  async sendWhatsAppMessage(sessionName: string, phoneNumber: string, content: string, quotedMessageId?: string): Promise<Message> {
+    const payload: any = {
+      sessionName,
+      phoneNumber,
+      content,
+    };
+
+    if (quotedMessageId) {
+      payload.quotedMessageId = quotedMessageId;
+    }
+
+    const { data } = await api.post('/chat/n8n/send-message', payload);
+
+    // Converter resposta do backend para formato Message
+    const messageData = data.data || data;
+    return {
+      id: messageData.id,
+      conversationId: `whatsapp-${messageData.sessionName}-${messageData.phoneNumber}`,
+      direction: messageData.direction || 'outgoing',
+      type: messageData.messageType || 'text',
+      content: messageData.content,
+      status: messageData.status || 'sent',
+      createdAt: messageData.createdAt || new Date().toISOString(),
+    };
+  }
 }
 
 export default new ChatService();

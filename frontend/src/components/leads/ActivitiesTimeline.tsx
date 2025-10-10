@@ -172,7 +172,7 @@ export default function ActivitiesTimeline({ leadId, showOnlyHistory = false }: 
 
           {/* Activities */}
           <div className="space-y-4">
-            {filteredActivities.map((activity, index) => (
+            {filteredActivities.map((activity) => (
               <div key={activity.id} className="relative flex gap-4">
                 {/* Icon */}
                 <div className={`flex-shrink-0 w-10 h-10 rounded-full border-2 flex items-center justify-center ${getActivityColor(activity.type)} z-10`}>

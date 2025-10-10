@@ -21,10 +21,10 @@ class WhatsAppSyncService {
     io = null;
     // Configurações (pode mover para .env depois)
     POLLING_INTERVAL_MS = 5000; // 5 segundos
-    SESSION_NAME = 'session_01k74cqnky2pv9bn8m8wctad9t';
+    SESSION_NAME = 'session_01k77wpm5edhch4b97qbgenk7p';
     WAHA_URL = 'https://apiwts.nexusatemporal.com.br';
     WAHA_API_KEY = 'bd0c416348b2f04d198ff8971b608a87';
-    ENABLED = process.env.ENABLE_WHATSAPP_POLLING !== 'false';
+    ENABLED = true; // Habilitado para polling
     constructor(socketIO) {
         this.io = socketIO;
     }

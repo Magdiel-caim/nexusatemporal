@@ -30,7 +30,7 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
         type: formData.type as any,
         title: formData.title,
         description: formData.description || undefined,
-        scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt) : undefined,
+        scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : undefined,
       };
 
       await onSubmit(submitData);

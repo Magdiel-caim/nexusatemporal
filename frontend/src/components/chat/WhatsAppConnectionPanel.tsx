@@ -239,7 +239,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
       setCurrentSessionName(session.name);
 
       // Chamar endpoint de reconexão
-      const { data } = await api.post(`/chat/whatsapp/sessions/${session.name}/reconnect`);
+      await api.post(`/chat/whatsapp/sessions/${session.name}/reconnect`);
 
       // Buscar QR Code
       const token = localStorage.getItem('token');

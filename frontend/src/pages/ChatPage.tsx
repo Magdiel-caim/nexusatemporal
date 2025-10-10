@@ -313,13 +313,56 @@ const ChatPage: React.FC = () => {
   };
 
   const sendMessage = async () => {
-    if (!messageInput.trim() || !selectedConversation) return;
+    console.log('🚀 FUNÇÃO sendMessage CHAMADA!', {
+      messageInput: messageInput,
+      hasConversation: !!selectedConversation,
+    });
+
+    if (!messageInput.trim() || !selectedConversation) {
+      console.log('❌ BLOQUEADO - Mensagem vazia ou sem conversa');
+      return;
+    }
 
     try {
-      const newMessage = await chatService.sendMessage(selectedConversation.id, {
-        type: 'text',
-        content: messageInput,
+      let newMessage: Message;
+
+      // DEBUG - Verificar conversa
+      console.log('🔍 DEBUG - Conversa selecionada:', {
+        id: selectedConversation.id,
+        phoneNumber: selectedConversation.phoneNumber,
+        whatsappInstanceId: selectedConversation.whatsappInstanceId,
+        startsWithWhatsapp: selectedConversation.id.startsWith('whatsapp-'),
       });
+
+      // FORÇAR WhatsApp se tiver phoneNumber no padrão brasileiro (começa com 55)
+      const isWhatsApp = selectedConversation.whatsappInstanceId ||
+                         selectedConversation.id.startsWith('whatsapp-') ||
+                         (selectedConversation.phoneNumber && selectedConversation.phoneNumber.startsWith('55'));
+
+      if (isWhatsApp && selectedConversation.phoneNumber) {
+        console.log('📤 Enviando mensagem WhatsApp:', {
+          session: selectedConversation.whatsappInstanceId,
+          phone: selectedConversation.phoneNumber,
+          content: messageInput,
+        });
+
+        // Se não tiver whatsappInstanceId, usar um padrão
+        const sessionName = selectedConversation.whatsappInstanceId || 'session_01k77wpm5edhch4b97qbgenk7p';
+
+        // Enviar via WhatsApp
+        newMessage = await chatService.sendWhatsAppMessage(
+          sessionName,
+          selectedConversation.phoneNumber,
+          messageInput
+        );
+      } else {
+        console.log('📧 Enviando mensagem normal (não WhatsApp)');
+        // Conversa normal
+        newMessage = await chatService.sendMessage(selectedConversation.id, {
+          type: 'text',
+          content: messageInput,
+        });
+      }
 
       setMessages((prev) => [...prev, newMessage]);
       setMessageInput('');

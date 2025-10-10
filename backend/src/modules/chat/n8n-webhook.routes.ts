@@ -16,4 +16,13 @@ router.get('/messages/:sessionName', (req, res) => controller.getMessages(req, r
 // Listar conversas
 router.get('/conversations', (req, res) => controller.getConversations(req, res));
 
+// Enviar mensagem via WhatsApp
+router.post('/send-message', (req, res) => controller.sendMessage(req, res));
+
+// Marcar mensagens como lidas
+router.post('/messages/:sessionName/mark-read', (req, res) => controller.markAsRead(req, res));
+
+// Deletar mensagem
+router.delete('/messages/:messageId', (req, res) => controller.deleteMessage(req, res));
+
 export default router;

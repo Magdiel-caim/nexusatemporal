@@ -28,7 +28,6 @@ type ViewMode = 'kanban' | 'list' | 'grid' | 'timeline' | 'division';
 
 export default function LeadsPage() {
   const location = useLocation();
-  const [pipelines, setPipelines] = useState<Pipeline[]>([]);
   const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
@@ -81,7 +80,6 @@ export default function LeadsPage() {
   const loadPipelines = async () => {
     try {
       const data = await leadsService.getPipelines();
-      setPipelines(data);
       if (data.length > 0) {
         setSelectedPipeline(data[0]);
       }

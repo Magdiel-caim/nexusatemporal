@@ -100,7 +100,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
   }, [isDragging]);
 
   // Detectar se houve drag para prevenir onClick acidental
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = () => {
     // Se houve drag, não executar onClick
     if (dragDetected.current) {
       return;
@@ -188,13 +188,13 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
       {/* Contatos (Email e Telefone - apenas ícones) */}
       <div className="flex items-center gap-2 text-xs text-gray-400">
         {lead.email && (
-          <Mail className="w-3.5 h-3.5" title={lead.email} />
+          <span title={lead.email}><Mail className="w-3.5 h-3.5" /></span>
         )}
         {lead.phone && (
-          <Phone className="w-3.5 h-3.5" title={lead.phone} />
+          <span title={lead.phone}><Phone className="w-3.5 h-3.5" /></span>
         )}
         {lead.whatsapp && (
-          <MessageCircle className="w-3.5 h-3.5" title={lead.whatsapp} />
+          <span title={lead.whatsapp}><MessageCircle className="w-3.5 h-3.5" /></span>
         )}
       </div>
 

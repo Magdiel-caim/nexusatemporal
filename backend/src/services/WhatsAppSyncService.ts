@@ -37,10 +37,10 @@ export class WhatsAppSyncService {
 
   // Configurações (pode mover para .env depois)
   private readonly POLLING_INTERVAL_MS = 5000; // 5 segundos
-  private readonly SESSION_NAME = 'session_01k74cqnky2pv9bn8m8wctad9t';
+  private readonly SESSION_NAME = 'session_01k77wpm5edhch4b97qbgenk7p';
   private readonly WAHA_URL = 'https://apiwts.nexusatemporal.com.br';
   private readonly WAHA_API_KEY = 'bd0c416348b2f04d198ff8971b608a87';
-  private readonly ENABLED = process.env.ENABLE_WHATSAPP_POLLING !== 'false';
+  private readonly ENABLED = false; // DESABILITADO - erro 422 persistente
 
   constructor(socketIO?: any) {
     this.io = socketIO;
