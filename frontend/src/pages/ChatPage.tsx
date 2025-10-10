@@ -16,6 +16,7 @@ import {
   X,
   Image as ImageIcon,
   Smartphone,
+  Trash2,
 } from 'lucide-react';
 import chatService, { Conversation, Message, QuickReply } from '../services/chatService';
 import toast from 'react-hot-toast';
@@ -31,16 +32,24 @@ const ChatPage: React.FC = () => {
   const [messageInput, setMessageInput] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('');
+  const [filterChatType, setFilterChatType] = useState<string>(''); // '' | 'individual' | 'group'
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [quickReplies, setQuickReplies] = useState<QuickReply[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [showWhatsAppConnection, setShowWhatsAppConnection] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedConversationRef = useRef<Conversation | null>(null);
 
   // Initialize WebSocket
   useEffect(() => {
-    const apiUrl = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3001';
+    // Detectar automaticamente se está em localhost ou produção
+    const apiUrl = window.location.origin.includes('localhost')
+      ? 'http://localhost:3001'
+      : 'https://api.nexusatemporal.com.br';
+
+    console.log('🔌 Conectando WebSocket em:', apiUrl);
+
     const socketInstance = io(apiUrl, {
       auth: {
         token: localStorage.getItem('token'),
@@ -70,12 +79,80 @@ const ChatPage: React.FC = () => {
       loadConversations();
     });
 
+    // Listen para mensagens WhatsApp vindas do WAHA via backend
+    socketInstance.on('chat:new-message', (whatsappMessage: any) => {
+      console.log('📱 Nova mensagem WhatsApp recebida via WebSocket:', whatsappMessage);
+
+      // Atualizar lista de conversas SEMPRE
+      loadConversations();
+
+      // Se estiver na conversa, adicionar mensagem (usando ref ao invés de closure)
+      const currentConversation = selectedConversationRef.current;
+      if (currentConversation) {
+        console.log('📋 Conversa selecionada:', {
+          id: currentConversation.id,
+          phoneNumber: currentConversation.phoneNumber,
+          whatsappInstanceId: currentConversation.whatsappInstanceId
+        });
+        console.log('📨 Mensagem recebida de:', whatsappMessage.phoneNumber);
+
+        // Verificar se a mensagem é da conversa atual
+        if (currentConversation.phoneNumber === whatsappMessage.phoneNumber &&
+            currentConversation.whatsappInstanceId === whatsappMessage.sessionName) {
+          console.log('✅ Mensagem pertence à conversa atual - adicionando à lista');
+          const newMessage: Message = {
+            id: whatsappMessage.id,
+            conversationId: currentConversation.id,
+            content: whatsappMessage.content,
+            direction: whatsappMessage.direction,
+            type: whatsappMessage.messageType || 'text',
+            status: 'delivered',
+            createdAt: whatsappMessage.createdAt,
+          };
+          setMessages((prev) => [...prev, newMessage]);
+          scrollToBottom();
+        } else {
+          console.log('⏭️ Mensagem de outra conversa - exibindo toast');
+          toast.success(`Nova mensagem de ${whatsappMessage.contactName || whatsappMessage.phoneNumber}`);
+        }
+      } else {
+        console.log('⏭️ Nenhuma conversa selecionada - exibindo toast');
+        toast.success(`Nova mensagem de ${whatsappMessage.contactName || whatsappMessage.phoneNumber}`);
+      }
+    });
+
+    // Listen para mensagens deletadas no WhatsApp
+    socketInstance.on('chat:message-deleted', (deletedData: any) => {
+      console.log('🗑️ Mensagem deletada no WhatsApp:', deletedData);
+
+      // Atualizar lista de conversas
+      loadConversations();
+
+      // Se estiver na conversa, remover mensagem da UI (usando ref)
+      const currentConversation = selectedConversationRef.current;
+      if (currentConversation) {
+        if (currentConversation.phoneNumber === deletedData.phoneNumber &&
+            currentConversation.whatsappInstanceId === deletedData.sessionName) {
+          console.log('✅ Removendo mensagem da conversa atual:', deletedData.messageId);
+          setMessages((prev) => prev.filter((msg) => msg.id !== deletedData.messageId));
+          toast.success('Mensagem deletada no WhatsApp');
+        }
+      }
+    });
+
     setSocket(socketInstance);
 
     return () => {
+      socketInstance.off('chat:new-message');
+      socketInstance.off('chat:message-deleted');
       socketInstance.disconnect();
     };
-  }, []);
+  }, []); // WebSocket conecta UMA VEZ e não reconecta
+
+  // Update ref when conversation changes
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation;
+  }, [selectedConversation]);
 
   // Join conversation room when selected
   useEffect(() => {
@@ -91,7 +168,7 @@ const ChatPage: React.FC = () => {
   // Load conversations
   useEffect(() => {
     loadConversations();
-  }, [searchQuery, filterStatus]);
+  }, [searchQuery, filterStatus, filterChatType]);
 
   // Load messages when conversation is selected
   useEffect(() => {
@@ -117,11 +194,45 @@ const ChatPage: React.FC = () => {
 
   const loadConversations = async () => {
     try {
-      const data = await chatService.getConversations({
+      // Carregar conversas normais
+      const normalConversations = await chatService.getConversations({
         search: searchQuery,
         status: filterStatus,
       });
-      setConversations(data);
+
+      // Carregar conversas WhatsApp do endpoint N8N
+      let whatsappConversations: Conversation[] = [];
+      try {
+        const whatsappData = await chatService.getWhatsAppConversations();
+
+        // Converter conversas WhatsApp para o formato Conversation
+        whatsappConversations = whatsappData.map((conv: any) => ({
+          id: `whatsapp-${conv.sessionName}-${conv.phoneNumber}`, // Usar hífen ao invés de underscore
+          contactName: conv.contactName || conv.phoneNumber,
+          phoneNumber: conv.phoneNumber,
+          whatsappInstanceId: conv.sessionName,
+          chatType: conv.chatType || 'individual', // 'individual' ou 'group'
+          status: 'active' as const,
+          isUnread: (conv.unreadCount || 0) > 0,
+          unreadCount: conv.unreadCount || 0,
+          lastMessageAt: conv.lastMessageAt,
+          lastMessagePreview: conv.lastMessage,
+          createdAt: conv.lastMessageAt || new Date().toISOString(),
+          updatedAt: conv.lastMessageAt || new Date().toISOString(),
+        }));
+      } catch (whatsappError) {
+        console.log('WhatsApp conversations not available:', whatsappError);
+      }
+
+      // Mesclar e ordenar por última mensagem
+      const allConversations = [...normalConversations, ...whatsappConversations]
+        .sort((a, b) => {
+          const dateA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
+          const dateB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
+          return dateB - dateA; // Mais recente primeiro
+        });
+
+      setConversations(allConversations);
     } catch (error) {
       console.error('Error loading conversations:', error);
       toast.error('Erro ao carregar conversas');
@@ -131,8 +242,36 @@ const ChatPage: React.FC = () => {
   const loadMessages = async (conversationId: string) => {
     try {
       setIsLoading(true);
-      const data = await chatService.getMessages(conversationId);
-      setMessages(data);
+
+      // Se for conversa WhatsApp, buscar do endpoint WhatsApp
+      if (conversationId.startsWith('whatsapp-')) {
+        // Usar dados do selectedConversation ao invés de fazer parse
+        if (!selectedConversation) return;
+
+        const sessionName = selectedConversation.whatsappInstanceId;
+        const phoneNumber = selectedConversation.phoneNumber;
+
+        console.log('🔍 Buscando mensagens:', { sessionName, phoneNumber });
+
+        const whatsappMessages = await chatService.getWhatsAppMessages(sessionName!, phoneNumber);
+
+        // Converter para formato Message
+        const messages: Message[] = whatsappMessages.map((msg: any) => ({
+          id: msg.id,
+          conversationId: conversationId,
+          direction: msg.direction,
+          type: msg.messageType || 'text',
+          content: msg.content,
+          status: msg.status || 'delivered',
+          createdAt: msg.createdAt,
+        }));
+
+        setMessages(messages);
+      } else {
+        // Conversa normal
+        const data = await chatService.getMessages(conversationId);
+        setMessages(data);
+      }
     } catch (error) {
       console.error('Error loading messages:', error);
       toast.error('Erro ao carregar mensagens');
@@ -152,7 +291,21 @@ const ChatPage: React.FC = () => {
 
   const markConversationAsRead = async (conversationId: string) => {
     try {
-      await chatService.markAsRead(conversationId);
+      // Se for conversa WhatsApp, usar endpoint específico
+      if (conversationId.startsWith('whatsapp-')) {
+        if (!selectedConversation) return;
+
+        const sessionName = selectedConversation.whatsappInstanceId;
+        const phoneNumber = selectedConversation.phoneNumber;
+
+        console.log('✅ Marcando como lido:', { sessionName, phoneNumber });
+
+        await chatService.markWhatsAppAsRead(sessionName!, phoneNumber);
+      } else {
+        await chatService.markAsRead(conversationId);
+      }
+
+      // Recarregar conversas para atualizar contador
       loadConversations();
     } catch (error) {
       console.error('Error marking as read:', error);
@@ -209,6 +362,22 @@ const ChatPage: React.FC = () => {
     setShowQuickReplies(false);
   };
 
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!confirm('Deseja realmente excluir esta mensagem?')) {
+      return;
+    }
+
+    try {
+      await chatService.deleteWhatsAppMessage(messageId);
+      setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+      toast.success('Mensagem excluída com sucesso');
+      loadConversations(); // Atualizar lista de conversas
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast.error('Erro ao excluir mensagem');
+    }
+  };
+
   const formatMessageTime = (date: string) => {
     return format(new Date(date), 'HH:mm', { locale: ptBR });
   };
@@ -240,6 +409,9 @@ const ChatPage: React.FC = () => {
     if (filterStatus && conv.status !== filterStatus) {
       return false;
     }
+    if (filterChatType && (conv as any).chatType !== filterChatType) {
+      return false;
+    }
     return true;
   });
 
@@ -265,6 +437,7 @@ const ChatPage: React.FC = () => {
                   setShowWhatsAppConnection(false);
                   loadConversations();
                 }}
+                onClose={() => setShowWhatsAppConnection(false)}
               />
             </div>
           </div>
@@ -290,7 +463,7 @@ const ChatPage: React.FC = () => {
             />
           </div>
 
-          {/* Filter Buttons */}
+          {/* Filter Buttons - Status */}
           <div className="flex gap-2 mt-3">
             <button
               onClick={() => setFilterStatus('')}
@@ -315,6 +488,34 @@ const ChatPage: React.FC = () => {
               }`}
             >
               Aguardando
+            </button>
+          </div>
+
+          {/* Filter Buttons - Chat Type */}
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={() => setFilterChatType('')}
+              className={`px-3 py-1.5 text-sm rounded-lg ${
+                filterChatType === '' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              Todos
+            </button>
+            <button
+              onClick={() => setFilterChatType('individual')}
+              className={`px-3 py-1.5 text-sm rounded-lg ${
+                filterChatType === 'individual' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              Individuais
+            </button>
+            <button
+              onClick={() => setFilterChatType('group')}
+              className={`px-3 py-1.5 text-sm rounded-lg ${
+                filterChatType === 'group' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+              }`}
+            >
+              Grupos
             </button>
           </div>
 
@@ -426,23 +627,34 @@ const ChatPage: React.FC = () => {
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex ${message.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}
+                    className={`flex group ${message.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}
                   >
-                    <div
-                      className={`max-w-md px-4 py-2 rounded-lg ${
-                        message.direction === 'outgoing'
-                          ? 'bg-indigo-600 text-white'
-                          : 'bg-white text-gray-900 border border-gray-200'
-                      }`}
-                    >
-                      {message.content && <p className="text-sm">{message.content}</p>}
+                    <div className="flex items-end gap-2">
+                      <div
+                        className={`max-w-md px-4 py-2 rounded-lg ${
+                          message.direction === 'outgoing'
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-white text-gray-900 border border-gray-200'
+                        }`}
+                      >
+                        {message.content && <p className="text-sm">{message.content}</p>}
 
-                      <div className="flex items-center justify-end gap-1 mt-1">
-                        <span className="text-xs opacity-75">
-                          {formatMessageTime(message.createdAt)}
-                        </span>
-                        {message.direction === 'outgoing' && getMessageStatusIcon(message.status)}
+                        <div className="flex items-center justify-end gap-1 mt-1">
+                          <span className="text-xs opacity-75">
+                            {formatMessageTime(message.createdAt)}
+                          </span>
+                          {message.direction === 'outgoing' && getMessageStatusIcon(message.status)}
+                        </div>
                       </div>
+
+                      {/* Botão de exclusão (aparece ao passar o mouse) */}
+                      <button
+                        onClick={() => handleDeleteMessage(message.id)}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded text-red-600"
+                        title="Excluir mensagem"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
                 ))}

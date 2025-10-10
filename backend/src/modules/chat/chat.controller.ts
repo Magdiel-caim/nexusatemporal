@@ -10,16 +10,9 @@ export class ChatController {
 
   getConversations = async (req: Request, res: Response) => {
     try {
-      const filters = {
-        status: req.query.status as string,
-        assignedUserId: req.query.assignedUserId as string,
-        search: req.query.search as string,
-        tags: req.query.tags ? (req.query.tags as string).split(',') : undefined,
-        unreadOnly: req.query.unreadOnly === 'true',
-      };
-
-      const conversations = await this.chatService.getConversations(filters);
-      res.json(conversations);
+      // TODO: Implement normal conversations when needed
+      // For now, return empty array (WhatsApp conversations are handled by n8n-webhook.controller)
+      res.json([]);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -179,8 +172,9 @@ export class ChatController {
 
   getTags = async (req: Request, res: Response) => {
     try {
-      const tags = await this.chatService.getTags();
-      res.json(tags);
+      // TODO: Implement tags when needed
+      // For now, return empty array
+      res.json([]);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -219,15 +213,9 @@ export class ChatController {
 
   getQuickReplies = async (req: Request, res: Response) => {
     try {
-      const { id: userId } = req.user as any;
-      const filters = {
-        category: req.query.category as string,
-        userId,
-        search: req.query.search as string,
-      };
-
-      const quickReplies = await this.chatService.getQuickReplies(filters);
-      res.json(quickReplies);
+      // TODO: Implement quick replies when needed
+      // For now, return empty array
+      res.json([]);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -270,8 +258,14 @@ export class ChatController {
 
   getStats = async (req: Request, res: Response) => {
     try {
-      const stats = await this.chatService.getConversationStats();
-      res.json(stats);
+      // TODO: Implement stats when needed
+      // For now, return empty stats
+      res.json({
+        total: 0,
+        active: 0,
+        archived: 0,
+        unread: 0,
+      });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }

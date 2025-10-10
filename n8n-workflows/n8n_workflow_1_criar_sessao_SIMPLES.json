@@ -35,7 +35,7 @@
         "sendBody": true,
         "contentType": "json",
         "jsonParameters": true,
-        "bodyParametersJson": "={\n  \"name\": \"{{ $json.body.sessionName }}\",\n  \"config\": {\n    \"engine\": \"GOWS\"\n  }\n}",
+        "bodyParametersJson": "={\n  \"name\": \"{{ $json.body.sessionName }}\",\n  \"config\": {\n    \"engine\": \"GOWS\",\n    \"webhooks\": [\n      {\n        \"url\": \"https://workflow.nexusatemporal.com/webhook/waha-receive-message\",\n        \"events\": [\"message\", \"message.any\"]\n      }\n    ]\n  }\n}",
         "options": {}
       },
       "id": "create-session",

@@ -4,8 +4,10 @@ const express_1 = require("express");
 const n8n_webhook_controller_1 = require("./n8n-webhook.controller");
 const router = (0, express_1.Router)();
 const controller = new n8n_webhook_controller_1.N8NWebhookController();
-// Webhook para receber mensagens do N8N
+// Webhook para receber mensagens do N8N (legado)
 router.post('/webhook/n8n/message', (req, res) => controller.receiveMessage(req, res));
+// Webhook para receber mensagens DIRETO do WAHA (sem N8N)
+router.post('/webhook/waha/message', (req, res) => controller.receiveWAHAWebhook(req, res));
 // Listar mensagens de uma sessão
 router.get('/messages/:sessionName', (req, res) => controller.getMessages(req, res));
 // Listar conversas

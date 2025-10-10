@@ -1,9 +1,11 @@
 import { Request, Response } from 'express';
 import { WAHASessionService } from './waha-session.service';
 import { getWebSocketService } from './websocket.service';
+import { WhatsAppSessionDBService } from '@/services/whatsapp-session-db.service';
 
 export class WAHASessionController {
   private wahaSessionService = new WAHASessionService();
+  private sessionDBService = new WhatsAppSessionDBService();
 
   /**
    * POST /api/chat/whatsapp/sessions/create
@@ -113,15 +115,32 @@ export class WAHASessionController {
 
   /**
    * GET /api/chat/whatsapp/sessions
-   * Lista todas as sessões
+   * Lista todas as sessões combinando dados do WAHA com banco
    */
   listSessions = async (req: Request, res: Response) => {
     try {
-      const sessions = await this.wahaSessionService.listSessions();
+      // Buscar sessões do WAHA
+      const wahaSessions = await this.wahaSessionService.listSessions();
+
+      // Buscar sessões do banco
+      const dbSessions = await this.sessionDBService.listSessions();
+
+      // Combinar dados: WAHA + nomes amigáveis do banco
+      const combinedSessions = wahaSessions.map((wahaSession: any) => {
+        const dbSession = dbSessions.find(db => db.session_name === wahaSession.name);
+
+        return {
+          name: wahaSession.name,
+          friendlyName: dbSession?.friendly_name || wahaSession.name,
+          status: wahaSession.status,
+          config: wahaSession.config,
+          me: wahaSession.me,
+        };
+      });
 
       res.json({
         success: true,
-        sessions,
+        sessions: combinedSessions,
       });
     } catch (error: any) {
       console.error('Error listing sessions:', error);
@@ -158,6 +177,9 @@ export class WAHASessionController {
       const { sessionName } = req.params;
 
       await this.wahaSessionService.logoutSession(sessionName);
+
+      // Atualizar status no banco
+      await this.sessionDBService.updateStatus(sessionName, 'STOPPED');
 
       res.json({
         success: true,
@@ -202,8 +224,11 @@ export class WAHASessionController {
       if (event === 'session.status') {
         const { status } = payload;
 
-        // Atualizar status no banco
+        // Atualizar status no banco (service)
         await this.wahaSessionService.handleStatusChange(session, status);
+
+        // Atualizar status no banco (DB)
+        await this.sessionDBService.updateStatus(session, status);
 
         // Emitir evento via WebSocket para atualizar frontend em tempo real
         try {
@@ -224,6 +249,56 @@ export class WAHASessionController {
     } catch (error: any) {
       console.error('Error handling status webhook:', error);
       res.status(500).json({ error: error.message });
+    }
+  };
+
+  /**
+   * POST /api/chat/whatsapp/sessions/register
+   * Registra uma sessão criada externamente (via N8N) no banco local
+   */
+  registerSession = async (req: Request, res: Response) => {
+    try {
+      const { sessionName, friendlyName, userId } = req.body;
+
+      if (!sessionName || !friendlyName) {
+        return res.status(400).json({ error: 'sessionName and friendlyName are required' });
+      }
+
+      // Salvar no banco
+      await this.sessionDBService.upsertSession(sessionName, friendlyName, 'SCAN_QR_CODE', userId);
+
+      res.json({
+        success: true,
+        message: 'Session registered successfully',
+      });
+    } catch (error: any) {
+      console.error('Error registering session:', error);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  /**
+   * POST /api/chat/whatsapp/sessions/:sessionName/reconnect
+   * Reconecta uma sessão desconectada gerando novo QR Code
+   */
+  reconnectSession = async (req: Request, res: Response) => {
+    try {
+      const { sessionName } = req.params;
+
+      // Reiniciar sessão no WAHA
+      const session = await this.wahaSessionService.startSession(sessionName);
+
+      // Atualizar status no banco
+      await this.sessionDBService.updateStatus(sessionName, 'SCAN_QR_CODE');
+
+      res.json({
+        success: true,
+        session,
+        message: 'Session reconnecting. Scan QR code to connect.',
+      });
+    } catch (error: any) {
+      console.error('Error reconnecting session:', error);
+      res.status(400).json({ error: error.message });
     }
   };
 }

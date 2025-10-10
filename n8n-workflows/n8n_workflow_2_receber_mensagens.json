@@ -25,7 +25,7 @@
           "conditions": [
             {
               "id": "message-event",
-              "leftValue": "={{ $json.body.event }}",
+              "leftValue": "={{ $json.event }}",
               "rightValue": "message",
               "operator": {
                 "type": "string",
@@ -45,7 +45,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Processar dados da mensagem WAHA\nconst payload = $input.item.json.body.payload;\nconst session = $input.item.json.body.session;\n\nreturn {\n  sessionName: session,\n  wahaMessageId: payload.id,\n  phoneNumber: payload.from.replace('@c.us', ''),\n  contactName: payload._data?.notifyName || payload.from,\n  messageType: payload.type || 'text',\n  content: payload.body || '',\n  mediaUrl: payload._data?.mediaUrl || null,\n  direction: payload.fromMe ? 'outgoing' : 'incoming',\n  timestamp: payload.timestamp || Date.now(),\n  rawPayload: payload\n};"
+        "jsCode": "// Processar dados da mensagem WAHA\nconst payload = $input.item.json.payload;\nconst session = $input.item.json.session;\n\n// Detectar se é grupo ou conversa individual\nconst isGroup = payload.from && payload.from.includes('@g.us');\n\n// Para grupos, usar participant; para individual, usar from\nlet phoneNumber = '';\nif (isGroup && payload.participant) {\n  // Remover sufixos: @lid, @s.whatsapp.net, @c.us\n  phoneNumber = payload.participant.replace(/@lid|@s.whatsapp.net|@c.us/g, '');\n} else if (payload.from) {\n  // Remover sufixos: @c.us, @lid\n  phoneNumber = payload.from.replace(/@c.us|@lid/g, '');\n}\n\n// Nome do contato\nconst contactName = payload._data?.Info?.PushName || payload._data?.notifyName || phoneNumber;\n\nreturn {\n  sessionName: session,\n  wahaMessageId: payload.id,\n  phoneNumber: phoneNumber,\n  contactName: contactName,\n  messageType: payload.type || 'text',\n  content: payload.body || '',\n  mediaUrl: payload._data?.mediaUrl || null,\n  direction: payload.fromMe ? 'outgoing' : 'incoming',\n  timestamp: payload.timestamp ? payload.timestamp * 1000 : Date.now(),\n  rawPayload: payload\n};"
       },
       "id": "process-message",
       "name": "Processar Mensagem",

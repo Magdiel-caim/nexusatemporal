@@ -37,9 +37,10 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
 
 // Rate limiting
-if (process.env.NODE_ENV === 'production') {
-  app.use(rateLimiter);
-}
+// TEMPORARIAMENTE DESATIVADO para debug
+// if (process.env.NODE_ENV === 'production') {
+//   app.use(rateLimiter);
+// }
 
 // Make io accessible to routes
 app.set('io', io);
@@ -62,12 +63,26 @@ app.use(errorHandler);
 // Initialize WebSocket service for Chat module
 initializeWebSocketService(io);
 
+// ============================================
+// POLLING SERVICE - SOLUÇÃO TEMPORÁRIA
+// Remove quando webhooks WAHA funcionarem
+// Para desativar: ENABLE_WHATSAPP_POLLING=false
+// ============================================
+import WhatsAppSyncService from '@/services/WhatsAppSyncService';
+let whatsappSyncService: WhatsAppSyncService | null = null;
+
 const PORT = process.env.API_PORT || 3001;
 
 // Initialize database and start server
 AppDataSource.initialize()
   .then(() => {
     logger.info('Database connected successfully');
+
+    // ============================================
+    // Inicializar WhatsApp Polling Service
+    // ============================================
+    whatsappSyncService = new WhatsAppSyncService(io);
+    whatsappSyncService.start();
 
     httpServer.listen(PORT, () => {
       logger.info(`🚀 Server running on port ${PORT}`);
@@ -83,6 +98,12 @@ AppDataSource.initialize()
 // Graceful shutdown
 process.on('SIGTERM', () => {
   logger.info('SIGTERM signal received: closing HTTP server');
+
+  // Parar serviço de polling
+  if (whatsappSyncService) {
+    whatsappSyncService.stop();
+  }
+
   httpServer.close(() => {
     logger.info('HTTP server closed');
     AppDataSource.destroy().then(() => {

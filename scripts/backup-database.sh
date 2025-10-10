@@ -26,10 +26,10 @@ DB_NAME="nexus_master"
 DB_PASSWORD="6uyJZdc0xsCe7ymief3x2Izi9QubcTYP"
 
 # IDrive E2 S3 Configuration
-S3_ENDPOINT="https://c1k7.va.idrivee2-46.com"
-S3_ACCESS_KEY="ZaIdY59FGaL8BdtRjZtL"
-S3_SECRET_KEY="wrytdsWINH8tXbedBl4LaxmvSDGqnbsZCFQP6iyj"
-S3_BUCKET="onenexus"
+S3_ENDPOINT="https://o0m5.va.idrivee2-26.com"
+S3_ACCESS_KEY="qFzk5gw00zfSRvj5BQwm"
+S3_SECRET_KEY="bIxbc653Y9SYXIaPWqxa4SDXR85ehHQQGf0x8wL8"
+S3_BUCKET="backupsistemaonenexus"
 S3_PATH="backups/database"
 
 echo -e "${GREEN}=====================================${NC}"

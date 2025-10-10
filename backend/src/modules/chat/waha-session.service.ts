@@ -79,39 +79,43 @@ export class WAHASessionService {
         { headers: this.getHeaders() }
       );
 
-      // Criar ou atualizar conversation no nosso banco
-      const existingConversation = await this.conversationRepository.findOne({
-        where: { whatsappInstanceId: sessionName },
-      });
+      // Tentar criar ou atualizar conversation no nosso banco (opcional - não falha se tabela não existir)
+      try {
+        const existingConversation = await this.conversationRepository.findOne({
+          where: { whatsappInstanceId: sessionName },
+        });
 
-      if (existingConversation) {
-        // Atualizar conversation existente
-        await this.conversationRepository.update(
-          { whatsappInstanceId: sessionName },
-          {
-            status: 'waiting',
+        if (existingConversation) {
+          // Atualizar conversation existente
+          await this.conversationRepository.update(
+            { whatsappInstanceId: sessionName },
+            {
+              status: 'waiting',
+              assignedUserId: userId,
+              metadata: {
+                wahaSessionName: sessionName,
+                updatedBy: userId,
+                lastUpdate: new Date(),
+              } as any,
+            }
+          );
+        } else {
+          // Criar nova conversation
+          await this.conversationRepository.save({
+            contactName: `WhatsApp - ${sessionName}`,
+            phoneNumber: sessionName,
+            whatsappInstanceId: sessionName,
             assignedUserId: userId,
+            status: 'waiting',
             metadata: {
               wahaSessionName: sessionName,
-              updatedBy: userId,
-              lastUpdate: new Date(),
-            } as any,
-          }
-        );
-      } else {
-        // Criar nova conversation
-        await this.conversationRepository.save({
-          contactName: `WhatsApp - ${sessionName}`,
-          phoneNumber: sessionName,
-          whatsappInstanceId: sessionName,
-          assignedUserId: userId,
-          status: 'waiting',
-          metadata: {
-            wahaSessionName: sessionName,
-            createdBy: userId,
-            engine: 'GOWS',
-          },
-        });
+              createdBy: userId,
+              engine: 'GOWS',
+            },
+          });
+        }
+      } catch (convError: any) {
+        console.log('Could not create/update conversation (table may not exist):', convError.message);
       }
 
       return response.data;
@@ -220,11 +224,15 @@ export class WAHASessionService {
         { headers: this.getHeaders() }
       );
 
-      // Atualizar conversation no banco
-      await this.conversationRepository.update(
-        { whatsappInstanceId: sessionName },
-        { status: 'closed' }
-      );
+      // Tentar atualizar conversation no banco (opcional - não falha se tabela não existir)
+      try {
+        await this.conversationRepository.update(
+          { whatsappInstanceId: sessionName },
+          { status: 'closed' }
+        );
+      } catch (convError: any) {
+        console.log('Could not update conversation status (table may not exist):', convError.message);
+      }
     } catch (error: any) {
       console.error('Error logging out session:', error.response?.data || error.message);
       throw new Error(`Failed to logout session: ${error.response?.data?.message || error.message}`);
@@ -241,11 +249,15 @@ export class WAHASessionService {
         { headers: this.getHeaders() }
       );
 
-      // Atualizar conversation no banco
-      await this.conversationRepository.update(
-        { whatsappInstanceId: sessionName },
-        { status: 'archived' }
-      );
+      // Tentar atualizar conversation no banco (opcional - não falha se tabela não existir)
+      try {
+        await this.conversationRepository.update(
+          { whatsappInstanceId: sessionName },
+          { status: 'archived' }
+        );
+      } catch (convError: any) {
+        console.log('Could not update conversation status (table may not exist):', convError.message);
+      }
     } catch (error: any) {
       console.error('Error deleting session:', error.response?.data || error.message);
       throw new Error(`Failed to delete session: ${error.response?.data?.message || error.message}`);
@@ -258,24 +270,28 @@ export class WAHASessionService {
   async handleStatusChange(sessionName: string, newStatus: string): Promise<void> {
     console.log(`Session ${sessionName} status changed to: ${newStatus}`);
 
-    // Atualizar conversation no banco
-    let conversationStatus: 'active' | 'waiting' | 'closed' = 'waiting';
+    // Tentar atualizar conversation no banco (opcional - não falha se tabela não existir)
+    try {
+      let conversationStatus: 'active' | 'waiting' | 'closed' = 'waiting';
 
-    if (newStatus === 'WORKING') {
-      conversationStatus = 'active';
-    } else if (newStatus === 'FAILED' || newStatus === 'STOPPED') {
-      conversationStatus = 'closed';
-    }
-
-    await this.conversationRepository.update(
-      { whatsappInstanceId: sessionName },
-      {
-        status: conversationStatus,
-        metadata: {
-          wahaStatus: newStatus,
-          lastStatusUpdate: new Date(),
-        } as any,
+      if (newStatus === 'WORKING') {
+        conversationStatus = 'active';
+      } else if (newStatus === 'FAILED' || newStatus === 'STOPPED') {
+        conversationStatus = 'closed';
       }
-    );
+
+      await this.conversationRepository.update(
+        { whatsappInstanceId: sessionName },
+        {
+          status: conversationStatus,
+          metadata: {
+            wahaStatus: newStatus,
+            lastStatusUpdate: new Date(),
+          } as any,
+        }
+      );
+    } catch (convError: any) {
+      console.log('Could not update conversation status (table may not exist):', convError.message);
+    }
   }
 }

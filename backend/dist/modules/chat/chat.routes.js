@@ -14,7 +14,9 @@ const n8nWebhookController = new n8n_webhook_controller_1.N8NWebhookController()
 // WhatsApp webhooks (no authentication required)
 router.post('/webhook/whatsapp', whatsappController.handleWebhook);
 router.post('/webhook/waha/status', wahaSessionController.handleStatusWebhook);
-// N8N webhooks (no authentication required)
+// WAHA webhook direto (no authentication required)
+router.post('/webhook/waha/message', (req, res) => n8nWebhookController.receiveWAHAWebhook(req, res));
+// N8N webhooks (no authentication required - LEGADO)
 router.post('/webhook/n8n/message', (req, res) => n8nWebhookController.receiveMessage(req, res));
 // All other routes require authentication
 router.use(auth_middleware_1.authenticate);
@@ -49,9 +51,14 @@ router.get('/whatsapp/qrcode-proxy', chatController.getQRCodeProxy);
 // N8N Chat Routes (authenticated)
 router.get('/n8n/messages/:sessionName', (req, res) => n8nWebhookController.getMessages(req, res));
 router.get('/n8n/conversations', (req, res) => n8nWebhookController.getConversations(req, res));
+router.post('/n8n/messages/:sessionName/mark-read', (req, res) => n8nWebhookController.markAsRead(req, res));
+router.post('/n8n/send-message', (req, res) => n8nWebhookController.sendMessage(req, res));
+router.delete('/n8n/messages/:messageId', (req, res) => n8nWebhookController.deleteMessage(req, res));
 // WAHA Session Management (WhatsApp Connection)
 router.post('/whatsapp/sessions/create', wahaSessionController.createSession);
+router.post('/whatsapp/sessions/register', wahaSessionController.registerSession);
 router.post('/whatsapp/sessions/:sessionName/start', wahaSessionController.startSession);
+router.post('/whatsapp/sessions/:sessionName/reconnect', wahaSessionController.reconnectSession);
 router.get('/whatsapp/sessions/:sessionName/qr', wahaSessionController.getQRCode);
 router.get('/whatsapp/sessions/:sessionName/status', wahaSessionController.getStatus);
 router.get('/whatsapp/sessions', wahaSessionController.listSessions);

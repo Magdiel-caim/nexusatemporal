@@ -205,6 +205,32 @@ class ChatService {
     const { data } = await api.get('/chat/stats');
     return data;
   }
+
+  // ===== WHATSAPP =====
+
+  async getWhatsAppConversations(): Promise<Conversation[]> {
+    const { data } = await api.get('/chat/n8n/conversations');
+    return data.data || data;
+  }
+
+  async getWhatsAppMessages(sessionName: string, phoneNumber?: string): Promise<Message[]> {
+    const params = new URLSearchParams();
+    if (phoneNumber) params.append('phoneNumber', phoneNumber);
+
+    const { data } = await api.get(`/chat/n8n/messages/${sessionName}?${params.toString()}`);
+    return data.data || data;
+  }
+
+  async markWhatsAppAsRead(sessionName: string, phoneNumber: string): Promise<void> {
+    const params = new URLSearchParams();
+    params.append('phoneNumber', phoneNumber);
+
+    await api.post(`/chat/n8n/messages/${sessionName}/mark-read?${params.toString()}`);
+  }
+
+  async deleteWhatsAppMessage(messageId: string): Promise<void> {
+    await api.delete(`/chat/n8n/messages/${messageId}`);
+  }
 }
 
 export default new ChatService();

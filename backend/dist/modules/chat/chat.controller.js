@@ -9,15 +9,9 @@ class ChatController {
     // ===== CONVERSATION ENDPOINTS =====
     getConversations = async (req, res) => {
         try {
-            const filters = {
-                status: req.query.status,
-                assignedUserId: req.query.assignedUserId,
-                search: req.query.search,
-                tags: req.query.tags ? req.query.tags.split(',') : undefined,
-                unreadOnly: req.query.unreadOnly === 'true',
-            };
-            const conversations = await this.chatService.getConversations(filters);
-            res.json(conversations);
+            // TODO: Implement normal conversations when needed
+            // For now, return empty array (WhatsApp conversations are handled by n8n-webhook.controller)
+            res.json([]);
         }
         catch (error) {
             res.status(400).json({ error: error.message });
@@ -164,8 +158,9 @@ class ChatController {
     // ===== TAG ENDPOINTS =====
     getTags = async (req, res) => {
         try {
-            const tags = await this.chatService.getTags();
-            res.json(tags);
+            // TODO: Implement tags when needed
+            // For now, return empty array
+            res.json([]);
         }
         catch (error) {
             res.status(400).json({ error: error.message });
@@ -203,14 +198,9 @@ class ChatController {
     // ===== QUICK REPLY ENDPOINTS =====
     getQuickReplies = async (req, res) => {
         try {
-            const { id: userId } = req.user;
-            const filters = {
-                category: req.query.category,
-                userId,
-                search: req.query.search,
-            };
-            const quickReplies = await this.chatService.getQuickReplies(filters);
-            res.json(quickReplies);
+            // TODO: Implement quick replies when needed
+            // For now, return empty array
+            res.json([]);
         }
         catch (error) {
             res.status(400).json({ error: error.message });
@@ -252,8 +242,14 @@ class ChatController {
     // ===== STATISTICS =====
     getStats = async (req, res) => {
         try {
-            const stats = await this.chatService.getConversationStats();
-            res.json(stats);
+            // TODO: Implement stats when needed
+            // For now, return empty stats
+            res.json({
+                total: 0,
+                active: 0,
+                archived: 0,
+                unread: 0,
+            });
         }
         catch (error) {
             res.status(400).json({ error: error.message });
@@ -262,29 +258,59 @@ class ChatController {
     // ===== WHATSAPP QR CODE PROXY =====
     getQRCodeProxy = async (req, res) => {
         try {
+            console.log('[QR Proxy] Request received:', req.query);
             const { session } = req.query;
             if (!session) {
+                console.log('[QR Proxy] Error: Session name not provided');
                 return res.status(400).json({ error: 'Session name is required' });
             }
-            // Fetch QR Code from WAHA with authentication
+            // Fetch QR Code from WAHA with authentication and retry logic
             const wahaUrl = `https://apiwts.nexusatemporal.com.br/api/screenshot?session=${session}&screenshotType=qr`;
             const wahaApiKey = 'bd0c416348b2f04d198ff8971b608a87';
-            const response = await fetch(wahaUrl, {
-                headers: {
-                    'X-Api-Key': wahaApiKey,
-                },
-            });
-            if (!response.ok) {
-                return res.status(response.status).json({ error: 'Failed to fetch QR Code from WAHA' });
+            let lastError = null;
+            const maxRetries = 5; // Tentar até 5 vezes
+            const retryDelay = 2000; // 2 segundos entre tentativas
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                console.log(`[QR Proxy] Attempt ${attempt}/${maxRetries} - Fetching from WAHA:`, wahaUrl);
+                const response = await fetch(wahaUrl, {
+                    headers: {
+                        'X-Api-Key': wahaApiKey,
+                    },
+                });
+                console.log(`[QR Proxy] Attempt ${attempt}/${maxRetries} - WAHA response status:`, response.status);
+                if (response.ok) {
+                    // Sucesso!
+                    const imageBuffer = await response.arrayBuffer();
+                    console.log('[QR Proxy] Image buffer size:', imageBuffer.byteLength);
+                    // Set proper headers for image
+                    res.set('Content-Type', 'image/jpeg');
+                    res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+                    res.send(Buffer.from(imageBuffer));
+                    console.log('[QR Proxy] Image sent successfully');
+                    return;
+                }
+                // Se recebeu 422 (QR Code não pronto) e ainda tem tentativas, espera e tenta novamente
+                if (response.status === 422 && attempt < maxRetries) {
+                    console.log(`[QR Proxy] QR Code not ready yet (422), waiting ${retryDelay}ms before retry ${attempt + 1}...`);
+                    lastError = { status: response.status, message: 'QR Code not ready' };
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    continue;
+                }
+                // Outros erros ou última tentativa falhou
+                lastError = { status: response.status, message: await response.text() };
+                if (attempt === maxRetries) {
+                    break;
+                }
             }
-            const imageBuffer = await response.arrayBuffer();
-            // Set proper headers for image
-            res.set('Content-Type', 'image/jpeg');
-            res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-            res.send(Buffer.from(imageBuffer));
+            // Se chegou aqui, todas as tentativas falharam
+            console.log('[QR Proxy] All retry attempts failed:', lastError);
+            return res.status(lastError.status || 500).json({
+                error: 'Failed to fetch QR Code from WAHA after multiple attempts',
+                details: lastError.message
+            });
         }
         catch (error) {
-            console.error('Error fetching QR Code:', error);
+            console.error('[QR Proxy] Error:', error);
             res.status(500).json({ error: error.message });
         }
     };

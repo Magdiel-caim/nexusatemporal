@@ -70,11 +70,11 @@ bash /root/nexusatemporal/scripts/pre-deploy.sh
 
 ### Credenciais Configuradas:
 
-- **Endpoint:** https://c1k7.va.idrivee2-46.com
-- **Bucket:** onenexus
+- **Endpoint:** https://o0m5.va.idrivee2-26.com
+- **Bucket:** backupsistemaonenexus
 - **Pasta:** backups/database/
-- **Access Key:** ZaIdY59FGaL8BdtRjZtL
-- **Secret Key:** wrytdsWINH8tXbedBl4LaxmvSDGqnbsZCFQP6iyj
+- **Access Key:** qFzk5gw00zfSRvj5BQwm
+- **Secret Key:** bIxbc653Y9SYXIaPWqxa4SDXR85ehHQQGf0x8wL8
 
 ### Instalar AWS CLI (Necessário para Upload):
 
@@ -88,10 +88,10 @@ sudo ./aws/install
 ### Testar Conexão com IDrive E2:
 
 ```bash
-AWS_ACCESS_KEY_ID="ZaIdY59FGaL8BdtRjZtL" \
-AWS_SECRET_ACCESS_KEY="wrytdsWINH8tXbedBl4LaxmvSDGqnbsZCFQP6iyj" \
-aws s3 ls s3://onenexus/backups/database/ \
-  --endpoint-url https://c1k7.va.idrivee2-46.com \
+AWS_ACCESS_KEY_ID="qFzk5gw00zfSRvj5BQwm" \
+AWS_SECRET_ACCESS_KEY="bIxbc653Y9SYXIaPWqxa4SDXR85ehHQQGf0x8wL8" \
+aws s3 ls s3://backupsistemaonenexus/backups/database/ \
+  --endpoint-url https://o0m5.va.idrivee2-26.com \
   --no-verify-ssl
 ```
 
@@ -120,18 +120,18 @@ docker exec -i $(docker ps -q -f name=nexus_postgres) \
 
 ```bash
 # 1. Listar backups disponíveis no IDrive E2
-AWS_ACCESS_KEY_ID="ZaIdY59FGaL8BdtRjZtL" \
-AWS_SECRET_ACCESS_KEY="wrytdsWINH8tXbedBl4LaxmvSDGqnbsZCFQP6iyj" \
-aws s3 ls s3://onenexus/backups/database/ \
-  --endpoint-url https://c1k7.va.idrivee2-46.com \
+AWS_ACCESS_KEY_ID="qFzk5gw00zfSRvj5BQwm" \
+AWS_SECRET_ACCESS_KEY="bIxbc653Y9SYXIaPWqxa4SDXR85ehHQQGf0x8wL8" \
+aws s3 ls s3://backupsistemaonenexus/backups/database/ \
+  --endpoint-url https://o0m5.va.idrivee2-26.com \
   --no-verify-ssl
 
 # 2. Baixar backup do IDrive E2
-AWS_ACCESS_KEY_ID="ZaIdY59FGaL8BdtRjZtL" \
-AWS_SECRET_ACCESS_KEY="wrytdsWINH8tXbedBl4LaxmvSDGqnbsZCFQP6iyj" \
-aws s3 cp s3://onenexus/backups/database/nexus_backup_YYYYMMDD_HHMMSS.sql.gz \
+AWS_ACCESS_KEY_ID="qFzk5gw00zfSRvj5BQwm" \
+AWS_SECRET_ACCESS_KEY="bIxbc653Y9SYXIaPWqxa4SDXR85ehHQQGf0x8wL8" \
+aws s3 cp s3://backupsistemaonenexus/backups/database/nexus_backup_YYYYMMDD_HHMMSS.sql.gz \
   /root/nexusatemporal/backups/ \
-  --endpoint-url https://c1k7.va.idrivee2-46.com \
+  --endpoint-url https://o0m5.va.idrivee2-26.com \
   --no-verify-ssl
 
 # 3. Descompactar e restaurar (mesmos comandos acima)

@@ -25,7 +25,7 @@ services:
         - "traefik.http.routers.nexusfrontend.rule=Host(`one.nexusatemporal.com.br`)"
         - "traefik.http.routers.nexusfrontend.entrypoints=websecure"
         - "traefik.http.routers.nexusfrontend.tls.certresolver=letsencrypt"
-        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=3000"
+        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=80"
 
   # Backend
   backend:
@@ -51,9 +51,10 @@ services:
       - SMTP_PORT=587
       - SMTP_USER=contato@nexusatemporal.com.br
       - SMTP_PASSWORD=fBYXkRUBaNmQ
-      - S3_ENDPOINT=https://c1k7.va.idrivee2-46.com
-      - S3_ACCESS_KEY_ID=ZaIdY59FGaL8BdtRjZtL
-      - S3_SECRET_ACCESS_KEY=wrytdsWINH8tXbedBl4LaxmvSDGqnbsZCFQP6iy
+      - S3_ENDPOINT=https://o0m5.va.idrivee2-26.com
+      - S3_ACCESS_KEY_ID=qFzk5gw00zfSRvj5BQwm
+      - S3_SECRET_ACCESS_KEY=bIxbc653Y9SYXIaPWqxa4SDXR85ehHQQGf0x8wL8
+      - S3_BUCKET=backupsistemaonenexus
       - BACKEND_URL=https://api.nexusatemporal.com.br
       - FRONTEND_URL=https://one.nexusatemporal.com.br
     networks:

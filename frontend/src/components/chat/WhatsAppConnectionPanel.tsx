@@ -7,16 +7,18 @@ import { Socket } from 'socket.io-client';
 interface WhatsAppConnectionPanelProps {
   socket: Socket | null;
   onConnectionSuccess?: () => void;
+  onClose?: () => void;
 }
 
 type ConnectionStatus = 'idle' | 'creating' | 'starting' | 'qr_ready' | 'connecting' | 'connected' | 'failed';
 
-const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socket, onConnectionSuccess }) => {
+const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socket, onConnectionSuccess, onClose }) => {
   const [status, setStatus] = useState<ConnectionStatus>('idle');
   const [sessionName, setSessionName] = useState('');
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [currentSessionName, setCurrentSessionName] = useState<string | null>(null);
   const [connectedSessions, setConnectedSessions] = useState<any[]>([]);
+  const [disconnectedSessions, setDisconnectedSessions] = useState<any[]>([]);
 
   // Carregar sessões conectadas ao montar
   useEffect(() => {
@@ -38,6 +40,12 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
           if (onConnectionSuccess) {
             onConnectionSuccess();
           }
+          // Auto-fechar popup após 2 segundos
+          setTimeout(() => {
+            if (onClose) {
+              onClose();
+            }
+          }, 2000);
         } else if (data.status === 'FAILED') {
           setStatus('failed');
           toast.error('Falha ao conectar WhatsApp');
@@ -55,7 +63,15 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
   const loadConnectedSessions = async () => {
     try {
       const { data } = await api.get('/chat/whatsapp/sessions');
-      setConnectedSessions(data.sessions.filter((s: any) => s.status === 'WORKING'));
+
+      // Separar sessões ativas e inativas
+      const active = data.sessions.filter((s: any) => s.status === 'WORKING');
+      const inactive = data.sessions.filter((s: any) =>
+        s.status !== 'WORKING' && s.status !== 'SCAN_QR_CODE'
+      );
+
+      setConnectedSessions(active);
+      setDisconnectedSessions(inactive);
     } catch (error) {
       console.error('Error loading sessions:', error);
     }
@@ -75,7 +91,6 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
     try {
       setStatus('creating');
-      setCurrentSessionName(sessionName.toLowerCase());
 
       // Chamar N8N Workflow simplificado para criar sessão
       const n8nResponse = await fetch('https://workflow.nexusatemporal.com/webhook/waha-create-session-v2', {
@@ -96,6 +111,19 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
       console.log('N8N Response:', n8nData);
 
       if (n8nData.success && n8nData.sessionName) {
+        // Atualizar com o nome real da sessão retornado pelo WAHA
+        setCurrentSessionName(n8nData.sessionName);
+
+        // Registrar sessão com nome amigável no banco via backend
+        try {
+          await api.post('/chat/whatsapp/sessions/register', {
+            sessionName: n8nData.sessionName,
+            friendlyName: sessionName, // Nome que o usuário digitou
+          });
+        } catch (error) {
+          console.error('Error registering session:', error);
+        }
+
         // Buscar QR Code via proxy do backend (com autenticação)
         const token = localStorage.getItem('token');
         const qrCodeProxyUrl = `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br'}/api/chat/whatsapp/qrcode-proxy?session=${n8nData.sessionName}`;
@@ -118,8 +146,8 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
         setStatus('qr_ready');
         toast.success('QR Code gerado! Escaneie com seu WhatsApp');
 
-        // Poll para verificar se conectou
-        startPollingForConnection(sessionName.toLowerCase());
+        // Poll para verificar se conectou (usar nome real retornado pelo N8N/WAHA)
+        startPollingForConnection(n8nData.sessionName);
       } else {
         throw new Error('QR Code não retornado pelo N8N');
       }
@@ -157,6 +185,12 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
           if (onConnectionSuccess) {
             onConnectionSuccess();
           }
+          // Auto-fechar popup após 2 segundos
+          setTimeout(() => {
+            if (onClose) {
+              onClose();
+            }
+          }, 2000);
           return;
         } else if (data.session.status === 'FAILED') {
           setStatus('failed');
@@ -189,11 +223,51 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
   const handleDisconnect = async (session: any) => {
     try {
       await api.post(`/chat/whatsapp/sessions/${session.name}/logout`);
-      toast.success('Desconectado com sucesso');
-      loadConnectedSessions();
+      toast.success(`${session.friendlyName || session.name} desconectado com sucesso`);
+
+      // Recarregar lista imediatamente
+      await loadConnectedSessions();
     } catch (error) {
       console.error('Error disconnecting:', error);
       toast.error('Erro ao desconectar');
+    }
+  };
+
+  const handleReconnect = async (session: any) => {
+    try {
+      setStatus('creating');
+      setCurrentSessionName(session.name);
+
+      // Chamar endpoint de reconexão
+      const { data } = await api.post(`/chat/whatsapp/sessions/${session.name}/reconnect`);
+
+      // Buscar QR Code
+      const token = localStorage.getItem('token');
+      const qrCodeProxyUrl = `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br'}/api/chat/whatsapp/qrcode-proxy?session=${session.name}`;
+
+      const qrResponse = await fetch(qrCodeProxyUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!qrResponse.ok) {
+        throw new Error('Erro ao buscar QR Code');
+      }
+
+      const qrBlob = await qrResponse.blob();
+      const qrBlobUrl = URL.createObjectURL(qrBlob);
+
+      setQrCodeData(qrBlobUrl);
+      setStatus('qr_ready');
+      toast.success('QR Code gerado! Escaneie para reconectar');
+
+      // Poll para verificar se conectou
+      startPollingForConnection(session.name);
+    } catch (error: any) {
+      console.error('Error reconnecting:', error);
+      toast.error(error.message || 'Erro ao reconectar');
+      setStatus('idle');
     }
   };
 
@@ -216,12 +290,36 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
           </h3>
           {connectedSessions.map((session) => (
             <div key={session.name} className="flex items-center justify-between py-2">
-              <span className="text-green-700 font-medium">{session.name}</span>
+              <span className="text-green-700 font-medium">{session.friendlyName || session.name}</span>
               <button
                 onClick={() => handleDisconnect(session)}
                 className="text-sm text-red-600 hover:text-red-700 underline"
               >
                 Desconectar
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Sessões Inativas */}
+      {disconnectedSessions.length > 0 && (
+        <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
+          <h3 className="font-semibold text-orange-800 mb-2 flex items-center gap-2">
+            <XCircle className="h-5 w-5" />
+            Conexões Inativas
+          </h3>
+          {disconnectedSessions.map((session) => (
+            <div key={session.name} className="flex items-center justify-between py-2">
+              <div>
+                <span className="text-orange-700 font-medium">{session.friendlyName || session.name}</span>
+                <p className="text-xs text-orange-600">Status: {session.status}</p>
+              </div>
+              <button
+                onClick={() => handleReconnect(session)}
+                className="text-sm text-blue-600 hover:text-blue-700 font-semibold underline"
+              >
+                Reconectar
               </button>
             </div>
           ))}
@@ -238,12 +336,18 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
               type="text"
               value={sessionName}
               onChange={(e) => setSessionName(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleCreateSession();
+                }
+              }}
               placeholder="Ex: whatsapp_comercial"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               maxLength={50}
+              autoFocus
             />
             <p className="text-xs text-gray-500 mt-1">
-              Use apenas letras, números e underscores (_)
+              Use apenas letras, números e underscores (_). Pressione Enter para conectar.
             </p>
           </div>
 

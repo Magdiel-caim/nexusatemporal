@@ -15,7 +15,6 @@ const http_1 = require("http");
 const socket_io_1 = require("socket.io");
 const data_source_1 = require("@/database/data-source");
 const error_handler_1 = require("@/shared/middleware/error-handler");
-const rate_limiter_1 = require("@/shared/middleware/rate-limiter");
 const logger_1 = require("@/shared/utils/logger");
 const routes_1 = __importDefault(require("@/routes"));
 const websocket_service_1 = require("@/modules/chat/websocket.service");
@@ -41,9 +40,10 @@ app.use(express_1.default.json({ limit: '50mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
 app.use((0, morgan_1.default)('combined', { stream: { write: (message) => logger_1.logger.info(message.trim()) } }));
 // Rate limiting
-if (process.env.NODE_ENV === 'production') {
-    app.use(rate_limiter_1.rateLimiter);
-}
+// TEMPORARIAMENTE DESATIVADO para debug
+// if (process.env.NODE_ENV === 'production') {
+//   app.use(rateLimiter);
+// }
 // Make io accessible to routes
 app.set('io', io);
 // Routes
@@ -60,11 +60,23 @@ app.get('/health', (req, res) => {
 app.use(error_handler_1.errorHandler);
 // Initialize WebSocket service for Chat module
 (0, websocket_service_1.initializeWebSocketService)(io);
+// ============================================
+// POLLING SERVICE - SOLUÇÃO TEMPORÁRIA
+// Remove quando webhooks WAHA funcionarem
+// Para desativar: ENABLE_WHATSAPP_POLLING=false
+// ============================================
+const WhatsAppSyncService_1 = __importDefault(require("@/services/WhatsAppSyncService"));
+let whatsappSyncService = null;
 const PORT = process.env.API_PORT || 3001;
 // Initialize database and start server
 data_source_1.AppDataSource.initialize()
     .then(() => {
     logger_1.logger.info('Database connected successfully');
+    // ============================================
+    // Inicializar WhatsApp Polling Service
+    // ============================================
+    whatsappSyncService = new WhatsAppSyncService_1.default(io);
+    whatsappSyncService.start();
     httpServer.listen(PORT, () => {
         logger_1.logger.info(`🚀 Server running on port ${PORT}`);
         logger_1.logger.info(`📡 Environment: ${process.env.NODE_ENV}`);
@@ -78,6 +90,10 @@ data_source_1.AppDataSource.initialize()
 // Graceful shutdown
 process.on('SIGTERM', () => {
     logger_1.logger.info('SIGTERM signal received: closing HTTP server');
+    // Parar serviço de polling
+    if (whatsappSyncService) {
+        whatsappSyncService.stop();
+    }
     httpServer.close(() => {
         logger_1.logger.info('HTTP server closed');
         data_source_1.AppDataSource.destroy().then(() => {
