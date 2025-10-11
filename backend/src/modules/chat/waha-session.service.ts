@@ -60,7 +60,7 @@ export class WAHASessionService {
         }
       }
 
-      const webhookUrl = `${process.env.BACKEND_URL}/api/chat/webhook/waha/status`;
+      const webhookUrl = `${process.env.BACKEND_URL}/api/chat/webhook/waha/message`;
 
       const response = await axios.post(
         `${this.wahaUrl}/api/sessions`,
@@ -71,7 +71,7 @@ export class WAHASessionService {
             webhooks: [
               {
                 url: webhookUrl,
-                events: ['session.status', 'message'],
+                events: ['message', 'message.any', 'message.revoked'],
               },
             ],
           },
