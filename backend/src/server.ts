@@ -37,8 +37,10 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(morgan('combined', { stream: { write: (message) => logger.info(message.trim()) } }));
 
 // Rate limiting
-// Aplicado em todos os ambientes (limites ajustados: 1000 req/15min)
-app.use(rateLimiter);
+// TEMPORARIAMENTE DESATIVADO para debug
+// if (process.env.NODE_ENV === 'production') {
+//   app.use(rateLimiter);
+// }
 
 // Make io accessible to routes
 app.set('io', io);
