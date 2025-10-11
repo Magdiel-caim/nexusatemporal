@@ -15,6 +15,7 @@ const http_1 = require("http");
 const socket_io_1 = require("socket.io");
 const data_source_1 = require("@/database/data-source");
 const error_handler_1 = require("@/shared/middleware/error-handler");
+const rate_limiter_1 = require("@/shared/middleware/rate-limiter");
 const logger_1 = require("@/shared/utils/logger");
 const routes_1 = __importDefault(require("@/routes"));
 const websocket_service_1 = require("@/modules/chat/websocket.service");
@@ -40,10 +41,8 @@ app.use(express_1.default.json({ limit: '50mb' }));
 app.use(express_1.default.urlencoded({ extended: true, limit: '50mb' }));
 app.use((0, morgan_1.default)('combined', { stream: { write: (message) => logger_1.logger.info(message.trim()) } }));
 // Rate limiting
-// TEMPORARIAMENTE DESATIVADO para debug
-// if (process.env.NODE_ENV === 'production') {
-//   app.use(rateLimiter);
-// }
+// Aplicado em todos os ambientes (limites ajustados: 1000 req/15min)
+app.use(rate_limiter_1.rateLimiter);
 // Make io accessible to routes
 app.set('io', io);
 // Routes

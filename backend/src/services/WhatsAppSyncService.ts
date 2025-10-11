@@ -37,10 +37,9 @@ export class WhatsAppSyncService {
 
   // Configurações (pode mover para .env depois)
   private readonly POLLING_INTERVAL_MS = 5000; // 5 segundos
-  private readonly SESSION_NAME = 'session_01k77wpm5edhch4b97qbgenk7p';
   private readonly WAHA_URL = 'https://apiwts.nexusatemporal.com.br';
   private readonly WAHA_API_KEY = 'bd0c416348b2f04d198ff8971b608a87';
-  private readonly ENABLED = false; // DESABILITADO - erro 422 persistente
+  private readonly ENABLED = true; // REATIVADO - sincroniza TODAS as sessões automaticamente
 
   constructor(socketIO?: any) {
     this.io = socketIO;
@@ -93,16 +92,23 @@ export class WhatsAppSyncService {
    */
   private async syncMessages() {
     try {
-      // Buscar chats ativos do WAHA
-      const chats = await this.getWAHAChats();
+      // Buscar TODAS as sessões ativas do WAHA
+      const sessions = await this.getWAHASessions();
 
-      if (!chats || chats.length === 0) {
-        return; // Sem chats para sincronizar
+      if (!sessions || sessions.length === 0) {
+        return; // Sem sessões ativas
       }
 
-      // Para cada chat, buscar mensagens recentes
-      for (const chat of chats) {
-        await this.syncChatMessages(chat.id);
+      console.log(`🔄 [SYNC] Sincronizando ${sessions.length} sessão(ões) WhatsApp`);
+
+      // Para cada sessão, buscar chats e mensagens
+      for (const session of sessions) {
+        // Apenas sessões WORKING
+        if (session.status !== 'WORKING') {
+          continue;
+        }
+
+        await this.syncSessionMessages(session.name);
       }
     } catch (error: any) {
       console.error('❌ Erro ao sincronizar mensagens:', error.message);
@@ -110,12 +116,55 @@ export class WhatsAppSyncService {
   }
 
   /**
-   * Busca lista de chats do WAHA
+   * Busca todas as sessões do WAHA
    */
-  private async getWAHAChats(): Promise<any[]> {
+  private async getWAHASessions(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.WAHA_URL}/api/sessions`, {
+        headers: {
+          'X-Api-Key': this.WAHA_API_KEY,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`WAHA API error: ${response.status}`);
+      }
+
+      return (await response.json()) as any[];
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar sessões do WAHA:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Sincroniza mensagens de uma sessão específica
+   */
+  private async syncSessionMessages(sessionName: string) {
+    try {
+      // Buscar chats ativos da sessão
+      const chats = await this.getWAHAChats(sessionName);
+
+      if (!chats || chats.length === 0) {
+        return; // Sem chats para sincronizar
+      }
+
+      // Para cada chat, buscar mensagens recentes
+      for (const chat of chats) {
+        await this.syncChatMessages(sessionName, chat.id);
+      }
+    } catch (error: any) {
+      // Silencioso - não logar cada erro de sessão individual
+    }
+  }
+
+  /**
+   * Busca lista de chats de uma sessão do WAHA
+   */
+  private async getWAHAChats(sessionName: string): Promise<any[]> {
     try {
       const response = await fetch(
-        `${this.WAHA_URL}/api/${this.SESSION_NAME}/chats`,
+        `${this.WAHA_URL}/api/${sessionName}/chats`,
         {
           headers: {
             'X-Api-Key': this.WAHA_API_KEY,
@@ -129,15 +178,15 @@ export class WhatsAppSyncService {
 
       return (await response.json()) as any[];
     } catch (error: any) {
-      console.error('❌ Erro ao buscar chats do WAHA:', error.message);
+      // Silencioso - pode ser sessão sem chats
       return [];
     }
   }
 
   /**
-   * Sincroniza mensagens de um chat específico
+   * Sincroniza mensagens de um chat específico de uma sessão
    */
-  private async syncChatMessages(chatId: string) {
+  private async syncChatMessages(sessionName: string, chatId: string) {
     try {
       // Ignorar grupos e status
       if (chatId.includes('@g.us') || chatId.includes('status@broadcast')) {
@@ -146,7 +195,7 @@ export class WhatsAppSyncService {
 
       // Buscar últimas 20 mensagens do WAHA
       const response = await fetch(
-        `${this.WAHA_URL}/api/${this.SESSION_NAME}/chats/${chatId}/messages?limit=20`,
+        `${this.WAHA_URL}/api/${sessionName}/chats/${chatId}/messages?limit=20`,
         {
           headers: {
             'X-Api-Key': this.WAHA_API_KEY,
@@ -162,7 +211,7 @@ export class WhatsAppSyncService {
 
       // Processar cada mensagem
       for (const msg of messages) {
-        await this.processMessage(msg, chatId);
+        await this.processMessage(sessionName, msg, chatId);
       }
     } catch (error: any) {
       // Silencioso - não logar cada erro de chat individual
@@ -172,7 +221,7 @@ export class WhatsAppSyncService {
   /**
    * Processa uma mensagem individual
    */
-  private async processMessage(msg: WAHAMessage, chatId: string) {
+  private async processMessage(sessionName: string, msg: WAHAMessage, chatId: string) {
     try {
       // Extrair número do telefone
       // Formato: 554192431011@c.us ou 554192431011@s.whatsapp.net ou 554192431011@lid
@@ -211,7 +260,7 @@ export class WhatsAppSyncService {
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         RETURNING *`,
         [
-          this.SESSION_NAME,
+          sessionName, // Agora usa o nome da sessão correto
           phoneNumber,
           contactName,
           direction,
@@ -227,6 +276,7 @@ export class WhatsAppSyncService {
       const savedMessage = result[0];
 
       console.log('✅ [SYNC] Nova mensagem salva:', {
+        session: sessionName,
         id: savedMessage.id,
         phone: phoneNumber,
         direction,
