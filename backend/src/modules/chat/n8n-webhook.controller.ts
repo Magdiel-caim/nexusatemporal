@@ -486,9 +486,9 @@ export class N8NWebhookController {
         return res.json({ success: true, message: 'Message revoked event processed' });
       }
 
-      // Filtrar apenas eventos de mensagem
-      if (wahaPayload.event !== 'message' && wahaPayload.event !== 'message.any') {
-        console.log('⏭️ Evento ignorado (não é mensagem):', wahaPayload.event);
+      // Filtrar apenas eventos de mensagem (só processar 'message', ignorar 'message.any' para evitar duplicação)
+      if (wahaPayload.event !== 'message') {
+        console.log('⏭️ Evento ignorado (não é "message"):', wahaPayload.event);
         return res.json({ success: true, message: 'Event ignored (not a message)' });
       }
 

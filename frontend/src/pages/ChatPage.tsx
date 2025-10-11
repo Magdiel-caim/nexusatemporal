@@ -86,6 +86,12 @@ const ChatPage: React.FC = () => {
       // Atualizar lista de conversas SEMPRE
       loadConversations();
 
+      // IMPORTANTE: Ignorar mensagens OUTGOING do WebSocket (já foram adicionadas localmente ao enviar)
+      if (whatsappMessage.direction === 'outgoing') {
+        console.log('⏭️ Mensagem outgoing ignorada (já adicionada localmente)');
+        return;
+      }
+
       // Se estiver na conversa, adicionar mensagem (usando ref ao invés de closure)
       const currentConversation = selectedConversationRef.current;
       if (currentConversation) {
