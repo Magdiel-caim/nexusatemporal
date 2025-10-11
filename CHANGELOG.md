@@ -1,5 +1,519 @@
 # 📋 CHANGELOG - Nexus Atemporal CRM
 
+## 🔄 SESSÃO: 2025-10-11 (Madrugada) - CORREÇÃO TOTAL DUPLICAÇÃO DE MENSAGENS (v32)
+
+---
+
+## 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Corrigir duplicação de mensagens WhatsApp (recebidas e enviadas) e problemas de infraestrutura.
+
+**Status Final:** ✅ **FUNCIONANDO 100%** - Usuário confirmou: "maravilha funcionou 100% parabens"!
+
+**Versão:** v32
+
+**Deploy:**
+- Backend: código corrigido + reiniciado (filtro de eventos webhook)
+- Frontend: `nexus_frontend:no-dup-v32` (filtro WebSocket para outgoing)
+- Infraestrutura: Traefik configurado para porta 3000
+
+**Backup:**
+- Banco: `/tmp/nexus_backup_v32_fix-duplicacao_20251011_010236.sql` (64KB)
+- iDrive e2: ✅ Enviado
+- GitHub: ✅ Commit `bd2a351` pushed
+
+---
+
+## 🎯 PROBLEMAS IDENTIFICADOS E RESOLVIDOS
+
+### ❌ PROBLEMA 1: Mensagens Recebidas Duplicadas no Banco de Dados
+
+**Sintoma:**
+- Cada mensagem recebida aparecia **2 vezes** no banco com IDs diferentes
+- Horários praticamente idênticos (diferença de milissegundos)
+- Exemplo: "ola" aparecia 2 vezes, "tudo bem sim" aparecia 2 vezes
+
+**Causa Raiz:**
+Webhook configurado com **2 eventos simultâneos**:
+```json
+{
+  "events": ["message", "message.any", "message.revoked"]
+}
+```
+
+Cada mensagem do WhatsApp dispara **AMBOS** eventos:
+1. `event: "message"` → Backend salva no banco
+2. `event: "message.any"` → Backend salva **DE NOVO** no banco
+
+Código do backend aceitava ambos os eventos:
+```typescript
+// backend/src/modules/chat/n8n-webhook.controller.ts (linha 490)
+if (wahaPayload.event !== 'message' && wahaPayload.event !== 'message.any') {
+  // Ignorar apenas se NÃO for message E NÃO for message.any
+  // OU SEJA: aceita AMBOS = duplicação!
+}
+```
+
+**Evidência nos Logs:**
+```bash
+🔔 Webhook WAHA recebido: { event: 'message', ... }
+✅ Mensagem salva no banco: 6e7a8a3f-...
+
+🔔 Webhook WAHA recebido: { event: 'message.any', ... }
+✅ Mensagem salva no banco: e80b4189-...  # ← DUPLICATA!
+```
+
+**Solução Implementada:**
+
+**1. Código do Backend Corrigido:**
+```typescript
+// backend/src/modules/chat/n8n-webhook.controller.ts (linha 490)
+// ANTES
+if (wahaPayload.event !== 'message' && wahaPayload.event !== 'message.any')
+
+// DEPOIS
+if (wahaPayload.event !== 'message')
+```
+Agora o backend:
+- ✅ Processa apenas `event: "message"`
+- ✅ Ignora completamente `event: "message.any"`
+
+**2. Webhook Reconfigurado no WAHA:**
+```bash
+curl -X DELETE https://apiwts.nexusatemporal.com.br/api/sessions/atemporal_main
+curl -X POST https://apiwts.nexusatemporal.com.br/api/sessions -d '{
+  "config": {
+    "webhooks": [{
+      "events": ["message", "message.revoked"]  # ✅ Removido message.any
+    }]
+  }
+}'
+```
+
+**Resultado:**
+- ✅ Cada mensagem recebida salva **1 vez** apenas
+- ✅ Menos requisições webhook (melhor performance)
+- ✅ Banco de dados limpo
+
+**Arquivo:** `backend/src/modules/chat/n8n-webhook.controller.ts:490`
+
+---
+
+### ❌ PROBLEMA 2: Mensagens Enviadas Duplicadas Visualmente no Frontend
+
+**Sintoma:**
+- Ao enviar mensagem, aparecia **2 vezes** na conversa
+- Ao recarregar página (F5), voltava para **1 mensagem** (correto)
+- No banco estava correto (apenas 1 registro)
+- Problema era **apenas visual** no frontend
+
+**Causa Raiz:**
+Fluxo de envio com duplicação:
+
+1. **Usuário clica em "Enviar"**
+   ```typescript
+   // frontend/src/pages/ChatPage.tsx (linha 367)
+   setMessages((prev) => [...prev, newMessage]);  // ← Adiciona localmente
+   ```
+
+2. **Backend salva no banco e emite WebSocket**
+   ```typescript
+   // backend/src/modules/chat/n8n-webhook.controller.ts (linha 396)
+   io.emit('chat:new-message', savedMessage);  // ← Emite via WebSocket
+   ```
+
+3. **Frontend recebe WebSocket e adiciona DE NOVO**
+   ```typescript
+   // frontend/src/pages/ChatPage.tsx (linha 112)
+   socketInstance.on('chat:new-message', (msg) => {
+     setMessages((prev) => [...prev, msg]);  // ← DUPLICAÇÃO!
+   });
+   ```
+
+**Resultado:** Mensagem aparece 2 vezes visualmente (1 local + 1 WebSocket)
+
+**Solução Implementada:**
+
+Adicionado filtro no listener WebSocket para **ignorar mensagens outgoing** (que já foram adicionadas localmente):
+
+```typescript
+// frontend/src/pages/ChatPage.tsx (linha 89-93)
+socketInstance.on('chat:new-message', (whatsappMessage: any) => {
+  // IMPORTANTE: Ignorar mensagens OUTGOING do WebSocket
+  if (whatsappMessage.direction === 'outgoing') {
+    console.log('⏭️ Mensagem outgoing ignorada (já adicionada localmente)');
+    return;  // ← Não adiciona novamente!
+  }
+
+  // Processar apenas mensagens INCOMING (recebidas)
+  // ...
+});
+```
+
+**Lógica:**
+- Mensagens **OUTGOING** (enviadas): Adicionadas localmente ao clicar em "Enviar"
+- Mensagens **INCOMING** (recebidas): Adicionadas via WebSocket quando chegam
+
+**Resultado:**
+- ✅ Mensagens enviadas aparecem **1 vez** apenas
+- ✅ Mensagens recebidas continuam funcionando normalmente
+- ✅ Experiência do usuário corrigida
+
+**Arquivo:** `frontend/src/pages/ChatPage.tsx:89-93`
+
+---
+
+### ❌ PROBLEMA 3: Bad Gateway 502 no Frontend Após Deploy
+
+**Sintoma:**
+- Após deploy da correção de duplicação, frontend retornava erro 502
+- URL https://one.nexusatemporal.com.br inacessível
+- Container frontend rodando normalmente (port 3000 listening)
+
+**Causa Raiz:**
+Traefik configurado com porta **incorreta**:
+```yaml
+traefik.http.services.nexusfrontend.loadbalancer.server.port: "80"
+```
+
+Mas o frontend roda com **Vite dev server na porta 3000**:
+```dockerfile
+# frontend/Dockerfile
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]  # ← Roda na porta 3000
+```
+
+**Evidência:**
+```bash
+docker exec nexus_frontend netstat -tlnp
+tcp  0.0.0.0:3000  LISTEN  18/node  # ← Vite rodando na porta 3000
+
+docker service inspect nexus_frontend
+"traefik...server.port": "80"  # ← Traefik tentando acessar porta 80 = 502!
+```
+
+**Solução Implementada:**
+```bash
+docker service update \
+  --label-rm "traefik.http.services.nexusfrontend.loadbalancer.server.port" \
+  nexus_frontend
+
+docker service update \
+  --label-add "traefik.http.services.nexusfrontend.loadbalancer.server.port=3000" \
+  nexus_frontend
+```
+
+**Resultado:**
+```bash
+curl -I https://one.nexusatemporal.com.br
+HTTP/2 200  # ✅ Funcionando!
+```
+
+---
+
+## 🛠️ PROCESSO DE CORREÇÃO COMPLETO
+
+### Fase 1: Limpeza Total do Sistema (Requisito do Usuário)
+
+**Contexto:**
+Após múltiplas tentativas de correção que não funcionaram completamente, usuário solicitou:
+> "precisamos que você limpe o banco de dados e se for possivel recomece o processo do zero"
+
+**Ações Executadas:**
+
+1. **Limpeza do Banco de Dados**
+   ```sql
+   DELETE FROM whatsapp_sessions;  -- 2 sessões deletadas
+   DELETE FROM chat_messages;      -- 8 mensagens deletadas
+   ```
+
+2. **Limpeza das Sessões WAHA**
+   - Mantidas apenas sessões externas Chatwoot (Whatsapp_Brasilia, Whatsapp_Cartuchos)
+   - Deletadas todas as sessões de usuário antigas
+
+3. **Criação de Sessão Limpa com Webhook Correto**
+   ```bash
+   curl -X POST https://apiwts.nexusatemporal.com.br/api/sessions -d '{
+     "name": "atemporal_main",
+     "config": {
+       "engine": "GOWS",
+       "webhooks": [{
+         "url": "https://api.nexusatemporal.com.br/api/chat/webhook/waha/message",
+         "events": ["message", "message.revoked"]  # ✅ SEM message.any
+       }]
+     }
+   }'
+   ```
+
+4. **Inserção no Banco de Dados**
+   ```sql
+   INSERT INTO whatsapp_sessions (session_name, friendly_name, status, created_at)
+   VALUES ('atemporal_main', 'Atemporal Principal', 'STOPPED', NOW());
+   ```
+
+5. **Reconexão do Usuário**
+   - Usuário escaneou QR Code
+   - Sessão mudou para status WORKING
+   - Testes realizados com sucesso
+
+---
+
+### Fase 2: Correção de Duplicação (Backend)
+
+**Problema Detectado:**
+Mesmo após limpeza, mensagens continuavam duplicando no banco.
+
+**Investigação:**
+```bash
+# Logs mostravam 2 webhooks por mensagem:
+🔔 Webhook WAHA recebido: { event: 'message', ... }
+✅ Mensagem salva no banco
+
+🔔 Webhook WAHA recebido: { event: 'message.any', ... }
+✅ Mensagem salva no banco  # ← DUPLICATA!
+```
+
+**Correção Aplicada:**
+- Modificado: `backend/src/modules/chat/n8n-webhook.controller.ts:490`
+- Copiado arquivo corrigido para container rodando
+- Backend reiniciado com `docker service update --force`
+
+**Validação:**
+```bash
+docker service logs nexus_backend | grep "Evento ignorado"
+⏭️ Evento ignorado (não é "message"): message.any  # ✅ Funcionando!
+```
+
+---
+
+### Fase 3: Correção de Duplicação Visual (Frontend)
+
+**Problema Detectado:**
+Mensagens enviadas apareciam 2 vezes na UI (mas 1 vez no banco).
+
+**Investigação:**
+- Código adiciona mensagem localmente ao enviar (linha 367)
+- Backend emite via WebSocket após salvar
+- Frontend recebe WebSocket e adiciona novamente (linha 112)
+
+**Correção Aplicada:**
+- Modificado: `frontend/src/pages/ChatPage.tsx:89-93`
+- Adicionado filtro para ignorar mensagens outgoing no WebSocket
+- Build: `npm run build`
+- Docker: `docker build -t nexus_frontend:no-dup-v32`
+- Deploy: `docker service update --image nexus_frontend:no-dup-v32`
+
+---
+
+### Fase 4: Correção de Bad Gateway 502
+
+**Problema Detectado:**
+Frontend inacessível após deploy (erro 502).
+
+**Investigação:**
+```bash
+docker exec nexus_frontend netstat -tlnp
+tcp  0.0.0.0:3000  LISTEN  # ← Rodando na porta 3000
+
+docker service inspect nexus_frontend | grep port
+"...server.port": "80"  # ← Traefik tentando porta 80 = ERRO!
+```
+
+**Correção Aplicada:**
+```bash
+docker service update \
+  --label-add "traefik.http.services.nexusfrontend.loadbalancer.server.port=3000" \
+  nexus_frontend
+```
+
+**Validação:**
+```bash
+curl -I https://one.nexusatemporal.com.br
+HTTP/2 200  # ✅ Funcionando!
+```
+
+---
+
+## 📊 TESTES REALIZADOS E VALIDAÇÕES
+
+### ✅ Teste 1: Mensagens Recebidas (Backend)
+```bash
+# Usuário enviou mensagem do WhatsApp
+# Verificação no banco:
+SELECT id, direction, content FROM chat_messages ORDER BY created_at DESC;
+
+# Resultado: Apenas 1 registro por mensagem ✅
+```
+
+### ✅ Teste 2: Mensagens Enviadas (Frontend)
+```bash
+# Usuário enviou mensagem pelo sistema
+# Verificação visual: Apareceu 1 vez apenas ✅
+# Recarregou página: Continua 1 vez ✅
+```
+
+### ✅ Teste 3: Frontend Acessível
+```bash
+curl -I https://one.nexusatemporal.com.br
+HTTP/2 200  # ✅
+```
+
+### ✅ Teste 4: Logs de Webhook
+```bash
+docker service logs nexus_backend | tail -50 | grep "message.any"
+⏭️ Evento ignorado (não é "message"): message.any  # ✅ Sendo ignorado corretamente
+```
+
+---
+
+## 🗂️ ARQUIVOS MODIFICADOS
+
+### Backend
+1. **backend/src/modules/chat/n8n-webhook.controller.ts**
+   - Linha 490: Filtro de eventos webhook (ignora `message.any`)
+   - Compilado: `backend/dist/modules/chat/n8n-webhook.controller.js`
+
+### Frontend
+2. **frontend/src/pages/ChatPage.tsx**
+   - Linhas 89-93: Filtro WebSocket para mensagens outgoing
+   - Build: `frontend/dist/` (novo bundle gerado)
+
+### Infraestrutura
+3. **Docker Service Labels**
+   - `traefik.http.services.nexusfrontend.loadbalancer.server.port: 3000`
+
+---
+
+## 📦 DEPLOY E BACKUP
+
+### Builds Criados
+```bash
+# Backend (código corrigido + reiniciado)
+docker service update --force nexus_backend
+
+# Frontend
+docker build -t nexus_frontend:no-dup-v32 -f frontend/Dockerfile frontend
+docker service update --image nexus_frontend:no-dup-v32 nexus_frontend
+```
+
+### Backup do Banco de Dados
+```bash
+# Arquivo local
+/tmp/nexus_backup_v32_fix-duplicacao_20251011_010236.sql (64KB)
+
+# iDrive e2
+s3://backupsistemaonenexus/backups/database/nexus_backup_v32_fix-duplicacao_20251011_010236.sql
+Status: ✅ Uploaded
+```
+
+### Git/GitHub
+```bash
+Commit: bd2a351
+Message: "fix: Corrige duplicação de mensagens WhatsApp (v32)"
+Branch: main
+Status: ✅ Pushed
+```
+
+---
+
+## 📈 MÉTRICAS DE SUCESSO
+
+| Métrica | Antes | Depois |
+|---------|-------|--------|
+| Mensagens duplicadas no banco | ❌ 100% | ✅ 0% |
+| Mensagens duplicadas visualmente | ❌ 100% | ✅ 0% |
+| Webhooks por mensagem | 2 | 1 |
+| Frontend acessível | ❌ 502 | ✅ 200 |
+| Satisfação do usuário | Frustrado | "parabens" |
+
+---
+
+## 🎓 LIÇÕES APRENDIDAS
+
+### 1. Webhooks com Múltiplos Eventos
+**Problema:** Configurar webhook com eventos redundantes (`message` + `message.any`)
+**Lição:** Usar apenas o evento **mais específico** necessário
+**Solução:** Documentar eventos webhook e validar antes de configurar
+
+### 2. Estado Local vs WebSocket
+**Problema:** Adicionar dados localmente E via WebSocket sem filtrar direção
+**Lição:** Separar claramente:
+- **Outgoing**: Adicionar localmente ao enviar
+- **Incoming**: Adicionar via WebSocket ao receber
+**Solução:** Sempre filtrar `direction` em listeners WebSocket
+
+### 3. Configuração de Proxy/Load Balancer
+**Problema:** Traefik com porta incorreta após mudança de Dockerfile
+**Lição:** Ao mudar de produção (nginx:80) para dev (vite:3000), atualizar labels
+**Solução:** Validar labels do Traefik após cada deploy
+
+### 4. Processo de Debug Iterativo
+**Problema:** Múltiplas tentativas sem resolver completamente
+**Lição:** Às vezes é melhor fazer **reset total** e começar do zero
+**Solução:** Quando correções parciais não funcionam, limpar tudo e reconstruir
+
+---
+
+## 🔧 COMANDOS ÚTEIS PARA PRÓXIMA SESSÃO
+
+### Verificar Duplicação
+```bash
+# Mensagens no banco
+docker exec nexus_postgres.1.xxx psql -U nexus_admin -d nexus_master \
+  -c "SELECT id, direction, content, created_at FROM chat_messages ORDER BY created_at DESC LIMIT 10;"
+
+# Logs de webhook
+docker service logs nexus_backend --tail 50 | grep "Webhook WAHA"
+```
+
+### Verificar Webhook
+```bash
+curl -s https://apiwts.nexusatemporal.com.br/api/sessions/atemporal_main \
+  -H "X-Api-Key: bd0c416348b2f04d198ff8971b608a87" \
+  -k | python3 -m json.tool | grep -A 10 "webhooks"
+```
+
+### Verificar Frontend
+```bash
+# Status HTTP
+curl -I https://one.nexusatemporal.com.br
+
+# Labels Traefik
+docker service inspect nexus_frontend --format '{{json .Spec.Labels}}' | python3 -m json.tool
+```
+
+---
+
+## ✅ CHECKLIST FINAL
+
+- [x] Duplicação de mensagens recebidas corrigida (backend)
+- [x] Duplicação de mensagens enviadas corrigida (frontend)
+- [x] Bad Gateway 502 corrigido (infraestrutura)
+- [x] Testes de envio e recebimento realizados
+- [x] Backup do banco criado (64KB)
+- [x] Backup enviado para iDrive e2
+- [x] Código commitado e pushed para GitHub
+- [x] CHANGELOG atualizado
+- [x] Usuário validou: "maravilha funcionou 100% parabens"
+
+---
+
+## 📋 PRÓXIMOS PASSOS SUGERIDOS
+
+1. **Monitoramento:** Observar logs por 24h para garantir que não há regressões
+2. **Documentação:** Atualizar guia de desenvolvimento sobre WebSocket + estado local
+3. **Testes Automatizados:** Criar testes para prevenir duplicação futura
+4. **Performance:** Analisar se removendo `message.any` melhorou latência
+5. **Code Review:** Revisar outros lugares que podem ter padrão similar
+
+---
+
+**Data:** 2025-10-11 (Madrugada)
+**Versão:** v32
+**Status:** ✅ PRODUÇÃO - FUNCIONANDO 100%
+**Commit:** bd2a351
+
+---
+
 ## 🔄 SESSÃO: 2025-10-10 (Noite) - ENVIO DE MENSAGENS WHATSAPP FUNCIONANDO! (v31.2)
 
 ---
