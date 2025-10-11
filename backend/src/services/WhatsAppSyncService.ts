@@ -89,26 +89,29 @@ export class WhatsAppSyncService {
 
   /**
    * Sincroniza mensagens do WAHA com o banco
+   * IMPORTANTE: Sincroniza APENAS sessões criadas pelo usuário no sistema
    */
   private async syncMessages() {
     try {
-      // Buscar TODAS as sessões ativas do WAHA
-      const sessions = await this.getWAHASessions();
+      // Buscar sessões criadas PELO SISTEMA (tabela whatsapp_sessions)
+      const userSessions = await this.getUserSessions();
 
-      if (!sessions || sessions.length === 0) {
-        return; // Sem sessões ativas
+      if (!userSessions || userSessions.length === 0) {
+        return; // Sem sessões do usuário para sincronizar
       }
 
-      console.log(`🔄 [SYNC] Sincronizando ${sessions.length} sessão(ões) WhatsApp`);
+      console.log(`🔄 [SYNC] Sincronizando ${userSessions.length} sessão(ões) do sistema`);
 
-      // Para cada sessão, buscar chats e mensagens
-      for (const session of sessions) {
-        // Apenas sessões WORKING
-        if (session.status !== 'WORKING') {
-          continue;
+      // Para cada sessão do usuário
+      for (const dbSession of userSessions) {
+        // Verificar status no WAHA
+        const wahaStatus = await this.getWAHASessionStatus(dbSession.session_name);
+
+        if (wahaStatus !== 'WORKING') {
+          continue; // Apenas sessões ativas
         }
 
-        await this.syncSessionMessages(session.name);
+        await this.syncSessionMessages(dbSession.session_name);
       }
     } catch (error: any) {
       console.error('❌ Erro ao sincronizar mensagens:', error.message);
@@ -116,24 +119,42 @@ export class WhatsAppSyncService {
   }
 
   /**
-   * Busca todas as sessões do WAHA
+   * Busca sessões criadas pelo usuário no sistema (tabela whatsapp_sessions)
    */
-  private async getWAHASessions(): Promise<any[]> {
+  private async getUserSessions(): Promise<any[]> {
     try {
-      const response = await fetch(`${this.WAHA_URL}/api/sessions`, {
+      const sessions = await AppDataSource.query(
+        `SELECT session_name, friendly_name, status
+         FROM whatsapp_sessions
+         WHERE status != 'STOPPED'
+         ORDER BY created_at DESC`
+      );
+      return sessions;
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar sessões do sistema:', error.message);
+      return [];
+    }
+  }
+
+  /**
+   * Verifica status de uma sessão no WAHA
+   */
+  private async getWAHASessionStatus(sessionName: string): Promise<string> {
+    try {
+      const response = await fetch(`${this.WAHA_URL}/api/sessions/${sessionName}`, {
         headers: {
           'X-Api-Key': this.WAHA_API_KEY,
         },
       });
 
       if (!response.ok) {
-        throw new Error(`WAHA API error: ${response.status}`);
+        return 'FAILED';
       }
 
-      return (await response.json()) as any[];
+      const data = await response.json();
+      return data.status || 'FAILED';
     } catch (error: any) {
-      console.error('❌ Erro ao buscar sessões do WAHA:', error.message);
-      return [];
+      return 'FAILED';
     }
   }
 
