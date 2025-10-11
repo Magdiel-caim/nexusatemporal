@@ -115,28 +115,40 @@ export class WAHASessionController {
 
   /**
    * GET /api/chat/whatsapp/sessions
-   * Lista todas as sessões combinando dados do WAHA com banco
+   * Lista apenas as sessões criadas pelo sistema (do banco local)
+   * Enriquece com dados do WAHA quando disponíveis
    */
   listSessions = async (req: Request, res: Response) => {
     try {
-      // Buscar sessões do WAHA
-      const wahaSessions = await this.wahaSessionService.listSessions();
-
-      // Buscar sessões do banco
+      // Buscar APENAS sessões do banco (criadas pelo usuário)
       const dbSessions = await this.sessionDBService.listSessions();
 
-      // Combinar dados: WAHA + nomes amigáveis do banco
-      const combinedSessions = wahaSessions.map((wahaSession: any) => {
-        const dbSession = dbSessions.find(db => db.session_name === wahaSession.name);
+      // Para cada sessão do banco, buscar status atualizado do WAHA
+      const combinedSessions = await Promise.all(
+        dbSessions.map(async (dbSession: any) => {
+          try {
+            // Tentar obter dados do WAHA para esta sessão
+            const wahaSession = await this.wahaSessionService.getSessionStatus(dbSession.session_name);
 
-        return {
-          name: wahaSession.name,
-          friendlyName: dbSession?.friendly_name || wahaSession.name,
-          status: wahaSession.status,
-          config: wahaSession.config,
-          me: wahaSession.me,
-        };
-      });
+            return {
+              name: dbSession.session_name,
+              friendlyName: dbSession.friendly_name,
+              status: wahaSession.status || dbSession.status,
+              config: wahaSession.config || {},
+              me: wahaSession.me || null,
+            };
+          } catch (error) {
+            // Se sessão não existe no WAHA, retornar apenas dados do banco
+            return {
+              name: dbSession.session_name,
+              friendlyName: dbSession.friendly_name,
+              status: dbSession.status,
+              config: {},
+              me: null,
+            };
+          }
+        })
+      );
 
       res.json({
         success: true,

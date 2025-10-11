@@ -183,27 +183,32 @@ export class N8NWebhookController {
   /**
    * Lista todas as conversas (sessões com última mensagem)
    * GET /api/chat/conversations
+   *
+   * IMPORTANTE: Lista apenas conversas de sessões criadas pelo sistema (tabela whatsapp_sessions)
+   * Ignora mensagens de sessões externas (ex: Chatwoot)
    */
   async getConversations(req: Request, res: Response) {
     try {
       const conversations = await AppDataSource.query(`
         WITH latest_messages AS (
-          SELECT DISTINCT ON (session_name, phone_number)
-            session_name,
-            phone_number,
-            contact_name,
-            content,
-            created_at
-          FROM chat_messages
-          ORDER BY session_name, phone_number, created_at DESC
+          SELECT DISTINCT ON (cm.session_name, cm.phone_number)
+            cm.session_name,
+            cm.phone_number,
+            cm.contact_name,
+            cm.content,
+            cm.created_at
+          FROM chat_messages cm
+          INNER JOIN whatsapp_sessions ws ON cm.session_name = ws.session_name
+          ORDER BY cm.session_name, cm.phone_number, cm.created_at DESC
         ),
         unread_counts AS (
           SELECT
-            session_name,
-            phone_number,
-            COUNT(*) FILTER (WHERE is_read = false AND direction = 'incoming') as unread_count
-          FROM chat_messages
-          GROUP BY session_name, phone_number
+            cm.session_name,
+            cm.phone_number,
+            COUNT(*) FILTER (WHERE cm.is_read = false AND cm.direction = 'incoming') as unread_count
+          FROM chat_messages cm
+          INNER JOIN whatsapp_sessions ws ON cm.session_name = ws.session_name
+          GROUP BY cm.session_name, cm.phone_number
         )
         SELECT
           lm.session_name as "sessionName",
