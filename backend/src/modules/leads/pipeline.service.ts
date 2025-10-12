@@ -1,10 +1,10 @@
-import { AppDataSource } from '@/database/data-source';
+import { CrmDataSource } from '@/database/data-source';
 import { Pipeline } from './pipeline.entity';
 import { Stage } from './stage.entity';
 
 export class PipelineService {
-  private pipelineRepository = AppDataSource.getRepository(Pipeline);
-  private stageRepository = AppDataSource.getRepository(Stage);
+  private pipelineRepository = CrmDataSource.getRepository(Pipeline);
+  private stageRepository = CrmDataSource.getRepository(Stage);
 
   async createPipeline(data: {
     name: string;

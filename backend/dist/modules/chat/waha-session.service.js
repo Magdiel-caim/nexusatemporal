@@ -44,7 +44,7 @@ class WAHASessionService {
                     console.log('Session does not exist, creating new one...');
                 }
             }
-            const webhookUrl = `${process.env.BACKEND_URL}/api/chat/webhook/waha/status`;
+            const webhookUrl = `${process.env.BACKEND_URL}/api/chat/webhook/waha/message`;
             const response = await axios_1.default.post(`${this.wahaUrl}/api/sessions`, {
                 name: sessionName,
                 config: {
@@ -52,7 +52,7 @@ class WAHASessionService {
                     webhooks: [
                         {
                             url: webhookUrl,
-                            events: ['session.status', 'message'],
+                            events: ['message', 'message.any', 'message.revoked'],
                         },
                     ],
                 },

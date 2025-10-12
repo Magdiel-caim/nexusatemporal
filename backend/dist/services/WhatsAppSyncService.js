@@ -24,7 +24,7 @@ class WhatsAppSyncService {
     SESSION_NAME = 'session_01k77wpm5edhch4b97qbgenk7p';
     WAHA_URL = 'https://apiwts.nexusatemporal.com.br';
     WAHA_API_KEY = 'bd0c416348b2f04d198ff8971b608a87';
-    ENABLED = true; // Habilitado para polling
+    ENABLED = false; // DESABILITADO - erro 422 persistente
     constructor(socketIO) {
         this.io = socketIO;
     }

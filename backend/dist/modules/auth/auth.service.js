@@ -6,13 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const uuid_1 = require("uuid");
-const data_source_1 = require("@/database/data-source");
 const user_entity_1 = require("./user.entity");
 const error_handler_1 = require("@/shared/middleware/error-handler");
 const email_1 = require("@/shared/utils/email");
 const crypto_1 = __importDefault(require("crypto"));
 class AuthService {
-    userRepository = data_source_1.AppDataSource.getRepository(user_entity_1.User);
+    userRepository = CrmDataSource.getRepository(user_entity_1.User);
     generateAccessToken(payload) {
         return jsonwebtoken_1.default.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '7d' });
     }

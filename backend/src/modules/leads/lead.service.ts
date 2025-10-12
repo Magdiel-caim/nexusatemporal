@@ -1,11 +1,11 @@
-import { AppDataSource } from '@/database/data-source';
+import { CrmDataSource } from '@/database/data-source';
 import { Lead, LeadStatus, LeadPriority, LeadSource } from './lead.entity';
 import { Activity, ActivityType } from './activity.entity';
 import { Between, Like, In } from 'typeorm';
 
 export class LeadService {
-  private leadRepository = AppDataSource.getRepository(Lead);
-  private activityRepository = AppDataSource.getRepository(Activity);
+  private leadRepository = CrmDataSource.getRepository(Lead);
+  private activityRepository = CrmDataSource.getRepository(Activity);
 
   async createLead(data: {
     name: string;

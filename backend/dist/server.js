@@ -68,10 +68,15 @@ app.use(error_handler_1.errorHandler);
 const WhatsAppSyncService_1 = __importDefault(require("@/services/WhatsAppSyncService"));
 let whatsappSyncService = null;
 const PORT = process.env.API_PORT || 3001;
-// Initialize database and start server
-data_source_1.AppDataSource.initialize()
-    .then(() => {
-    logger_1.logger.info('Database connected successfully');
+// Initialize databases and start server
+Promise.all([
+    data_source_1.AppDataSource.initialize(),
+    data_source_1.CrmDataSource.initialize()
+])
+    .then(([chatDb, crmDb]) => {
+    logger_1.logger.info('✅ Chat Database connected successfully (chat_messages, whatsapp_sessions)');
+    logger_1.logger.info('✅ CRM Database connected successfully (leads, users, pipelines, etc)');
+    logger_1.logger.info(`   CRM DB Host: ${crmDb.options.host}`);
     // ============================================
     // Inicializar WhatsApp Polling Service
     // ============================================
@@ -96,8 +101,11 @@ process.on('SIGTERM', () => {
     }
     httpServer.close(() => {
         logger_1.logger.info('HTTP server closed');
-        data_source_1.AppDataSource.destroy().then(() => {
-            logger_1.logger.info('Database connection closed');
+        Promise.all([
+            data_source_1.AppDataSource.destroy(),
+            data_source_1.CrmDataSource.destroy()
+        ]).then(() => {
+            logger_1.logger.info('All database connections closed');
             process.exit(0);
         });
     });

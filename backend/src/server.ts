@@ -7,7 +7,7 @@ import morgan from 'morgan';
 import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import { AppDataSource } from '@/database/data-source';
+import { AppDataSource, CrmDataSource } from '@/database/data-source';
 import { errorHandler } from '@/shared/middleware/error-handler';
 import { rateLimiter } from '@/shared/middleware/rate-limiter';
 import { logger } from '@/shared/utils/logger';
@@ -73,10 +73,15 @@ let whatsappSyncService: WhatsAppSyncService | null = null;
 
 const PORT = process.env.API_PORT || 3001;
 
-// Initialize database and start server
-AppDataSource.initialize()
-  .then(() => {
-    logger.info('Database connected successfully');
+// Initialize databases and start server
+Promise.all([
+  AppDataSource.initialize(),
+  CrmDataSource.initialize()
+])
+  .then(([chatDb, crmDb]) => {
+    logger.info('✅ Chat Database connected successfully (chat_messages, whatsapp_sessions)');
+    logger.info('✅ CRM Database connected successfully (leads, users, pipelines, etc)');
+    logger.info(`   CRM DB Host: ${(crmDb.options as any).host}`);
 
     // ============================================
     // Inicializar WhatsApp Polling Service
@@ -106,8 +111,11 @@ process.on('SIGTERM', () => {
 
   httpServer.close(() => {
     logger.info('HTTP server closed');
-    AppDataSource.destroy().then(() => {
-      logger.info('Database connection closed');
+    Promise.all([
+      AppDataSource.destroy(),
+      CrmDataSource.destroy()
+    ]).then(() => {
+      logger.info('All database connections closed');
       process.exit(0);
     });
   });

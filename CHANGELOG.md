@@ -1,5 +1,254 @@
 # 📋 CHANGELOG - Nexus Atemporal CRM
 
+## 🔄 SESSÃO: 2025-10-12 - SEPARAÇÃO DE BANCOS DE DADOS (v33)
+
+---
+
+## 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Separar bancos de dados - Chat em VPS atual, CRM em VPS dedicada.
+
+**Status Final:** ✅ **INFRAESTRUTURA CONFIGURADA** - Bancos separados e sincronizados!
+
+**Versão:** v33
+
+**Arquitetura:**
+- VPS Atual (72.60.5.29): Chat/WhatsApp (`chat_messages`, `whatsapp_sessions`)
+- VPS Nova (46.202.144.210): CRM completo (`leads`, `users`, `pipelines`, `procedures`, `stages`, `lead_activities`)
+
+**Backup:**
+- Banco completo: `/tmp/nexus_backup_separacao_db_20251012_004058.sql` (65KB)
+- iDrive e2: ✅ Enviado `s3://backupsistemaonenexus/backups/database/`
+
+---
+
+## 🎯 IMPLEMENTAÇÃO REALIZADA
+
+### 1. ✅ Configuração PostgreSQL VPS Nova (46.202.144.210)
+
+**Serviço Docker Swarm Criado:**
+```bash
+docker service create \
+  --name nexus_crm_postgres \
+  --replicas 1 \
+  --network host \
+  --mount type=volume,source=nexus_crm_pgdata,target=/var/lib/postgresql/data \
+  -e POSTGRES_USER=nexus_admin \
+  -e POSTGRES_PASSWORD=nexus2024@secure \
+  -e POSTGRES_DB=nexus_crm \
+  postgres:16-alpine
+```
+
+**Status:** ✅ RUNNING (PostgreSQL 16.10)
+
+---
+
+### 2. ✅ Segurança e Firewall
+
+**UFW Configurado:**
+```bash
+ufw allow 22/tcp                              # SSH
+ufw allow from 72.60.5.29 to any port 5432   # PostgreSQL APENAS da VPS atual
+ufw enable
+```
+
+**Conexão Testada:**
+```bash
+psql -h 46.202.144.210 -U nexus_admin -d nexus_crm
+# ✅ Conexão bem-sucedida!
+```
+
+---
+
+### 3. ✅ Migração de Dados CRM
+
+**Tabelas Migradas (6):**
+- ✅ `leads` - 7 registros
+- ✅ `users` - 1 registro
+- ✅ `pipelines` - 1 registro
+- ✅ `procedures` - 5 registros
+- ✅ `stages` - 7 registros
+- ✅ `lead_activities` - 104 registros
+
+**Total:** 125 registros migrados com sucesso
+
+**ENUMs Criados (9):**
+- `lead_activities_type_enum`
+- `leads_attendancelocation_enum`
+- `leads_channel_enum`
+- `leads_clientstatus_enum`
+- `leads_priority_enum`
+- `leads_source_enum`
+- `leads_status_enum`
+- `users_role_enum`
+- `users_status_enum`
+
+**Comandos Executados:**
+```bash
+# Exportar schema + dados
+pg_dump -U nexus_admin nexus_master --clean --if-exists \
+  -t leads -t users -t pipelines -t procedures -t stages -t lead_activities
+
+# Importar no novo banco
+cat nexus_crm_complete.sql | docker exec -i $CONTAINER psql -U nexus_admin -d nexus_crm
+```
+
+---
+
+### 4. ✅ Configuração Backend - Dual DataSource
+
+**Arquivo:** `backend/src/database/data-source.ts`
+
+**CRM DataSource Criado:**
+```typescript
+const crmConfig: DataSourceOptions = {
+  type: 'postgres',
+  host: process.env.CRM_DB_HOST || '46.202.144.210',
+  port: parseInt(process.env.CRM_DB_PORT || '5432'),
+  username: process.env.CRM_DB_USERNAME || 'nexus_admin',
+  password: process.env.CRM_DB_PASSWORD || 'nexus2024@secure',
+  database: process.env.CRM_DB_DATABASE || 'nexus_crm',
+  synchronize: false,
+  logging: process.env.DB_LOGGING === 'true',
+  entities: [path.join(__dirname, '..', 'modules', '**', '*.entity{.ts,.js}')],
+  ssl: false,
+  name: 'crm',
+};
+
+export const CrmDataSource = new DataSource(crmConfig);
+```
+
+**Arquivo:** `backend/src/server.ts`
+
+**Inicialização Dual:**
+```typescript
+Promise.all([
+  AppDataSource.initialize(),  // Chat DB (VPS atual)
+  CrmDataSource.initialize()    // CRM DB (VPS nova)
+])
+  .then(([chatDb, crmDb]) => {
+    logger.info('✅ Chat Database connected (chat_messages, whatsapp_sessions)');
+    logger.info('✅ CRM Database connected (leads, users, pipelines, etc)');
+    logger.info(`   CRM DB Host: ${(crmDb.options as any).host}`);
+  });
+```
+
+**Services Atualizados:**
+- ✅ `leads/lead.service.ts` - Agora usa `CrmDataSource`
+- ✅ `leads/pipeline.service.ts` - Agora usa `CrmDataSource`
+- ✅ `leads/procedure.service.ts` - Agora usa `CrmDataSource`
+- ✅ `auth/auth.service.ts` - Agora usa `CrmDataSource`
+
+**Variáveis de Ambiente Adicionadas:**
+```bash
+docker service update \
+  --env-add "CRM_DB_HOST=46.202.144.210" \
+  --env-add "CRM_DB_PORT=5432" \
+  --env-add "CRM_DB_USERNAME=nexus_admin" \
+  --env-add "CRM_DB_PASSWORD=nexus2024@secure" \
+  --env-add "CRM_DB_DATABASE=nexus_crm" \
+  nexus_backend
+```
+
+---
+
+## 📊 ESTRUTURA FINAL DOS BANCOS
+
+### **VPS Atual (72.60.5.29) - nexus_master**
+```
+Tabelas (2):
+├── chat_messages (14 mensagens)
+└── whatsapp_sessions (1 sessão ativa)
+```
+
+### **VPS Nova (46.202.144.210) - nexus_crm**
+```
+Tabelas (6):
+├── users (1)
+├── pipelines (1)
+├── stages (7)
+├── procedures (5)
+├── leads (7)
+└── lead_activities (104)
+
+Relacionamentos:
+├── leads.stageId → stages.id
+├── leads.procedureId → procedures.id
+├── leads.assignedToId → users.id
+├── leads.createdById → users.id
+├── stages.pipelineId → pipelines.id
+├── lead_activities.leadId → leads.id
+└── lead_activities.userId → users.id
+```
+
+---
+
+## 🔍 ANÁLISE: MÓDULOS PENDENTES (SEM TABELAS)
+
+Durante a validação, identificamos **módulos existentes SEM estrutura de banco**:
+
+### **Entities Definidas mas SEM Tabela (Chat):**
+- ❌ `attachment.entity.ts` (anexos de mensagens)
+- ❌ `conversation.entity.ts` (conversas)
+- ❌ `message.entity.ts` (modelo alternativo de mensagens)
+- ❌ `quick-reply.entity.ts` (respostas rápidas)
+- ❌ `tag.entity.ts` (tags para organização)
+
+### **Módulos Completamente VAZIOS (sem entities):**
+- ⚠️ **agenda** - CRÍTICO: Não há tabelas de agendamento!
+- ⚠️ **bi** - Business Intelligence (relatórios)
+- ⚠️ **colaboracao** - Colaboração entre usuários
+- ⚠️ **estoque** - Gestão de estoque
+- ⚠️ **financeiro** - Controle financeiro
+- ⚠️ **marketing** - Automação de marketing
+- ⚠️ **prontuarios** - Prontuários médicos
+
+**IMPORTANTE:** Não existe integração Lead → Agenda porque o módulo agenda está vazio!
+
+---
+
+## ⚠️ PRÓXIMOS PASSOS CRÍTICOS
+
+### 1. **Deploy do Backend Atualizado**
+```bash
+cd /root/nexusatemporal/backend
+npm run build
+docker build -t nexus_backend:v33-dual-db -f Dockerfile .
+docker service update --image nexus_backend:v33-dual-db nexus_backend
+```
+
+### 2. **Criar Estrutura de Agendamentos**
+Módulo `agenda` precisa ser desenvolvido:
+- Entity: `appointment.entity.ts`
+- Relacionamento: `Lead → Appointments (1:N)`
+- Campos essenciais: data, hora, profissional, procedimento, status
+
+### 3. **Validar Integrações**
+- Testar criação de lead
+- Testar atribuição de usuário
+- Testar mudança de estágio
+- Verificar logs de atividades
+
+---
+
+## 📁 ARQUIVOS MODIFICADOS
+
+```
+backend/src/
+├── database/
+│   └── data-source.ts (+42 linhas - CrmDataSource config)
+├── server.ts (+10 linhas - dual DB initialization)
+└── modules/
+    ├── leads/
+    │   ├── lead.service.ts (AppDataSource → CrmDataSource)
+    │   ├── pipeline.service.ts (AppDataSource → CrmDataSource)
+    │   └── procedure.service.ts (AppDataSource → CrmDataSource)
+    └── auth/
+        └── auth.service.ts (AppDataSource → CrmDataSource)
+```
+
+---
+
 ## 🔄 SESSÃO: 2025-10-11 (Madrugada) - CORREÇÃO TOTAL DUPLICAÇÃO DE MENSAGENS (v32)
 
 ---

@@ -6,7 +6,7 @@ const procedure_entity_1 = require("./procedure.entity");
 class ProcedureService {
     procedureRepository;
     constructor() {
-        this.procedureRepository = data_source_1.AppDataSource.getRepository(procedure_entity_1.Procedure);
+        this.procedureRepository = data_source_1.CrmDataSource.getRepository(procedure_entity_1.Procedure);
     }
     async getProcedures(tenantId) {
         return await this.procedureRepository.find({

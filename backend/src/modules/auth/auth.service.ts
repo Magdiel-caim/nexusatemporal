@@ -14,7 +14,7 @@ interface TokenPayload {
 }
 
 export class AuthService {
-  private userRepository = AppDataSource.getRepository(User);
+  private userRepository = CrmDataSource.getRepository(User);
 
   generateAccessToken(payload: TokenPayload): string {
     return jwt.sign(

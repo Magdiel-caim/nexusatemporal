@@ -1,4 +1,4 @@
-import { AppDataSource } from '@/database/data-source';
+import { CrmDataSource } from '@/database/data-source';
 import { Procedure } from './procedure.entity';
 import { Repository } from 'typeorm';
 
@@ -6,7 +6,7 @@ class ProcedureService {
   private procedureRepository: Repository<Procedure>;
 
   constructor() {
-    this.procedureRepository = AppDataSource.getRepository(Procedure);
+    this.procedureRepository = CrmDataSource.getRepository(Procedure);
   }
 
   async getProcedures(tenantId: string): Promise<Procedure[]> {

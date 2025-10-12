@@ -6,8 +6,8 @@ const lead_entity_1 = require("./lead.entity");
 const activity_entity_1 = require("./activity.entity");
 const typeorm_1 = require("typeorm");
 class LeadService {
-    leadRepository = data_source_1.AppDataSource.getRepository(lead_entity_1.Lead);
-    activityRepository = data_source_1.AppDataSource.getRepository(activity_entity_1.Activity);
+    leadRepository = data_source_1.CrmDataSource.getRepository(lead_entity_1.Lead);
+    activityRepository = data_source_1.CrmDataSource.getRepository(activity_entity_1.Activity);
     async createLead(data) {
         const lead = this.leadRepository.create(data);
         const savedLead = await this.leadRepository.save(lead);

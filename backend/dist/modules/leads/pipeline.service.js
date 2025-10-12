@@ -5,8 +5,8 @@ const data_source_1 = require("@/database/data-source");
 const pipeline_entity_1 = require("./pipeline.entity");
 const stage_entity_1 = require("./stage.entity");
 class PipelineService {
-    pipelineRepository = data_source_1.AppDataSource.getRepository(pipeline_entity_1.Pipeline);
-    stageRepository = data_source_1.AppDataSource.getRepository(stage_entity_1.Stage);
+    pipelineRepository = data_source_1.CrmDataSource.getRepository(pipeline_entity_1.Pipeline);
+    stageRepository = data_source_1.CrmDataSource.getRepository(stage_entity_1.Stage);
     async createPipeline(data) {
         const pipeline = this.pipelineRepository.create({
             name: data.name,

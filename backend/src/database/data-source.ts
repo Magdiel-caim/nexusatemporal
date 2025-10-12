@@ -22,6 +22,26 @@ const baseConfig: DataSourceOptions = {
 export const AppDataSource = new DataSource(baseConfig);
 
 /**
+ * CRM Database Configuration (VPS separada - 46.202.144.210)
+ * Contém: leads, users, pipelines, procedures, stages, lead_activities
+ */
+const crmConfig: DataSourceOptions = {
+  type: 'postgres',
+  host: process.env.CRM_DB_HOST || '46.202.144.210',
+  port: parseInt(process.env.CRM_DB_PORT || '5432'),
+  username: process.env.CRM_DB_USERNAME || 'nexus_admin',
+  password: process.env.CRM_DB_PASSWORD || 'nexus2024@secure',
+  database: process.env.CRM_DB_DATABASE || 'nexus_crm',
+  synchronize: false, // Nunca sincronizar automaticamente em produção
+  logging: process.env.DB_LOGGING === 'true',
+  entities: [path.join(__dirname, '..', 'modules', '**', '*.entity{.ts,.js}')],
+  ssl: false,
+  name: 'crm', // Nome do datasource para referência
+};
+
+export const CrmDataSource = new DataSource(crmConfig);
+
+/**
  * Create a dynamic data source for tenant databases
  * @param tenantId - The tenant identifier
  * @returns DataSource for the tenant
