@@ -1,5 +1,237 @@
 # 📋 CHANGELOG - Nexus Atemporal CRM
 
+## 🔄 SESSÃO: 2025-10-13 - IMPLEMENTAÇÃO MÍDIA WHATSAPP (v34)
+
+---
+
+## 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Implementar funcionalidade completa de envio e recebimento de mídias via WhatsApp (imagens, vídeos, áudios, documentos).
+
+**Status Final:** ⚠️ **PARCIALMENTE CONCLUÍDO** - Frontend e Backend funcionando, investigar sincronização WhatsApp
+
+**Versão:** v34-media-complete
+
+**Funcionalidades Implementadas:**
+- ✅ Envio de imagens
+- ✅ Envio de vídeos
+- ✅ Envio de documentos (PDF, DOCX, etc)
+- ✅ Gravação e envio de áudio (PTT - Push to Talk)
+- ✅ Preview de mídia antes de enviar
+- ✅ Suporte a legendas (caption)
+- ✅ Responder mensagens com mídia (quote/reply)
+- ✅ Fix: Tecla Enter agora envia mensagens
+- ✅ Backend aceita base64 e URL
+- ⚠️ Recebimento de mídias via webhook WAHA (em teste)
+
+---
+
+## 🎯 IMPLEMENTAÇÃO REALIZADA
+
+### 1. ✅ Backend - Suporte Completo a Mídias
+
+**Arquivo:** `backend/src/modules/chat/n8n-webhook.controller.ts`
+
+**Funcionalidade `sendMedia()`:**
+- Detecta automaticamente se `fileUrl` é base64 ou URL pública
+- Converte base64 para formato WAHA: `{mimetype, filename, data}`
+- Suporte a todos os tipos de mídia via endpoints WAHA:
+  - `/api/sendImage` - Imagens
+  - `/api/sendVideo` - Vídeos
+  - `/api/sendVoice` - Áudios/PTT
+  - `/api/sendFile` - Documentos
+- Suporte a `caption` e `quotedMessageId`
+- Salva no banco com `media_url`
+- Emite via WebSocket para atualização em tempo real
+
+**Rota Adicionada:**
+```typescript
+// Line 66 em chat.routes.ts
+router.post('/n8n/send-media', (req, res) => n8nWebhookController.sendMedia(req, res));
+```
+
+---
+
+### 2. ✅ Frontend - Interface Completa de Mídia
+
+**Arquivo:** `frontend/src/pages/ChatPage.tsx`
+
+**Handlers Implementados:**
+
+**`handleSendFile()` (linha 441-476):**
+- Converte arquivo para base64
+- Detecta tipo automaticamente (image/video/audio/document)
+- Envia via `chatService.sendWhatsAppMedia()`
+- Adiciona mensagem localmente no estado
+- Preview modal com caption
+
+**`handleAudioReady()` (linha 479-509):**
+- Converte Blob de áudio para base64
+- Envia como PTT (push-to-talk)
+- Suporte a resposta de mensagens
+
+**Componentes:**
+- `MediaUploadButton` - Botões de upload por tipo
+- `MediaPreview` - Modal de preview com caption
+- `AudioRecorder` - Gravador de áudio
+- `MessageBubble` - Renderiza mídias recebidas
+
+---
+
+### 3. ✅ Serviço - Chat Service
+
+**Arquivo:** `frontend/src/services/chatService.ts`
+
+**Método `sendWhatsAppMedia()` (linha 266-302):**
+```typescript
+async sendWhatsAppMedia(
+  sessionName: string,
+  phoneNumber: string,
+  fileUrl: string,  // base64 ou URL
+  messageType: 'image' | 'video' | 'audio' | 'ptt' | 'document',
+  caption?: string,
+  quotedMessageId?: string
+): Promise<Message>
+```
+
+**FIX CRÍTICO:**
+- Adicionado `mediaUrl: messageData.mediaUrl` no retorno (linha 299)
+- Sem isso, mensagens apareciam sem mídia no frontend
+
+---
+
+### 4. ✅ Fix: Tecla Enter Envia Mensagens
+
+**Problema:** `onKeyPress` estava deprecated e não funcionava
+**Solução:** Mudado para `onKeyDown` (linha 406-411 em ChatPage.tsx)
+
+```typescript
+const handleKeyDown = (e: React.KeyboardEvent) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+};
+```
+
+---
+
+### 5. ✅ Rota de Mídia Registrada
+
+**Problema:** Rota `/n8n/send-media` retornava 404
+**Causa:** Método `sendMedia()` existia mas rota não estava registrada
+**Solução:** Adicionada linha 66 em `chat.routes.ts`
+
+**Deploy:**
+- Backend: `nexus_backend:v34-media-complete`
+- Frontend: `nexus_frontend:v34-media-complete`
+
+---
+
+## ⚠️ PROBLEMAS IDENTIFICADOS
+
+### 1. Mídias Não Chegam no WhatsApp Real
+
+**Status:** Backend envia com sucesso (200 OK), WAHA aceita (201 Created), mas mídias não aparecem no app WhatsApp
+
+**Logs Confirmam:**
+```
+✅ Mídia enviada via WAHA: true_554198549563@c.us_3EB0D0935682CE32BEAEF7
+✅ Mídia salva no banco: 0df52067-d668-417e-a9c1-3bd39c9571ad
+🔊 Mídia emitida via WebSocket
+POST /api/chat/n8n/send-media HTTP/1.1" 200
+```
+
+**WAHA Logs:**
+```
+POST /api/sendImage → 201 (2.5s)
+POST /api/sendFile → 201 (1.2s)
+POST /api/sendVoice → 201 (1.0s)
+```
+
+**Sessão WhatsApp:**
+```
+status: WORKING
+engine.grpc.client: READY
+```
+
+**Possíveis Causas:**
+1. **Base64 muito grande** - WhatsApp pode ter limite de tamanho
+2. **Rate limiting** - WhatsApp pode estar bloqueando múltiplas mídias
+3. **Sincronização** - Delay entre WhatsApp Web/Desktop/Mobile
+4. **Formato** - WAHA pode não estar processando base64 corretamente
+
+**Ação Sugerida para Próxima Sessão:**
+- Testar com imagens pequenas (< 100KB)
+- Verificar se aparecem no WhatsApp Web
+- Considerar usar URLs públicas ao invés de base64
+- Implementar sistema de upload para gerar URLs
+
+---
+
+### 2. Recebimento de Mídias
+
+**Status:** Webhook configurado, aguardando testes
+
+**Webhook WAHA:**
+```json
+{
+  "url": "https://api.nexusatemporal.com.br/api/chat/webhook/waha/message",
+  "events": ["message", "message.revoked"]
+}
+```
+
+**Frontend (linha 85-131):**
+- Listener `chat:new-message` implementado
+- Ignora mensagens outgoing (já adicionadas localmente)
+- Adiciona `mediaUrl` ao converter mensagem
+- Recarrega conversas automaticamente
+
+**Ação Sugerida:**
+- Enviar imagem/vídeo DE OUTRO número para testar recebimento
+- Verificar se `mediaUrl` vem no webhook do WAHA
+
+---
+
+## 🏗️ ARQUITETURA
+
+**Fluxo de Envio:**
+```
+User → MediaUploadButton → handleSendFile()
+  → fileToBase64() → sendWhatsAppMedia()
+  → Backend /api/chat/n8n/send-media
+  → WAHA /api/sendImage|sendVideo|sendVoice|sendFile
+  → WhatsApp
+```
+
+**Fluxo de Recebimento:**
+```
+WhatsApp → WAHA Webhook
+  → Backend /api/chat/webhook/waha/message
+  → WebSocket emit('chat:new-message')
+  → Frontend listener → setMessages()
+```
+
+---
+
+## 📦 DEPLOY
+
+**Imagens Docker:**
+```bash
+nexus_backend:v34-media-complete
+nexus_frontend:v34-media-complete
+```
+
+**Deployed:** 2025-10-13 15:05 UTC
+
+**Comandos:**
+```bash
+docker service update --image nexus_backend:v34-media-complete nexus_backend
+docker service update --image nexus_frontend:v34-media-complete nexus_frontend
+```
+
+---
+
 ## 🔄 SESSÃO: 2025-10-12 - SEPARAÇÃO DE BANCOS DE DADOS (v33)
 
 ---

@@ -1,6 +1,6 @@
-import jwt from 'jsonwebtoken';
+import * as jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import { AppDataSource, getTenantDataSource } from '@/database/data-source';
+import { AppDataSource, CrmDataSource, getTenantDataSource } from '@/database/data-source';
 import { User, UserRole, UserStatus } from './user.entity';
 import { AppError } from '@/shared/middleware/error-handler';
 import { sendEmail } from '@/shared/utils/email';
@@ -17,19 +17,17 @@ export class AuthService {
   private userRepository = CrmDataSource.getRepository(User);
 
   generateAccessToken(payload: TokenPayload): string {
-    return jwt.sign(
-      payload,
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
-    );
+    const options: any = {
+      expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    };
+    return jwt.sign(payload, process.env.JWT_SECRET!, options);
   }
 
   generateRefreshToken(payload: TokenPayload): string {
-    return jwt.sign(
-      payload,
-      process.env.JWT_REFRESH_SECRET!,
-      { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d' }
-    );
+    const options: any = {
+      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
+    };
+    return jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, options);
   }
 
   verifyAccessToken(token: string): TokenPayload {

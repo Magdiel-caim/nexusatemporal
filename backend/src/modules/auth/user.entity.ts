@@ -39,10 +39,10 @@ export class User {
   name: string;
 
   @Column({ nullable: true, type: 'varchar' })
-  phone: string;
+  phone: string | null;
 
   @Column({ nullable: true, type: 'varchar' })
-  avatar: string;
+  avatar: string | null;
 
   @Column({
     type: 'enum',
@@ -59,34 +59,34 @@ export class User {
   status: UserStatus;
 
   @Column({ nullable: true, type: 'varchar' })
-  tenantId: string;
+  tenantId: string | null;
 
   @Column({ nullable: true, type: 'text' })
-  refreshToken: string;
+  refreshToken: string | null;
 
   @Column({ default: false, type: 'boolean' })
   emailVerified: boolean;
 
   @Column({ nullable: true, type: 'varchar' })
-  emailVerificationToken: string;
+  emailVerificationToken: string | null;
 
   @Column({ nullable: true, type: 'varchar' })
-  passwordResetToken: string;
+  passwordResetToken: string | null;
 
   @Column({ nullable: true, type: 'timestamp' })
-  passwordResetExpires: Date;
+  passwordResetExpires: Date | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  permissions: string[];
+  permissions: string[] | null;
 
   @Column({ type: 'jsonb', nullable: true })
-  preferences: Record<string, any>;
+  preferences: Record<string, any> | null;
 
   @Column({ nullable: true, type: 'timestamp' })
-  lastLoginAt: Date;
+  lastLoginAt: Date | null;
 
   @Column({ nullable: true, type: 'varchar' })
-  lastLoginIp: string;
+  lastLoginIp: string | null;
 
   @CreateDateColumn()
   createdAt: Date;

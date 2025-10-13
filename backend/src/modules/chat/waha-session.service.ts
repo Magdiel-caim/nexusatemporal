@@ -11,6 +11,10 @@ export interface WAHASession {
       events: string[];
     }[];
   };
+  me?: {
+    id: string;
+    pushName: string;
+  };
 }
 
 export interface WAHAQRCode {

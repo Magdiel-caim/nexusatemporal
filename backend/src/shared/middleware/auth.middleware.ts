@@ -40,7 +40,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     }
 
     // Attach user info to request
-    (req as any).user = {
+    req.user = {
       userId: user.id,
       email: user.email,
       name: user.name,
@@ -61,7 +61,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
 
 export const authorize = (...roles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const user = (req as any).user;
+    const user = req.user;
 
     if (!user) {
       return next(new AppError('User not authenticated', 401));
@@ -77,7 +77,7 @@ export const authorize = (...roles: UserRole[]) => {
 
 export const checkPermission = (permission: string) => {
   return (req: Request, res: Response, next: NextFunction) => {
-    const user = (req as any).user;
+    const user = req.user;
 
     if (!user) {
       return next(new AppError('User not authenticated', 401));

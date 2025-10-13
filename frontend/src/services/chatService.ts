@@ -21,8 +21,9 @@ export interface Message {
   id: string;
   conversationId: string;
   direction: 'incoming' | 'outgoing';
-  type: 'text' | 'audio' | 'image' | 'video' | 'document' | 'location' | 'contact';
+  type: 'text' | 'audio' | 'image' | 'video' | 'document' | 'location' | 'contact' | 'ptt';
   content?: string;
+  mediaUrl?: string;
   senderId?: string;
   senderName?: string;
   whatsappMessageId?: string;
@@ -32,6 +33,10 @@ export interface Message {
   readAt?: string;
   metadata?: Record<string, any>;
   attachments?: Attachment[];
+  quotedMsg?: {
+    content: string;
+    senderName: string;
+  };
   createdAt: string;
 }
 
@@ -256,6 +261,57 @@ class ChatService {
       status: messageData.status || 'sent',
       createdAt: messageData.createdAt || new Date().toISOString(),
     };
+  }
+
+  async sendWhatsAppMedia(
+    sessionName: string,
+    phoneNumber: string,
+    fileUrl: string,
+    messageType: 'image' | 'video' | 'audio' | 'ptt' | 'document',
+    caption?: string,
+    quotedMessageId?: string
+  ): Promise<Message> {
+    const payload: any = {
+      sessionName,
+      phoneNumber,
+      fileUrl,
+      messageType,
+    };
+
+    if (caption) {
+      payload.caption = caption;
+    }
+
+    if (quotedMessageId) {
+      payload.quotedMessageId = quotedMessageId;
+    }
+
+    const { data } = await api.post('/chat/n8n/send-media', payload);
+
+    // Converter resposta do backend para formato Message
+    const messageData = data.data || data;
+    return {
+      id: messageData.id,
+      conversationId: `whatsapp-${messageData.sessionName}-${messageData.phoneNumber}`,
+      direction: messageData.direction || 'outgoing',
+      type: messageData.messageType || messageType,
+      content: messageData.content || caption,
+      mediaUrl: messageData.mediaUrl,
+      status: messageData.status || 'sent',
+      createdAt: messageData.createdAt || new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Converte arquivo para base64 (WAHA aceita base64 inline)
+   */
+  async fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 }
 

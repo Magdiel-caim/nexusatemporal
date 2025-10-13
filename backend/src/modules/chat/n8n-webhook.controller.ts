@@ -35,6 +35,7 @@ interface WAHAWebhookPayload {
     participant?: string;
     hasMedia: boolean;
     media?: any;
+    revokedMessageId?: string; // Para evento message.revoked
     _data?: {
       Info?: {
         PushName?: string;
@@ -44,6 +45,12 @@ interface WAHAWebhookPayload {
     };
   };
   environment?: any;
+}
+
+interface WAHAResponse {
+  id: string;
+  timestamp?: number;
+  [key: string]: any;
 }
 
 export class N8NWebhookController {
@@ -354,7 +361,7 @@ export class N8NWebhookController {
         throw new Error(`WAHA API error: ${wahaResponse.status} - ${errorText}`);
       }
 
-      const wahaData = await wahaResponse.json();
+      const wahaData = (await wahaResponse.json()) as WAHAResponse;
       console.log('✅ Mensagem enviada via WAHA:', wahaData.id);
 
       // Salvar no banco
@@ -421,6 +428,198 @@ export class N8NWebhookController {
       });
     } catch (error: any) {
       console.error('❌ Erro ao enviar mensagem:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message,
+      });
+    }
+  }
+
+  /**
+   * Envia mídia (imagem, vídeo, áudio, documento) via WhatsApp
+   * POST /api/chat/n8n/send-media
+   * Body: multipart/form-data com file + sessionName + phoneNumber + caption (opcional)
+   */
+  async sendMedia(req: Request, res: Response) {
+    try {
+      const { sessionName, phoneNumber, caption, messageType, fileUrl, quotedMessageId } = req.body;
+
+      if (!sessionName || !phoneNumber || !fileUrl) {
+        return res.status(400).json({
+          success: false,
+          error: 'sessionName, phoneNumber and fileUrl are required',
+        });
+      }
+
+      console.log('📤 Enviando mídia via WAHA:', {
+        session: sessionName,
+        phone: phoneNumber,
+        type: messageType,
+        hasQuote: !!quotedMessageId,
+      });
+
+      const wahaApiKey = 'bd0c416348b2f04d198ff8971b608a87';
+      let wahaUrl = '';
+      let requestBody: any = {
+        session: sessionName,
+        chatId: `${phoneNumber}@c.us`,
+      };
+
+      // Adicionar quoted message se fornecido
+      if (quotedMessageId) {
+        requestBody.reply_to = quotedMessageId;
+      }
+
+      // Detectar se fileUrl é base64 ou URL
+      const isBase64 = fileUrl.startsWith('data:');
+      let filePayload: any;
+
+      if (isBase64) {
+        // Extrair mimetype e data do base64
+        const match = fileUrl.match(/^data:([^;]+);base64,(.+)$/);
+        if (!match) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid base64 format',
+          });
+        }
+
+        const mimetype = match[1];
+        const data = match[2];
+
+        // Determinar filename baseado no tipo
+        const extension = mimetype.split('/')[1] || 'bin';
+        const filename = `media_${Date.now()}.${extension}`;
+
+        filePayload = {
+          mimetype,
+          filename,
+          data,
+        };
+      } else {
+        // URL pública
+        filePayload = { url: fileUrl };
+      }
+
+      // Determinar endpoint WAHA baseado no tipo de mídia
+      switch (messageType) {
+        case 'image':
+          wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendImage';
+          requestBody.file = filePayload;
+          if (caption) requestBody.caption = caption;
+          break;
+
+        case 'video':
+          wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendVideo';
+          requestBody.file = filePayload;
+          if (caption) requestBody.caption = caption;
+          break;
+
+        case 'audio':
+        case 'ptt':
+          wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendVoice';
+          requestBody.file = filePayload;
+          break;
+
+        case 'document':
+          wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendFile';
+          requestBody.file = filePayload;
+          if (caption) requestBody.caption = caption;
+          break;
+
+        default:
+          return res.status(400).json({
+            success: false,
+            error: `Unsupported media type: ${messageType}`,
+          });
+      }
+
+      // Enviar via WAHA
+      const wahaResponse = await fetch(wahaUrl, {
+        method: 'POST',
+        headers: {
+          'X-Api-Key': wahaApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!wahaResponse.ok) {
+        const errorText = await wahaResponse.text();
+        throw new Error(`WAHA API error: ${wahaResponse.status} - ${errorText}`);
+      }
+
+      const wahaData = (await wahaResponse.json()) as WAHAResponse;
+      console.log('✅ Mídia enviada via WAHA:', wahaData.id);
+
+      // Salvar no banco
+      const result = await AppDataSource.query(
+        `INSERT INTO chat_messages (
+          session_name,
+          phone_number,
+          contact_name,
+          direction,
+          message_type,
+          content,
+          media_url,
+          waha_message_id,
+          status,
+          created_at,
+          is_read
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        RETURNING *`,
+        [
+          sessionName,
+          phoneNumber,
+          phoneNumber, // contactName
+          'outgoing',
+          messageType,
+          caption || '',
+          fileUrl,
+          wahaData.id,
+          'sent',
+          new Date(),
+          true, // outgoing sempre lida
+        ]
+      );
+
+      const savedMessage = result[0];
+
+      console.log('✅ Mídia salva no banco:', savedMessage.id);
+
+      // Emitir via WebSocket
+      const io = req.app.get('io');
+      if (io) {
+        io.emit('chat:new-message', {
+          id: savedMessage.id,
+          sessionName: savedMessage.session_name,
+          phoneNumber: savedMessage.phone_number,
+          contactName: savedMessage.contact_name,
+          direction: savedMessage.direction,
+          messageType: savedMessage.message_type,
+          content: savedMessage.content,
+          mediaUrl: savedMessage.media_url,
+          createdAt: savedMessage.created_at,
+        });
+        console.log('🔊 Mídia emitida via WebSocket');
+      }
+
+      res.json({
+        success: true,
+        data: {
+          id: savedMessage.id,
+          sessionName: savedMessage.session_name,
+          phoneNumber: savedMessage.phone_number,
+          direction: savedMessage.direction,
+          messageType: savedMessage.message_type,
+          content: savedMessage.content,
+          mediaUrl: savedMessage.media_url,
+          status: savedMessage.status,
+          createdAt: savedMessage.created_at,
+        },
+      });
+    } catch (error: any) {
+      console.error('❌ Erro ao enviar mídia:', error);
       res.status(500).json({
         success: false,
         error: error.message,

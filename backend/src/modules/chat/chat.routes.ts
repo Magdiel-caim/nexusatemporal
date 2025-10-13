@@ -63,6 +63,7 @@ router.get('/n8n/messages/:sessionName', (req, res) => n8nWebhookController.getM
 router.get('/n8n/conversations', (req, res) => n8nWebhookController.getConversations(req, res));
 router.post('/n8n/messages/:sessionName/mark-read', (req, res) => n8nWebhookController.markAsRead(req, res));
 router.post('/n8n/send-message', (req, res) => n8nWebhookController.sendMessage(req, res));
+router.post('/n8n/send-media', (req, res) => n8nWebhookController.sendMedia(req, res));
 router.delete('/n8n/messages/:messageId', (req, res) => n8nWebhookController.deleteMessage(req, res));
 
 // WAHA Session Management (WhatsApp Connection)

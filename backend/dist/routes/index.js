@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_routes_1 = __importDefault(require("@/modules/auth/auth.routes"));
-const data_routes_1 = __importDefault(require("@/modules/config/data.routes"));
-const leads_routes_1 = __importDefault(require("@/modules/leads/leads.routes"));
-const chat_routes_1 = __importDefault(require("@/modules/chat/chat.routes"));
+const auth_routes_1 = __importDefault(require("../modules/auth/auth.routes"));
+const data_routes_1 = __importDefault(require("../modules/config/data.routes"));
+const leads_routes_1 = __importDefault(require("../modules/leads/leads.routes"));
+const chat_routes_1 = __importDefault(require("../modules/chat/chat.routes"));
 // Import other module routes as they are created
 // import agendaRoutes from '@/modules/agenda/agenda.routes';
 // import prontuariosRoutes from '@/modules/prontuarios/prontuarios.routes';

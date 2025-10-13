@@ -19,6 +19,9 @@ router.get('/conversations', (req, res) => controller.getConversations(req, res)
 // Enviar mensagem via WhatsApp
 router.post('/send-message', (req, res) => controller.sendMessage(req, res));
 
+// Enviar mídia via WhatsApp
+router.post('/send-media', (req, res) => controller.sendMedia(req, res));
+
 // Marcar mensagens como lidas
 router.post('/messages/:sessionName/mark-read', (req, res) => controller.markAsRead(req, res));
 

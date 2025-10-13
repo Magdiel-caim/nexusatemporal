@@ -88,11 +88,11 @@ __decorate([
 ], User.prototype, "name", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'varchar' }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], User.prototype, "phone", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'varchar' }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], User.prototype, "avatar", void 0);
 __decorate([
     (0, typeorm_1.Column)({
@@ -112,11 +112,11 @@ __decorate([
 ], User.prototype, "status", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'varchar' }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], User.prototype, "tenantId", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'text' }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], User.prototype, "refreshToken", void 0);
 __decorate([
     (0, typeorm_1.Column)({ default: false, type: 'boolean' }),
@@ -124,19 +124,19 @@ __decorate([
 ], User.prototype, "emailVerified", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'varchar' }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], User.prototype, "emailVerificationToken", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'varchar' }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], User.prototype, "passwordResetToken", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'timestamp' }),
-    __metadata("design:type", Date)
+    __metadata("design:type", Object)
 ], User.prototype, "passwordResetExpires", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
-    __metadata("design:type", Array)
+    __metadata("design:type", Object)
 ], User.prototype, "permissions", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
@@ -144,11 +144,11 @@ __decorate([
 ], User.prototype, "preferences", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'timestamp' }),
-    __metadata("design:type", Date)
+    __metadata("design:type", Object)
 ], User.prototype, "lastLoginAt", void 0);
 __decorate([
     (0, typeorm_1.Column)({ nullable: true, type: 'varchar' }),
-    __metadata("design:type", String)
+    __metadata("design:type", Object)
 ], User.prototype, "lastLoginIp", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),

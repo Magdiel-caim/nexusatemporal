@@ -12,7 +12,7 @@ exports.deleteTenantFile = deleteTenantFile;
 exports.listTenantFiles = listTenantFiles;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
-const logger_1 = require("@/shared/utils/logger");
+const logger_1 = require("../../shared/utils/logger");
 // Initialize S3 Client for iDrive E2
 const s3Client = new client_s3_1.S3Client({
     endpoint: process.env.S3_ENDPOINT,

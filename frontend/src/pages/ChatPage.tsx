@@ -2,28 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Search,
   Send,
-  Paperclip,
   Smile,
-  Mic,
   Phone,
   Video,
   MoreVertical,
-  Check,
-  CheckCheck,
-  Clock,
   Tag as TagIcon,
   User,
   X,
-  Image as ImageIcon,
   Smartphone,
-  Trash2,
 } from 'lucide-react';
 import chatService, { Conversation, Message, QuickReply } from '../services/chatService';
 import toast from 'react-hot-toast';
-import { format, formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { io, Socket } from 'socket.io-client';
 import WhatsAppConnectionPanel from '../components/chat/WhatsAppConnectionPanel';
+import MessageBubble from '../components/chat/MessageBubble';
+import MediaUploadButton, { MediaPreview } from '../components/chat/MediaUploadButton';
+import AudioRecorder from '../components/chat/AudioRecorder';
+import EmojiPicker from 'emoji-picker-react';
 
 const ChatPage: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -38,6 +35,11 @@ const ChatPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [showWhatsAppConnection, setShowWhatsAppConnection] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
+  const [fileCaption, setFileCaption] = useState('');
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [quotedMessage, setQuotedMessage] = useState<Message | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedConversationRef = useRef<Conversation | null>(null);
 
@@ -110,6 +112,7 @@ const ChatPage: React.FC = () => {
             id: whatsappMessage.id,
             conversationId: currentConversation.id,
             content: whatsappMessage.content,
+            mediaUrl: whatsappMessage.mediaUrl,
             direction: whatsappMessage.direction,
             type: whatsappMessage.messageType || 'text',
             status: 'delivered',
@@ -268,6 +271,7 @@ const ChatPage: React.FC = () => {
           direction: msg.direction,
           type: msg.messageType || 'text',
           content: msg.content,
+          mediaUrl: msg.mediaUrl,
           status: msg.status || 'delivered',
           createdAt: msg.createdAt,
         }));
@@ -399,7 +403,7 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -427,28 +431,100 @@ const ChatPage: React.FC = () => {
     }
   };
 
-  const formatMessageTime = (date: string) => {
-    return format(new Date(date), 'HH:mm', { locale: ptBR });
+  // Handler para seleção de arquivo
+  const handleFileSelect = async (file: File, preview?: string) => {
+    setSelectedFile(file);
+    setFilePreview(preview || null);
+  };
+
+  // Handler para envio de arquivo
+  const handleSendFile = async () => {
+    if (!selectedFile || !selectedConversation) return;
+
+    try {
+      // Converter arquivo para base64
+      const base64 = await chatService.fileToBase64(selectedFile);
+
+      // Determinar tipo de mídia
+      let messageType: 'image' | 'video' | 'audio' | 'document' = 'document';
+      if (selectedFile.type.startsWith('image/')) messageType = 'image';
+      else if (selectedFile.type.startsWith('video/')) messageType = 'video';
+      else if (selectedFile.type.startsWith('audio/')) messageType = 'audio';
+
+      const sessionName = selectedConversation.whatsappInstanceId || 'session_01k77wpm5edhch4b97qbgenk7p';
+
+      // Enviar via WhatsApp
+      const newMessage = await chatService.sendWhatsAppMedia(
+        sessionName,
+        selectedConversation.phoneNumber,
+        base64,
+        messageType,
+        fileCaption || undefined,
+        quotedMessage?.id
+      );
+
+      setMessages((prev) => [...prev, newMessage]);
+      setSelectedFile(null);
+      setFilePreview(null);
+      setFileCaption('');
+      setQuotedMessage(null);
+      toast.success('Mídia enviada');
+    } catch (error) {
+      console.error('Erro ao enviar mídia:', error);
+      toast.error('Erro ao enviar mídia');
+    }
+  };
+
+  // Handler para áudio gravado
+  const handleAudioReady = async (audioBlob: Blob) => {
+    if (!selectedConversation) return;
+
+    try {
+      // Converter blob para base64
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(audioBlob);
+      });
+
+      const sessionName = selectedConversation.whatsappInstanceId || 'session_01k77wpm5edhch4b97qbgenk7p';
+
+      // Enviar como PTT (push-to-talk)
+      const newMessage = await chatService.sendWhatsAppMedia(
+        sessionName,
+        selectedConversation.phoneNumber,
+        base64,
+        'ptt',
+        undefined,
+        quotedMessage?.id
+      );
+
+      setMessages((prev) => [...prev, newMessage]);
+      setQuotedMessage(null);
+      toast.success('Áudio enviado');
+    } catch (error) {
+      console.error('Erro ao enviar áudio:', error);
+      toast.error('Erro ao enviar áudio');
+    }
+  };
+
+  // Handler para emoji
+  const handleEmojiClick = (emojiData: any) => {
+    setMessageInput((prev) => prev + emojiData.emoji);
+    setShowEmojiPicker(false);
+  };
+
+  // Handler para responder mensagem
+  const handleReplyMessage = (messageId: string) => {
+    const msg = messages.find(m => m.id === messageId);
+    if (msg) {
+      setQuotedMessage(msg);
+    }
   };
 
   const formatConversationTime = (date?: string) => {
     if (!date) return '';
     return formatDistanceToNow(new Date(date), { addSuffix: true, locale: ptBR });
-  };
-
-  const getMessageStatusIcon = (status: string) => {
-    switch (status) {
-      case 'sent':
-        return <Check className="h-3 w-3 text-gray-400" />;
-      case 'delivered':
-        return <CheckCheck className="h-3 w-3 text-gray-400" />;
-      case 'read':
-        return <CheckCheck className="h-3 w-3 text-blue-500" />;
-      case 'pending':
-        return <Clock className="h-3 w-3 text-gray-400" />;
-      default:
-        return null;
-    }
   };
 
   const filteredConversations = conversations.filter((conv) => {
@@ -674,38 +750,12 @@ const ChatPage: React.FC = () => {
             ) : (
               <>
                 {messages.map((message) => (
-                  <div
+                  <MessageBubble
                     key={message.id}
-                    className={`flex group ${message.direction === 'outgoing' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className="flex items-end gap-2">
-                      <div
-                        className={`max-w-md px-4 py-2 rounded-lg ${
-                          message.direction === 'outgoing'
-                            ? 'bg-indigo-600 text-white'
-                            : 'bg-white text-gray-900 border border-gray-200'
-                        }`}
-                      >
-                        {message.content && <p className="text-sm">{message.content}</p>}
-
-                        <div className="flex items-center justify-end gap-1 mt-1">
-                          <span className="text-xs opacity-75">
-                            {formatMessageTime(message.createdAt)}
-                          </span>
-                          {message.direction === 'outgoing' && getMessageStatusIcon(message.status)}
-                        </div>
-                      </div>
-
-                      {/* Botão de exclusão (aparece ao passar o mouse) */}
-                      <button
-                        onClick={() => handleDeleteMessage(message.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-red-100 rounded text-red-600"
-                        title="Excluir mensagem"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
+                    message={message}
+                    onReply={handleReplyMessage}
+                    onDelete={handleDeleteMessage}
+                  />
                 ))}
                 <div ref={messagesEndRef} />
               </>
@@ -737,7 +787,24 @@ const ChatPage: React.FC = () => {
 
           {/* Message Input */}
           <div className="p-4 border-t border-gray-200 bg-white">
-            <div className="flex items-center gap-2">
+            {/* Quoted Message Display */}
+            {quotedMessage && (
+              <div className="mb-3 p-3 bg-blue-50 border-l-4 border-blue-500 flex items-center justify-between rounded">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-semibold text-blue-700">Respondendo:</p>
+                  <p className="text-sm text-gray-700 truncate">{quotedMessage.content}</p>
+                </div>
+                <button
+                  onClick={() => setQuotedMessage(null)}
+                  className="ml-2 text-gray-500 hover:text-gray-700"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 relative">
+              {/* Respostas Rápidas */}
               <button
                 onClick={() => setShowQuickReplies(!showQuickReplies)}
                 className="p-2 hover:bg-gray-100 rounded-lg"
@@ -745,13 +812,26 @@ const ChatPage: React.FC = () => {
               >
                 <TagIcon className="h-5 w-5 text-gray-600" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Paperclip className="h-5 w-5 text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <ImageIcon className="h-5 w-5 text-gray-600" />
-              </button>
 
+              {/* Upload de Documento */}
+              <MediaUploadButton
+                type="document"
+                onFileSelect={handleFileSelect}
+              />
+
+              {/* Upload de Imagem */}
+              <MediaUploadButton
+                type="image"
+                onFileSelect={handleFileSelect}
+              />
+
+              {/* Upload de Vídeo */}
+              <MediaUploadButton
+                type="video"
+                onFileSelect={handleFileSelect}
+              />
+
+              {/* Input de Texto */}
               <input
                 type="text"
                 placeholder="Digite uma mensagem..."
@@ -760,14 +840,20 @@ const ChatPage: React.FC = () => {
                   setMessageInput(e.target.value);
                   handleTyping();
                 }}
-                onKeyPress={handleKeyPress}
+                onKeyDown={handleKeyDown}
                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
 
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
+              {/* Emoji Picker */}
+              <button
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+                title="Emojis"
+              >
                 <Smile className="h-5 w-5 text-gray-600" />
               </button>
 
+              {/* Enviar ou Gravar Áudio */}
               {messageInput.trim() ? (
                 <button
                   onClick={sendMessage}
@@ -776,9 +862,16 @@ const ChatPage: React.FC = () => {
                   <Send className="h-5 w-5" />
                 </button>
               ) : (
-                <button className="p-2 hover:bg-gray-100 rounded-lg">
-                  <Mic className="h-5 w-5 text-gray-600" />
-                </button>
+                <AudioRecorder
+                  onAudioReady={handleAudioReady}
+                />
+              )}
+
+              {/* Emoji Picker Popover */}
+              {showEmojiPicker && (
+                <div className="absolute bottom-full right-0 mb-2 z-50">
+                  <EmojiPicker onEmojiClick={handleEmojiClick} />
+                </div>
               )}
             </div>
           </div>
@@ -795,6 +888,22 @@ const ChatPage: React.FC = () => {
         </div>
       )}
       </div>
+
+      {/* Media Preview Modal */}
+      {selectedFile && (
+        <MediaPreview
+          file={selectedFile}
+          preview={filePreview || ''}
+          caption={fileCaption}
+          onCaptionChange={setFileCaption}
+          onSend={handleSendFile}
+          onCancel={() => {
+            setSelectedFile(null);
+            setFilePreview(null);
+            setFileCaption('');
+          }}
+        />
+      )}
     </>
   );
 };

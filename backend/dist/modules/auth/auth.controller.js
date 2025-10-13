@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUsers = exports.getMe = exports.logout = exports.resetPassword = exports.requestPasswordReset = exports.verifyEmail = exports.refreshToken = exports.login = exports.register = void 0;
 const auth_service_1 = require("./auth.service");
-const error_handler_1 = require("@/shared/middleware/error-handler");
+const error_handler_1 = require("../../shared/middleware/error-handler");
 const authService = new auth_service_1.AuthService();
 exports.register = (0, error_handler_1.asyncHandler)(async (req, res) => {
     const user = await authService.register(req.body);

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.WAHASessionController = void 0;
 const waha_session_service_1 = require("./waha-session.service");
 const websocket_service_1 = require("./websocket.service");
-const whatsapp_session_db_service_1 = require("@/services/whatsapp-session-db.service");
+const whatsapp_session_db_service_1 = require("../../services/whatsapp-session-db.service");
 class WAHASessionController {
     wahaSessionService = new waha_session_service_1.WAHASessionService();
     sessionDBService = new whatsapp_session_db_service_1.WhatsAppSessionDBService();
