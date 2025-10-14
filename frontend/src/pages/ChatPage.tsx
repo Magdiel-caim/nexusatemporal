@@ -406,7 +406,12 @@ const ChatPage: React.FC = () => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      // Se houver mídia selecionada, enviar mídia; senão, enviar mensagem de texto
+      if (selectedFile) {
+        handleSendFile();
+      } else {
+        sendMessage();
+      }
     }
   };
 
@@ -489,12 +494,12 @@ const ChatPage: React.FC = () => {
 
       const sessionName = selectedConversation.whatsappInstanceId || 'session_01k77wpm5edhch4b97qbgenk7p';
 
-      // Enviar como PTT (push-to-talk)
+      // Enviar como 'audio' ao invés de 'ptt' (ptt requer waveform que WAHA não gera)
       const newMessage = await chatService.sendWhatsAppMedia(
         sessionName,
         selectedConversation.phoneNumber,
         base64,
-        'ptt',
+        'audio',
         undefined,
         quotedMessage?.id
       );

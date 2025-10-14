@@ -35,7 +35,19 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+
+      // Tentar usar OGG/Opus (melhor compatibilidade com WhatsApp)
+      let mimeType = 'audio/ogg;codecs=opus';
+      let options: MediaRecorderOptions = { mimeType };
+
+      // Fallback para webm se OGG não for suportado
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        console.warn('OGG não suportado, usando WebM');
+        mimeType = 'audio/webm';
+        options = { mimeType };
+      }
+
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
@@ -46,7 +58,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
       };
 
       mediaRecorder.onstop = () => {
-        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const blob = new Blob(audioChunksRef.current, { type: mimeType });
         setAudioBlob(blob);
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);

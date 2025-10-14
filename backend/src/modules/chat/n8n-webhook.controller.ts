@@ -517,8 +517,10 @@ export class N8NWebhookController {
 
         case 'audio':
         case 'ptt':
+          // Áudio/PTT - usar sendVoice com conversão automática do WAHA Plus
           wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendVoice';
           requestBody.file = filePayload;
+          requestBody.convert = true; // WAHA Plus converte automaticamente para OPUS/OGG
           break;
 
         case 'document':

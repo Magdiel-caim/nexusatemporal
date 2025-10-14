@@ -172,6 +172,14 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
               placeholder="Adicione uma legenda..."
               value={caption}
               onChange={(e) => onCaptionChange(e.target.value)}
+              onKeyDown={(e) => {
+                console.log('🔑 Tecla pressionada no modal:', e.key);
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  console.log('✅ Enter detectado - enviando mídia');
+                  onSend();
+                }
+              }}
               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               autoFocus
             />
