@@ -1,15 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Lead, Stage } from '@/services/leadsService';
+import appointmentService, { Appointment } from '@/services/appointmentService';
+import { Calendar, Plus } from 'lucide-react';
 
 interface DivisionViewProps {
   leads: Lead[];
   stages: Stage[];
   formatCurrency: (value?: number) => string;
   onLeadClick: (lead: Lead) => void;
+  onScheduleAppointment?: (lead: Lead) => void;
+  refreshTrigger?: number;
 }
 
-export default function DivisionView({ leads, stages, formatCurrency, onLeadClick }: DivisionViewProps) {
+export default function DivisionView({ leads, stages, formatCurrency, onLeadClick, onScheduleAppointment, refreshTrigger }: DivisionViewProps) {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(leads[0] || null);
+  const [leadAppointments, setLeadAppointments] = useState<Appointment[]>([]);
 
   const getStageName = (stageId: string) => {
     const stage = stages.find(s => s.id === stageId);
@@ -24,6 +29,21 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
   const handleLeadSelect = (lead: Lead) => {
     setSelectedLead(lead);
   };
+
+  useEffect(() => {
+    const loadAppointments = async () => {
+      if (selectedLead?.id) {
+        try {
+          const appointments = await appointmentService.getByLead(selectedLead.id);
+          setLeadAppointments(appointments);
+        } catch (error) {
+          console.error('Erro ao carregar agendamentos:', error);
+          setLeadAppointments([]);
+        }
+      }
+    };
+    loadAppointments();
+  }, [selectedLead, refreshTrigger]);
 
   return (
     <div className="flex gap-4 h-[calc(100vh-18rem)]">
@@ -162,26 +182,70 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
                 </div>
               </div>
 
-              {/* Value & Date */}
-              <div className="grid grid-cols-2 gap-4">
-                {selectedLead.estimatedValue && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Valor Estimado</h3>
-                    <p className="text-2xl font-bold text-primary-600">
-                      {formatCurrency(selectedLead.estimatedValue)}
-                    </p>
+              {/* Value */}
+              {selectedLead.estimatedValue && (
+                <div>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Valor Estimado</h3>
+                  <p className="text-2xl font-bold text-primary-600">
+                    {formatCurrency(selectedLead.estimatedValue)}
+                  </p>
+                </div>
+              )}
+
+              {/* Agendamentos */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="text-sm font-semibold text-gray-700">Agendamentos</h3>
+                  <button
+                    onClick={() => onScheduleAppointment?.(selectedLead)}
+                    className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
+                  >
+                    <Plus size={16} />
+                    Novo Agendamento
+                  </button>
+                </div>
+
+                {leadAppointments.length === 0 ? (
+                  <div className="bg-gray-50 rounded-lg p-4 text-center">
+                    <Calendar size={32} className="mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-500">Nenhum agendamento</p>
                   </div>
-                )}
-                {selectedLead.expectedCloseDate && (
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-700 mb-2">Data Esperada</h3>
-                    <p className="text-lg font-medium text-gray-900">
-                      {new Date(selectedLead.expectedCloseDate).toLocaleDateString('pt-BR', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric',
-                      })}
-                    </p>
+                ) : (
+                  <div className="space-y-2">
+                    {leadAppointments.map((apt) => (
+                      <div key={apt.id} className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Calendar size={14} className="text-gray-500" />
+                              <span className="text-sm font-medium text-gray-900">
+                                {new Date(apt.scheduledDate).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                })} às {new Date(apt.scheduledDate).toLocaleTimeString('pt-BR', {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                })}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-600">{apt.procedure?.name}</p>
+                            <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full ${
+                              apt.status === 'confirmado' ? 'bg-green-100 text-green-800' :
+                              apt.status === 'aguardando_confirmacao' ? 'bg-orange-100 text-orange-800' :
+                              apt.status === 'finalizado' ? 'bg-gray-100 text-gray-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {apt.status === 'aguardando_pagamento' ? 'Aguardando Pagamento' :
+                               apt.status === 'aguardando_confirmacao' ? 'Aguardando Confirmação' :
+                               apt.status === 'confirmado' ? 'Confirmado' :
+                               apt.status === 'finalizado' ? 'Finalizado' :
+                               apt.status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

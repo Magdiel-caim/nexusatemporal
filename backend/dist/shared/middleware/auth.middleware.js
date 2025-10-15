@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.checkPermission = exports.authorize = exports.authenticate = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const error_handler_1 = require("./error-handler");
-const user_entity_1 = require("../../modules/auth/user.entity");
-const data_source_1 = require("../../database/data-source");
-const user_entity_2 = require("../../modules/auth/user.entity");
+const user_entity_1 = require("@/modules/auth/user.entity");
+const data_source_1 = require("@/database/data-source");
+const user_entity_2 = require("@/modules/auth/user.entity");
 const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { leadsService, Pipeline, Stage, Lead } from '@/services/leadsService';
+import { leadsService, Pipeline, Stage, Lead, Procedure } from '@/services/leadsService';
+import appointmentService, { CreateAppointmentDto } from '@/services/appointmentService';
+import { useAuthStore } from '@/store/authStore';
 import Modal from '@/components/ui/Modal';
 import LeadDetails from '@/components/leads/LeadDetails';
 import LeadsFilter, { LeadFilters } from '@/components/leads/LeadsFilter';
@@ -12,7 +14,7 @@ import GridView from '@/components/leads/GridView';
 import TimelineView from '@/components/leads/TimelineView';
 import DivisionView from '@/components/leads/DivisionView';
 import toast from 'react-hot-toast';
-import { LayoutGrid, List, Columns, Clock, Split } from 'lucide-react';
+import { LayoutGrid, List, Columns, Clock, Split, X } from 'lucide-react';
 import {
   DndContext,
   DragEndEvent,
@@ -28,6 +30,7 @@ type ViewMode = 'kanban' | 'list' | 'grid' | 'timeline' | 'division';
 
 export default function LeadsPage() {
   const location = useLocation();
+  const { user } = useAuthStore();
   const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
@@ -39,6 +42,23 @@ export default function LeadsPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<LeadFilters>({});
 
+  // Appointment modal states
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [leadForAppointment, setLeadForAppointment] = useState<Lead | null>(null);
+  const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [refreshAppointmentsTrigger, setRefreshAppointmentsTrigger] = useState(0);
+  const [appointmentData, setAppointmentData] = useState({
+    scheduledDate: '',
+    scheduledTime: '09:00',
+    location: 'moema',
+    paymentAmount: '',
+    paymentMethod: 'pix',
+    hasReturn: false,
+    returnCount: 0,
+    returnFrequency: 30,
+    notes: '',
+  });
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -49,6 +69,7 @@ export default function LeadsPage() {
 
   useEffect(() => {
     loadPipelines();
+    loadProcedures();
   }, []);
 
   useEffect(() => {
@@ -99,6 +120,63 @@ export default function LeadsPage() {
     } catch (error: any) {
       toast.error('Erro ao carregar leads');
       console.error(error);
+    }
+  };
+
+  const loadProcedures = async () => {
+    try {
+      const data = await leadsService.getProcedures();
+      setProcedures(data);
+    } catch (error: any) {
+      console.error('Erro ao carregar procedimentos:', error);
+    }
+  };
+
+  const handleScheduleAppointment = (lead: Lead) => {
+    setLeadForAppointment(lead);
+    setAppointmentData({
+      scheduledDate: '',
+      scheduledTime: '09:00',
+      location: 'moema',
+      paymentAmount: lead.procedure?.price?.toString() || '',
+      paymentMethod: 'pix',
+      hasReturn: false,
+      returnCount: 0,
+      returnFrequency: 30,
+      notes: '',
+    });
+    setIsAppointmentModalOpen(true);
+  };
+
+  const handleSubmitAppointment = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!leadForAppointment) return;
+
+    try {
+      const scheduledDate = new Date(`${appointmentData.scheduledDate}T${appointmentData.scheduledTime}:00`);
+
+      const dto: CreateAppointmentDto = {
+        leadId: leadForAppointment.id,
+        procedureId: leadForAppointment.procedureId || procedures[0]?.id,
+        scheduledDate: scheduledDate.toISOString(),
+        location: appointmentData.location,
+        paymentAmount: appointmentData.paymentAmount ? parseFloat(appointmentData.paymentAmount) : undefined,
+        paymentMethod: appointmentData.paymentMethod,
+        hasReturn: appointmentData.hasReturn,
+        returnCount: appointmentData.hasReturn ? appointmentData.returnCount : undefined,
+        returnFrequency: appointmentData.hasReturn ? appointmentData.returnFrequency : undefined,
+        notes: appointmentData.notes || undefined,
+      };
+
+      await appointmentService.create(dto);
+      toast.success('Agendamento criado com sucesso!');
+      setIsAppointmentModalOpen(false);
+      setLeadForAppointment(null);
+      // Trigger refresh dos agendamentos no card do lead
+      setRefreshAppointmentsTrigger(prev => prev + 1);
+    } catch (error: any) {
+      toast.error('Erro ao criar agendamento: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -189,6 +267,21 @@ export default function LeadsPage() {
     }
     await loadLeads();
     handleCloseModal();
+  };
+
+  const handleDeleteLead = async (lead: Lead) => {
+    if (!window.confirm(`Tem certeza que deseja excluir o lead "${lead.name}"?\n\nEsta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      await leadsService.deleteLead(lead.id);
+      toast.success('Lead excluído com sucesso!');
+      await loadLeads();
+    } catch (error: any) {
+      console.error('Erro ao excluir lead:', error);
+      toast.error('Erro ao excluir lead');
+    }
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -303,6 +396,8 @@ export default function LeadsPage() {
             stages={selectedPipeline?.stages || []}
             formatCurrency={formatCurrency}
             onLeadClick={handleEditLead}
+            onScheduleAppointment={handleScheduleAppointment}
+            refreshTrigger={refreshAppointmentsTrigger}
           />
         );
       case 'kanban':
@@ -351,6 +446,8 @@ export default function LeadsPage() {
                             lead={lead}
                             formatCurrency={formatCurrency}
                             onClick={() => handleEditLead(lead)}
+                            onDelete={handleDeleteLead}
+                            userRole={user?.role}
                           />
                         ))
                       )}
@@ -469,6 +566,8 @@ export default function LeadsPage() {
                   lead={activeDragLead}
                   formatCurrency={formatCurrency}
                   onClick={() => {}}
+                  onDelete={handleDeleteLead}
+                  userRole={user?.role}
                 />
               ) : null}
             </DragOverlay>
@@ -494,10 +593,170 @@ export default function LeadsPage() {
                 stages={selectedPipeline.stages || []}
                 onSubmit={handleSubmitLead}
                 onClose={handleCloseModal}
+                onScheduleAppointment={handleScheduleAppointment}
+                refreshAppointmentsTrigger={refreshAppointmentsTrigger}
               />
             )}
           </ErrorBoundary>
         </Modal>
+      )}
+
+      {/* Modal de Agendamento */}
+      {isAppointmentModalOpen && leadForAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10100] p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold">Novo Agendamento</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Paciente: <span className="font-medium">{leadForAppointment.name}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsAppointmentModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitAppointment} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Data *</label>
+                    <input
+                      type="date"
+                      required
+                      value={appointmentData.scheduledDate}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, scheduledDate: e.target.value })}
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Horário *</label>
+                    <input
+                      type="time"
+                      required
+                      value={appointmentData.scheduledTime}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, scheduledTime: e.target.value })}
+                      className="w-full p-2 border rounded"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Local *</label>
+                  <select
+                    value={appointmentData.location}
+                    onChange={(e) => setAppointmentData({ ...appointmentData, location: e.target.value })}
+                    className="w-full p-2 border rounded"
+                  >
+                    <option value="moema">Moema</option>
+                    <option value="av_paulista">Av. Paulista</option>
+                    <option value="perdizes">Perdizes</option>
+                    <option value="online">Online</option>
+                    <option value="a_domicilio">A Domicílio</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Valor</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={appointmentData.paymentAmount}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, paymentAmount: e.target.value })}
+                      className="w-full p-2 border rounded"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Forma de Pagamento</label>
+                    <select
+                      value={appointmentData.paymentMethod}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, paymentMethod: e.target.value })}
+                      className="w-full p-2 border rounded"
+                    >
+                      <option value="pix">PIX</option>
+                      <option value="cartao">Cartão</option>
+                      <option value="dinheiro">Dinheiro</option>
+                      <option value="boleto">Boleto</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={appointmentData.hasReturn}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, hasReturn: e.target.checked })}
+                    />
+                    <span className="text-sm font-medium">Agendar retornos automáticos</span>
+                  </label>
+                </div>
+
+                {appointmentData.hasReturn && (
+                  <div className="grid grid-cols-2 gap-4 pl-6">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Quantidade de retornos</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="12"
+                        value={appointmentData.returnCount}
+                        onChange={(e) => setAppointmentData({ ...appointmentData, returnCount: parseInt(e.target.value) })}
+                        className="w-full p-2 border rounded"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-1">A cada (dias)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={appointmentData.returnFrequency}
+                        onChange={(e) => setAppointmentData({ ...appointmentData, returnFrequency: parseInt(e.target.value) })}
+                        className="w-full p-2 border rounded"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Observações</label>
+                  <textarea
+                    value={appointmentData.notes}
+                    onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
+                    className="w-full p-2 border rounded"
+                    rows={3}
+                    placeholder="Observações sobre o agendamento..."
+                  />
+                </div>
+
+                <div className="flex gap-2 justify-end pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAppointmentModalOpen(false)}
+                    className="px-4 py-2 border rounded hover:bg-gray-50"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Criar Agendamento
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Painel de Filtros */}

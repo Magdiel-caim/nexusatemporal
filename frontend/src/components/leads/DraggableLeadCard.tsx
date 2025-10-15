@@ -1,13 +1,15 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Lead } from '@/services/leadsService';
-import { User, Phone, MapPin, MessageCircle, Mail } from 'lucide-react';
+import { User, Phone, MapPin, MessageCircle, Mail, Trash2 } from 'lucide-react';
 import { useRef, useEffect } from 'react';
 
 interface DraggableLeadCardProps {
   lead: Lead;
   formatCurrency: (value?: number) => string;
   onClick: () => void;
+  onDelete?: (lead: Lead) => void;
+  userRole?: string;
 }
 
 const getChannelIcon = (channel?: string) => {
@@ -68,10 +70,13 @@ const getUserInitials = (name?: string) => {
   return name.substring(0, 2).toUpperCase();
 };
 
-export default function DraggableLeadCard({ lead, formatCurrency, onClick }: DraggableLeadCardProps) {
+export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDelete, userRole }: DraggableLeadCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: lead.id,
   });
+
+  // Verificar se usuário tem permissão para excluir
+  const canDelete = userRole === 'admin' || userRole === 'gestor';
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -112,6 +117,14 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
     }
   };
 
+  // Handler para excluir lead
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevenir o onClick do card
+    if (onDelete && canDelete) {
+      onDelete(lead);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -121,19 +134,30 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
       onClick={handleClick}
       className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing border border-gray-200"
     >
-      {/* Header: Nome + Responsável */}
+      {/* Header: Nome + Botão Excluir + Responsável */}
       <div className="flex items-start justify-between mb-2">
         <h4 className="font-semibold text-gray-900 text-sm flex-1 pr-2 line-clamp-2">
           {lead.name}
         </h4>
-        {lead.assignedTo && (
-          <div
-            className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold"
-            title={`Responsável: ${lead.assignedTo.name}`}
-          >
-            {getUserInitials(lead.assignedTo.name)}
-          </div>
-        )}
+        <div className="flex items-center gap-1.5">
+          {canDelete && onDelete && (
+            <button
+              onClick={handleDelete}
+              className="flex-shrink-0 w-6 h-6 rounded hover:bg-red-100 flex items-center justify-center text-red-600 hover:text-red-700 transition-colors"
+              title="Excluir lead"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {lead.assignedTo && (
+            <div
+              className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold"
+              title={`Responsável: ${lead.assignedTo.name}`}
+            >
+              {getUserInitials(lead.assignedTo.name)}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Procedimento */}

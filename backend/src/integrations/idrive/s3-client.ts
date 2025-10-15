@@ -31,14 +31,15 @@ export async function uploadFile(
       Body: body,
       ContentType: contentType,
       Metadata: metadata,
+      ACL: 'public-read', // Permitir acesso público para leitura
     });
 
     await s3Client.send(command);
 
     logger.info(`File uploaded successfully: ${key}`);
     return `${process.env.S3_ENDPOINT}/${BUCKET_NAME}/${key}`;
-  } catch (error) {
-    logger.error('Error uploading file to S3:', error);
+  } catch (error: any) {
+    logger.error('Error uploading file to S3:', error.message || error);
     throw error;
   }
 }
@@ -55,8 +56,8 @@ export async function downloadFile(key: string): Promise<any> {
 
     const response = await s3Client.send(command);
     return response.Body;
-  } catch (error) {
-    logger.error('Error downloading file from S3:', error);
+  } catch (error: any) {
+    logger.error('Error downloading file from S3:', error.message || error);
     throw error;
   }
 }
@@ -73,8 +74,8 @@ export async function deleteFile(key: string): Promise<void> {
 
     await s3Client.send(command);
     logger.info(`File deleted successfully: ${key}`);
-  } catch (error) {
-    logger.error('Error deleting file from S3:', error);
+  } catch (error: any) {
+    logger.error('Error deleting file from S3:', error.message || error);
     throw error;
   }
 }
@@ -91,8 +92,8 @@ export async function getPresignedUrl(key: string, expiresIn: number = 3600): Pr
 
     const url = await getSignedUrl(s3Client, command, { expiresIn });
     return url;
-  } catch (error) {
-    logger.error('Error generating presigned URL:', error);
+  } catch (error: any) {
+    logger.error('Error generating presigned URL:', error.message || error);
     throw error;
   }
 }
@@ -109,8 +110,8 @@ export async function listFiles(prefix: string = ''): Promise<any[]> {
 
     const response = await s3Client.send(command);
     return response.Contents || [];
-  } catch (error) {
-    logger.error('Error listing files from S3:', error);
+  } catch (error: any) {
+    logger.error('Error listing files from S3:', error.message || error);
     throw error;
   }
 }

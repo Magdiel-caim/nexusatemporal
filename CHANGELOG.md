@@ -1,5 +1,362 @@
 # 📋 CHANGELOG - Nexus Atemporal CRM
 
+## 🔄 SESSÃO: 2025-10-15 - SISTEMA DE PRONTUÁRIOS MÉDICOS (v52)
+
+---
+
+## 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Corrigir Agenda e implementar sistema completo de Prontuários Médicos com Anamnese
+
+**Status Final:** ✅ **CONCLUÍDO COM SUCESSO** - Agenda corrigida + Backend e Frontend de Prontuários funcionando
+
+**Versão:** v52-prontuarios
+
+**Data:** 2025-10-15
+
+**Problemas Resolvidos:**
+- ✅ Contagem "Hoje" na Agenda mostrava agendamentos de outros dias → Agora conta apenas do dia atual
+- ✅ Faltavam botões de workflow médico na Agenda → Implementado fluxo completo
+- ✅ Filtros de local com opções desnecessárias → Simplificado para Moema e Av. Paulista
+- ✅ Sistema de Prontuários não existia → Sistema completo implementado
+
+---
+
+## 🎯 IMPLEMENTAÇÃO REALIZADA
+
+### 1. ✅ Correção Frontend Agenda (v51)
+
+**Arquivo:** `frontend/src/pages/AgendaPage.tsx`
+
+**PROBLEMA IDENTIFICADO:**
+- Stats mostravam `appointments.length` em vez de `filteredAppointments.length`
+- Resultado: "Hoje" mostrava 4 agendamentos sendo que eram de datas diferentes (15/10, 16/10, 17/10, 30/10)
+
+**SOLUÇÃO:**
+```typescript
+// Antes
+<p className="text-2xl font-bold">{appointments.length}</p>
+
+// Depois
+<p className="text-2xl font-bold">{filteredAppointments.length}</p>
+```
+
+**RESULTADO:**
+- ✅ Contagem "Hoje" precisa
+- ✅ Filtros funcionando corretamente
+- ✅ Stats refletem visualização atual
+
+---
+
+### 2. ✅ Botões de Workflow Médico na Agenda
+
+**Arquivo:** `frontend/src/pages/AgendaPage.tsx` (linhas 578-647)
+
+**IMPLEMENTADO:**
+1. **Confirmar Pagamento** - Quando status = `aguardando_pagamento`
+2. **Check-in** - Quando status = `confirmado`
+3. **Iniciar Atendimento** - Quando status = `check_in` ou `confirmado`
+4. **Finalizar Atendimento** - Quando status = `em_atendimento`
+   - Modal pergunta sobre retornos automáticos
+   - Define quantidade e frequência de retornos
+
+**FLUXO COMPLETO:**
+```
+Aguardando Pagamento → Confirmado → Check-in → Em Atendimento → Finalizado
+```
+
+---
+
+### 3. ✅ Filtros de Local Simplificados
+
+**Arquivo:** `frontend/src/pages/AgendaPage.tsx` (linhas 405-416)
+
+**ANTES:** 5 opções (perdizes, online, a_domicilio, moema, av_paulista)
+**DEPOIS:** 2 opções (moema, av_paulista)
+
+**SOLUÇÃO:**
+```typescript
+<select value={filters.location} onChange={...}>
+  <option value="all">Todos</option>
+  <option value="moema">Moema</option>
+  <option value="av_paulista">Av. Paulista</option>
+</select>
+```
+
+---
+
+### 4. ✅ Backend - Sistema de Prontuários (v52)
+
+**Estrutura Criada:**
+- ✅ **3 tabelas no banco de dados:**
+  - `medical_records` - Prontuários principais
+  - `anamnesis` - Fichas de avaliação/anamnese
+  - `procedure_history` - Histórico de procedimentos realizados
+
+- ✅ **Entities TypeORM:**
+  - `MedicalRecord.entity.ts`
+  - `Anamnesis.entity.ts`
+  - `ProcedureHistory.entity.ts`
+
+- ✅ **Service Layer:**
+  - `medical-record.service.ts` - Lógica de negócio
+  - CRUD completo para prontuários
+  - CRUD completo para anamnese
+  - CRUD completo para histórico de procedimentos
+
+- ✅ **Controller:**
+  - `medical-record.controller.ts` - Handlers HTTP
+  - Validação de tenant_id
+  - Autenticação obrigatória
+
+- ✅ **Routes:**
+  - `medical-record.routes.ts` - 10+ endpoints
+
+**Endpoints Implementados:**
+```
+POST   /api/medical-records                      - Criar prontuário
+GET    /api/medical-records                      - Listar todos
+GET    /api/medical-records/:id                  - Buscar por ID
+GET    /api/medical-records/:id/complete         - Prontuário completo
+GET    /api/medical-records/lead/:leadId         - Buscar por lead
+PUT    /api/medical-records/:id                  - Atualizar
+DELETE /api/medical-records/:id                  - Excluir (soft delete)
+
+POST   /api/medical-records/anamnesis            - Criar anamnese
+GET    /api/medical-records/:id/anamnesis        - Listar anamneses
+GET    /api/medical-records/anamnesis/:id        - Buscar anamnese
+
+POST   /api/medical-records/procedure-history    - Criar histórico
+GET    /api/medical-records/:id/procedure-history - Listar histórico
+GET    /api/medical-records/procedure-history/:id - Buscar histórico
+```
+
+**Funcionalidades:**
+- ✅ Número de prontuário auto-gerado (PRO-2025-000001)
+- ✅ Trigger automático no banco de dados
+- ✅ Soft delete (is_active flag)
+- ✅ Relacionamentos completos (leads, users, appointments)
+- ✅ Suporte a arrays (alergias, medicamentos, cirurgias)
+- ✅ Anexos (fotos antes/depois, documentos)
+
+---
+
+### 5. ✅ Frontend - Página de Prontuários
+
+**Arquivo:** `frontend/src/pages/ProntuariosPage.tsx`
+
+**Componentes Implementados:**
+1. **Lista de Prontuários:**
+   - Tabela com todos os prontuários
+   - Busca avançada (nome, CPF, telefone, e-mail, número do prontuário)
+   - Ações: Visualizar, Editar, Excluir
+
+2. **Cards de Estatísticas:**
+   - Total de Prontuários
+   - Prontuários Ativos
+   - Prontuários com Anamnese
+
+3. **Modal de Criação:**
+   - Formulário básico (estrutura pronta)
+
+4. **Visualização Completa:**
+   - Dados do prontuário
+   - Lista de anamneses
+   - Histórico de procedimentos
+
+**Service Layer:**
+- ✅ `medicalRecordsService.ts` - Cliente da API
+- ✅ Interfaces TypeScript completas
+- ✅ Tratamento de erros
+
+**Rota:** https://painel.nexusatemporal.com.br/prontuarios
+
+---
+
+### 6. ✅ Estrutura de Dados - Prontuário
+
+**Informações Pessoais:**
+- Nome completo, data de nascimento
+- CPF, RG
+- Telefone, e-mail
+- Endereço completo (rua, cidade, estado, CEP)
+
+**Informações Médicas:**
+- Tipo sanguíneo
+- Alergias (array)
+- Doenças crônicas (array)
+- Medicações atuais (array)
+- Cirurgias anteriores (array)
+- Histórico familiar
+
+**Contato de Emergência:**
+- Nome, telefone, relacionamento
+
+**Observações:**
+- Notas gerais
+- Notas médicas (privadas)
+
+---
+
+### 7. ✅ Estrutura de Dados - Anamnese
+
+**Queixas:**
+- Queixa principal
+- Histórico da queixa
+
+**Hábitos de Vida:**
+- Fumante (sim/não)
+- Consumo de álcool
+- Atividade física
+- Horas de sono
+- Ingestão de água (litros/dia)
+
+**Estética Específica:**
+- Tipo de pele
+- Problemas de pele (array)
+- Cosméticos utilizados (array)
+- Procedimentos estéticos anteriores (array)
+- Expectativas
+
+**Saúde Geral:**
+- Diabetes
+- Hipertensão
+- Doença cardíaca
+- Problemas de tireoide
+
+**Questões Femininas:**
+- Gravidez
+- Amamentação
+- Ciclo menstrual regular
+- Uso de contraceptivo
+
+**Observações Profissionais:**
+- Observações do profissional
+- Plano de tratamento
+
+**Anexos:**
+- Fotos (array)
+- Documentos (array)
+
+---
+
+### 8. ✅ Estrutura de Dados - Histórico de Procedimentos
+
+**Informações do Procedimento:**
+- Data e hora
+- Duração (minutos)
+- Profissional responsável
+
+**Detalhes da Execução:**
+- Produtos utilizados (array)
+- Equipamentos utilizados (array)
+- Descrição da técnica
+- Áreas tratadas (array)
+
+**Documentação:**
+- Fotos antes (array)
+- Fotos depois (array)
+- Reação do paciente
+- Notas do profissional
+
+**Resultados:**
+- Descrição dos resultados
+- Complicações
+- Recomendações para próxima sessão
+
+---
+
+## 📦 DEPLOY
+
+### Backend v52-prontuarios
+```bash
+✅ Compilação TypeScript: Sucesso
+✅ Docker build: nexus_backend:v52-prontuarios
+✅ Docker service update: nexus_backend
+✅ Status: 1/1 replicas running
+```
+
+### Frontend v52-prontuarios
+```bash
+✅ Build Vite: Sucesso (4.69s)
+✅ Docker build: nexus_frontend:v52-prontuarios
+✅ Docker service update: nexus_frontend
+✅ Status: 1/1 replicas running
+```
+
+### Banco de Dados
+```bash
+✅ Migration: 009_create_medical_records.sql
+✅ Tabelas criadas: medical_records, anamnesis, procedure_history
+✅ Triggers criados: generate_record_number, update_updated_at
+✅ Índices criados: 12 índices para otimização
+```
+
+---
+
+## 🔐 BACKUP
+
+**Local:** iDrive S3 - s3://backupsistemaonenexus/backups/database/
+**Arquivo:** nexus_backup_v52_prontuarios_20251015.sql
+**Tamanho:** 11 MB
+**Status:** ✅ Upload concluído
+
+---
+
+## 📊 ESTATÍSTICAS
+
+**Arquivos Modificados:** 15
+- Backend: 8 arquivos
+- Frontend: 5 arquivos
+- Database: 1 migration
+- Configs: 1 arquivo
+
+**Linhas de Código:** ~2.500 novas linhas
+- Backend: ~1.200 linhas
+- Frontend: ~1.300 linhas
+
+---
+
+## 🔄 PRÓXIMOS PASSOS (Pendentes)
+
+### 1. Formulários Completos
+- [ ] Formulário detalhado de criação de prontuário
+- [ ] Formulário de edição com todos os campos
+- [ ] Validações de CPF, telefone, e-mail
+- [ ] Upload de documentos
+
+### 2. Sistema de Anamnese
+- [ ] Interface completa para preenchimento
+- [ ] Wizard multi-etapas
+- [ ] Salvar rascunho
+- [ ] Impressão de anamnese
+
+### 3. Histórico de Procedimentos
+- [ ] Interface de registro de procedimento
+- [ ] Upload de fotos antes/depois
+- [ ] Comparação lado a lado
+- [ ] Timeline visual
+
+### 4. Relatórios e Impressão
+- [ ] PDF de prontuário completo
+- [ ] PDF de anamnese
+- [ ] PDF de histórico de procedimentos
+- [ ] Layout otimizado para impressão
+
+### 5. Integrações
+- [ ] Vincular prontuário ao criar lead
+- [ ] Criar anamnese automaticamente ao agendar
+- [ ] Registrar procedimento ao finalizar atendimento
+- [ ] Notificações de anamnese pendente
+
+### 6. Melhorias de UX
+- [ ] Visualização completa mais bonita
+- [ ] Editor rico para observações
+- [ ] Galeria de fotos
+- [ ] Filtros avançados na listagem
+
+---
+
 ## 🔄 SESSÃO: 2025-10-14 - CORREÇÃO ÁUDIO WHATSAPP + ENTER (v35)
 
 ---

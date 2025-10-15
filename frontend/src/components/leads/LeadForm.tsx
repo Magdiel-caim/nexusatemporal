@@ -31,7 +31,6 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
     clientStatus: initialData?.clientStatus || 'conversa_iniciada',
     attendanceLocation: initialData?.attendanceLocation || 'moema',
     estimatedValue: initialData?.estimatedValue || '',
-    expectedCloseDate: initialData?.expectedCloseDate?.split('T')[0] || '',
     notes: initialData?.notes || '',
     tags: initialData?.tags?.join(', ') || '',
   });
@@ -87,8 +86,6 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
         neighborhood: formData.neighborhood || undefined,
         city: formData.city || undefined,
         state: formData.state || undefined,
-        // Convert empty strings to null for dates
-        expectedCloseDate: formData.expectedCloseDate || undefined,
         // Parse numeric values
         estimatedValue: formData.estimatedValue ? parseFloat(formData.estimatedValue as any) : undefined,
         // Parse tags
@@ -366,16 +363,6 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               onChange={(e) => handleChange('estimatedValue', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="0.00"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Data de Fechamento Esperada</label>
-            <input
-              type="date"
-              value={formData.expectedCloseDate}
-              onChange={(e) => handleChange('expectedCloseDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
         </div>

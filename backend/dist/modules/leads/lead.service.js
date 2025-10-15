@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LeadService = void 0;
-const data_source_1 = require("../../database/data-source");
+const data_source_1 = require("@/database/data-source");
 const lead_entity_1 = require("./lead.entity");
 const activity_entity_1 = require("./activity.entity");
 const typeorm_1 = require("typeorm");

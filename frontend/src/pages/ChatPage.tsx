@@ -21,6 +21,8 @@ import MessageBubble from '../components/chat/MessageBubble';
 import MediaUploadButton, { MediaPreview } from '../components/chat/MediaUploadButton';
 import AudioRecorder from '../components/chat/AudioRecorder';
 import EmojiPicker from 'emoji-picker-react';
+import ChannelSelector from '../components/chat/ChannelSelector';
+import ConversationDetailsPanel from '../components/chat/ConversationDetailsPanel';
 
 const ChatPage: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -30,6 +32,7 @@ const ChatPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('');
   const [filterChatType, setFilterChatType] = useState<string>(''); // '' | 'individual' | 'group'
+  const [selectedChannel, setSelectedChannel] = useState<string | null>(null); // Filtro por canal/sessão
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [quickReplies, setQuickReplies] = useState<QuickReply[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -250,10 +253,12 @@ const ChatPage: React.FC = () => {
 
   const loadMessages = async (conversationId: string) => {
     try {
+      console.log('🚀 INICIANDO loadMessages para:', conversationId);
       setIsLoading(true);
 
       // Se for conversa WhatsApp, buscar do endpoint WhatsApp
       if (conversationId.startsWith('whatsapp-')) {
+        console.log('✅ É conversa WhatsApp - buscando mensagens...');
         // Usar dados do selectedConversation ao invés de fazer parse
         if (!selectedConversation) return;
 
@@ -264,17 +269,30 @@ const ChatPage: React.FC = () => {
 
         const whatsappMessages = await chatService.getWhatsAppMessages(sessionName!, phoneNumber);
 
+        console.log('📨 Total de mensagens recebidas:', whatsappMessages.length);
+
         // Converter para formato Message
-        const messages: Message[] = whatsappMessages.map((msg: any) => ({
-          id: msg.id,
-          conversationId: conversationId,
-          direction: msg.direction,
-          type: msg.messageType || 'text',
-          content: msg.content,
-          mediaUrl: msg.mediaUrl,
-          status: msg.status || 'delivered',
-          createdAt: msg.createdAt,
-        }));
+        const messages: Message[] = whatsappMessages.map((msg: any) => {
+          // DEBUG: Log completo da mensagem
+          console.log('🔍 Processando mensagem:', {
+            id: msg.id,
+            type: msg.messageType,
+            hasMediaUrl: !!msg.mediaUrl,
+            mediaUrl: msg.mediaUrl,
+            isBase64: msg.mediaUrl ? msg.mediaUrl.startsWith('data:') : false,
+          });
+
+          return {
+            id: msg.id,
+            conversationId: conversationId,
+            direction: msg.direction,
+            type: msg.messageType || 'text',
+            content: msg.content,
+            mediaUrl: msg.mediaUrl,
+            status: msg.status || 'delivered',
+            createdAt: msg.createdAt,
+          };
+        });
 
         setMessages(messages);
       } else {
@@ -542,6 +560,10 @@ const ChatPage: React.FC = () => {
     if (filterChatType && (conv as any).chatType !== filterChatType) {
       return false;
     }
+    // Filtrar por canal selecionado
+    if (selectedChannel && conv.whatsappInstanceId !== selectedChannel) {
+      return false;
+    }
     return true;
   });
 
@@ -658,6 +680,12 @@ const ChatPage: React.FC = () => {
             Conectar WhatsApp
           </button>
         </div>
+
+        {/* Channel Selector */}
+        <ChannelSelector
+          selectedChannel={selectedChannel}
+          onChannelSelect={setSelectedChannel}
+        />
 
         {/* Conversations List */}
         <div className="flex-1 overflow-y-auto">
@@ -891,6 +919,11 @@ const ChatPage: React.FC = () => {
             <p className="text-gray-500">Escolha uma conversa para começar a conversar</p>
           </div>
         </div>
+      )}
+
+      {/* Right Panel - Conversation Details */}
+      {selectedConversation && (
+        <ConversationDetailsPanel conversation={selectedConversation} />
       )}
       </div>
 
