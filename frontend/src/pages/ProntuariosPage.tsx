@@ -128,11 +128,11 @@ const ProntuariosPage: React.FC = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
+          <h1 className="text-2xl font-bold flex items-center gap-2 dark:text-gray-100">
             <FileText className="text-purple-600" />
             Prontuários Médicos
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-600 dark:text-gray-300 mt-1">
             Gerencie os prontuários médicos dos pacientes
           </p>
         </div>
@@ -161,31 +161,31 @@ const ProntuariosPage: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Total de Prontuários</p>
-              <p className="text-2xl font-bold">{medicalRecords.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Total de Prontuários</p>
+              <p className="text-2xl font-bold dark:text-white">{medicalRecords.length}</p>
             </div>
             <FileText className="text-purple-600" size={32} />
           </div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Prontuários Ativos</p>
-              <p className="text-2xl font-bold">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Prontuários Ativos</p>
+              <p className="text-2xl font-bold dark:text-white">
                 {medicalRecords.filter((r) => r.isActive).length}
               </p>
             </div>
             <User className="text-green-600" size={32} />
           </div>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Com Anamnese</p>
-              <p className="text-2xl font-bold">
+              <p className="text-sm text-gray-600 dark:text-gray-300">Com Anamnese</p>
+              <p className="text-2xl font-bold dark:text-white">
                 {medicalRecords.filter((r) => r.anamnesisList && r.anamnesisList.length > 0).length}
               </p>
             </div>

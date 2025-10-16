@@ -19,7 +19,10 @@ import {
 } from 'lucide-react';
 import logoFull from '@/assets/images/logo-full.png';
 import logoIcon from '@/assets/images/logo-icon.png';
+import logoFullLight from '@/assets/images/logo-full-alt.png';
+import logoIconLight from '@/assets/images/logo-icon-alt.png';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -44,6 +47,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
+  const { theme } = useTheme();
 
   const handleLogout = async () => {
     await logout();
@@ -61,9 +65,17 @@ export default function MainLayout({ children }: MainLayoutProps) {
         {/* Logo */}
         <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
           {sidebarOpen ? (
-            <img src={logoFull} alt="Nexus Atemporal" className="h-10" />
+            <img
+              src={theme === 'dark' ? logoFullLight : logoFull}
+              alt="Nexus Atemporal"
+              className="h-10"
+            />
           ) : (
-            <img src={logoIcon} alt="Nexus Atemporal" className="h-8" />
+            <img
+              src={theme === 'dark' ? logoIconLight : logoIcon}
+              alt="Nexus Atemporal"
+              className="h-8"
+            />
           )}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}

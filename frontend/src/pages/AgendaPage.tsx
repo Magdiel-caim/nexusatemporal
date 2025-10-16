@@ -312,8 +312,8 @@ const AgendaPage: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Agenda</h1>
-          <p className="text-gray-600">Gerencie os agendamentos da clínica</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">Agenda</h1>
+          <p className="text-gray-600 dark:text-gray-300">Gerencie os agendamentos da clínica</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -456,20 +456,20 @@ const AgendaPage: React.FC = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">{viewMode === 'today' ? 'Hoje' : 'Total'}</p>
-              <p className="text-2xl font-bold">{filteredAppointments.length}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">{viewMode === 'today' ? 'Hoje' : 'Total'}</p>
+              <p className="text-2xl font-bold dark:text-white">{filteredAppointments.length}</p>
             </div>
             <Calendar className="text-blue-600" size={32} />
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Confirmados</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Confirmados</p>
               <p className="text-2xl font-bold text-green-600">
                 {filteredAppointments.filter(a => a.status === 'confirmado').length}
               </p>
@@ -478,10 +478,10 @@ const AgendaPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Aguardando</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Aguardando</p>
               <p className="text-2xl font-bold text-orange-600">
                 {filteredAppointments.filter(a => a.status === 'aguardando_confirmacao').length}
               </p>
@@ -490,10 +490,10 @@ const AgendaPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-lg shadow">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-gray-600">Em Atendimento</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">Em Atendimento</p>
               <p className="text-2xl font-bold text-purple-600">
                 {filteredAppointments.filter(a => a.status === 'em_atendimento').length}
               </p>
@@ -535,7 +535,7 @@ const AgendaPage: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 dark:text-gray-300">
                       <div className="flex items-center gap-2">
                         <Clock size={16} />
                         {viewMode === 'all' && (
