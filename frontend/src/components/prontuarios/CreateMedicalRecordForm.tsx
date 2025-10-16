@@ -140,7 +140,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
         {/* Lead Selection */}
         <div className="p-6 border-b dark:border-gray-700 bg-purple-50 dark:bg-purple-900/20">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
             Selecionar Paciente (Lead) *
           </label>
           <input
@@ -230,7 +230,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       Nome Completo *
                     </label>
                     <input
@@ -243,7 +243,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       Data de Nascimento
                     </label>
                     <input
@@ -255,7 +255,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       CPF
                     </label>
                     <input
@@ -268,7 +268,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       RG
                     </label>
                     <input
@@ -280,7 +280,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       Telefone
                     </label>
                     <input
@@ -293,7 +293,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       E-mail
                     </label>
                     <input
@@ -325,7 +325,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       Cidade
                     </label>
                     <input
@@ -337,7 +337,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       Estado
                     </label>
                     <input
@@ -351,7 +351,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       CEP
                     </label>
                     <input
@@ -392,7 +392,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Alergias <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
+                    Alergias <span className="text-xs text-gray-500 dark:text-gray-300">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.allergies?.join(', ')}
@@ -405,7 +405,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Doenças Crônicas <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
+                    Doenças Crônicas <span className="text-xs text-gray-500 dark:text-gray-300">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.chronicDiseases?.join(', ')}
@@ -418,7 +418,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Medicações Atuais <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
+                    Medicações Atuais <span className="text-xs text-gray-500 dark:text-gray-300">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.currentMedications?.join(', ')}
@@ -431,7 +431,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cirurgias Anteriores <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
+                    Cirurgias Anteriores <span className="text-xs text-gray-500 dark:text-gray-300">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.previousSurgeries?.join(', ')}

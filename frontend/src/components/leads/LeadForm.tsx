@@ -111,10 +111,10 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Informações Básicas */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Informações Básicas</h4>
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">Informações Básicas</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Nome do Lead <span className="text-red-500">*</span>
             </label>
             <input
@@ -128,7 +128,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Email</label>
             <input
               type="email"
               value={formData.email}
@@ -139,7 +139,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Telefone</label>
             <input
               type="tel"
               value={formData.phone}
@@ -150,7 +150,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Telefone 2</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Telefone 2</label>
             <input
               type="tel"
               value={formData.phone2}
@@ -161,7 +161,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">WhatsApp</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">WhatsApp</label>
             <input
               type="tel"
               value={formData.whatsapp}
@@ -172,7 +172,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bairro</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Bairro</label>
             <input
               type="text"
               value={formData.neighborhood}
@@ -183,7 +183,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cidade</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Cidade</label>
             <input
               type="text"
               value={formData.city}
@@ -194,7 +194,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Estado</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Estado</label>
             <select
               value={formData.state}
               onChange={(e) => handleChange('state', e.target.value)}
@@ -232,7 +232,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Estágio <span className="text-red-500">*</span>
             </label>
             <select
@@ -250,7 +250,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Procedimento</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Procedimento</label>
             <select
               value={formData.procedureId}
               onChange={(e) => handleChange('procedureId', e.target.value)}
@@ -269,8 +269,8 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Responsável <span className="text-xs text-gray-500">(Atendimento)</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+              Responsável <span className="text-xs text-gray-500 dark:text-gray-300">(Atendimento)</span>
             </label>
             <select
               value={formData.assignedToId}
@@ -290,10 +290,10 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
 
       {/* Detalhes da Venda */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Detalhes da Venda</h4>
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">Detalhes da Venda</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Origem</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Origem</label>
             <select
               value={formData.source}
               onChange={(e) => handleChange('source', e.target.value)}
@@ -309,7 +309,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Canal</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Canal</label>
             <select
               value={formData.channel}
               onChange={(e) => handleChange('channel', e.target.value)}
@@ -326,7 +326,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Situação do Cliente</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Situação do Cliente</label>
             <select
               value={formData.clientStatus}
               onChange={(e) => handleChange('clientStatus', e.target.value)}
@@ -343,7 +343,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Local de Atendimento</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Local de Atendimento</label>
             <select
               value={formData.attendanceLocation}
               onChange={(e) => handleChange('attendanceLocation', e.target.value)}
@@ -355,7 +355,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor Estimado</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Valor Estimado</label>
             <input
               type="number"
               step="0.01"
@@ -370,10 +370,10 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
 
       {/* Informações Adicionais */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">Informações Adicionais</h4>
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">Informações Adicionais</h4>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Tags</label>
             <input
               type="text"
               value={formData.tags}
@@ -385,7 +385,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Observações</label>
             <textarea
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}

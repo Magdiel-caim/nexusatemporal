@@ -103,7 +103,7 @@ export default function LeadsFilter({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Busca por Nome */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Buscar por nome
             </label>
             <div className="relative">
@@ -120,7 +120,7 @@ export default function LeadsFilter({
 
           {/* Estágio */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Estágio
             </label>
             <select
@@ -139,7 +139,7 @@ export default function LeadsFilter({
 
           {/* Procedimento */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Procedimento
             </label>
             <select
@@ -158,7 +158,7 @@ export default function LeadsFilter({
 
           {/* Responsável */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Responsável
             </label>
             <select
@@ -177,7 +177,7 @@ export default function LeadsFilter({
 
           {/* Status do Cliente */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Status do Cliente
             </label>
             <select
@@ -195,7 +195,7 @@ export default function LeadsFilter({
 
           {/* Canal de Comunicação */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Canal de Comunicação
             </label>
             <select
@@ -217,7 +217,7 @@ export default function LeadsFilter({
 
           {/* Local de Atendimento */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Local de Atendimento
             </label>
             <select
@@ -235,12 +235,12 @@ export default function LeadsFilter({
 
           {/* Faixa de Valor */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
               Valor Estimado
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Mínimo</label>
+                <label className="block text-xs text-gray-500 dark:text-white mb-1">Mínimo</label>
                 <input
                   type="number"
                   value={localFilters.minValue || ''}
@@ -250,7 +250,7 @@ export default function LeadsFilter({
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Máximo</label>
+                <label className="block text-xs text-gray-500 dark:text-white mb-1">Máximo</label>
                 <input
                   type="number"
                   value={localFilters.maxValue || ''}

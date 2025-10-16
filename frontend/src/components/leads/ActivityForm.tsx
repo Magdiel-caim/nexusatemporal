@@ -50,7 +50,7 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Tipo de Atividade */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
           Tipo de Atividade <span className="text-red-500">*</span>
         </label>
         <select
@@ -72,7 +72,7 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
 
       {/* Título */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
           Título <span className="text-red-500">*</span>
         </label>
         <input
@@ -87,7 +87,7 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
 
       {/* Descrição */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
           Descrição
         </label>
         <textarea
@@ -101,7 +101,7 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
 
       {/* Data/Hora Agendada */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
           Agendar para
         </label>
         <input
