@@ -1,5 +1,257 @@
 # 📋 CHANGELOG - Nexus Atemporal CRM
 
+## 📦 SESSÃO: 2025-10-16 - EXPORTAÇÃO E IMPORTAÇÃO DE LEADS (v61)
+
+---
+
+## 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Implementar sistema completo de exportação e importação de leads em múltiplos formatos
+
+**Status Final:** ✅ **EXPORTAÇÃO/IMPORTAÇÃO 100% IMPLEMENTADA** - Sistema totalmente funcional
+
+**Versão:** v61-export-import
+
+**Data:** 2025-10-16 17:34 UTC
+
+---
+
+## 🎉 NOVAS FUNCIONALIDADES
+
+### 📤 Sistema de Exportação de Leads
+
+#### Formatos Suportados
+✅ **PDF** - Relatório profissional com tabelas formatadas
+✅ **XLSX** - Planilha Excel com todas as colunas
+✅ **CSV** - Formato universal para importação em outros sistemas
+✅ **JSON** - Dados estruturados para integrações técnicas
+
+#### Recursos Implementados
+- Exportação de todos os leads ou apenas filtrados
+- Interface com dropdown intuitivo de formatos
+- Download automático do arquivo gerado
+- Preservação de todos os dados: nome, telefone, email, cidade, estado, etc.
+- Formatação adequada de valores e datas
+
+#### Arquivos Criados
+- `frontend/src/utils/leadsExport.ts` - Utilitário com funções de exportação
+- `frontend/src/components/leads/LeadsExportButtons.tsx` - Componente de UI
+
+### 📥 Sistema de Importação de Leads
+
+#### Formatos Aceitos
+✅ XLSX (Excel)
+✅ XLS (Excel legado)
+✅ CSV (separado por vírgula)
+✅ JSON (estruturado)
+
+#### Recursos Implementados
+
+**Modal em 3 Etapas:**
+1. **Upload** - Seleção do arquivo com validação de formato
+2. **Preview** - Visualização dos dados e estatísticas de importação
+3. **Resultado** - Feedback detalhado com sucessos e erros
+
+**Validação Inteligente:**
+- Campo "Nome" obrigatório
+- Conversão automática de tipos de dados
+- Formatação de valores monetários
+- Relatório detalhado de erros por linha
+
+**Mapeamento de Cabeçalhos:**
+- Reconhecimento automático de cabeçalhos em português ou inglês
+- Suporte a variações: "Telefone", "Phone", "Tel"
+- Normalização de acentos e espaços
+
+#### Campos Suportados na Importação
+- **Básicos:** Nome*, Telefone, Telefone 2, WhatsApp, Email
+- **Localização:** Cidade, Estado, Bairro
+- **Classificação:** Status, Prioridade, Origem, Canal
+- **Negócio:** Valor Estimado, Procedimento
+- **Atendimento:** Local de Atendimento, Situação do Cliente
+- **Outros:** Observações, Empresa, Cargo
+
+#### Arquivos Criados
+- `frontend/src/utils/leadsImport.ts` - Utilitário com funções de importação
+- `frontend/src/components/leads/LeadsImportModal.tsx` - Modal completo de importação
+
+### 🔧 Correção no Formulário de Atividades
+
+**Problema Reportado:**
+> Campo "Agendar para" aparecendo no formulário de Nova Atividade, sendo redundante com o agendamento no formulário de leads.
+
+**Solução Implementada:**
+✅ Removido campo `scheduledAt` do estado do componente
+✅ Removido campo de data/hora do formulário
+✅ Removido do payload de submissão
+✅ Interface simplificada: Tipo, Título e Descrição
+
+**Arquivo Modificado:**
+- `frontend/src/components/leads/ActivityForm.tsx:12-16`
+
+---
+
+## 📦 PACOTES INSTALADOS
+
+```json
+{
+  "jspdf": "^2.5.2",
+  "jspdf-autotable": "^3.8.4",
+  "xlsx": "^0.18.5",
+  "file-saver": "^2.0.5",
+  "@types/file-saver": "^2.0.7"
+}
+```
+
+**Tamanho adicionado ao bundle:** ~250KB (comprimido)
+
+---
+
+## 🎨 INTERFACE DO USUÁRIO
+
+### Botões na Página de Leads
+
+**Localização:** Header da página, entre "Filtros" e "+ Novo Lead"
+
+**Botão Exportar:**
+- Dropdown com 4 opções de formato
+- Ícone de documento
+- Badge com quantidade de leads quando há seleção
+
+**Botão Importar:**
+- Ícone de upload
+- Abre modal em tela cheia
+- Compatível com dark mode
+
+### Modal de Importação
+
+**Design:**
+- Layout responsivo e intuitivo
+- 3 etapas claramente separadas
+- Estatísticas visuais (total, válidos, erros)
+- Preview em tabela dos primeiros 5 leads
+- Cards informativos com cores
+- Feedback visual em cada etapa
+
+**Compatibilidade:**
+- ✅ Dark mode completo
+- ✅ Responsive design
+- ✅ Acessibilidade mantida
+
+---
+
+## 📊 ESTATÍSTICAS DA IMPLEMENTAÇÃO
+
+### Arquivos Modificados
+**Total: 5 arquivos**
+
+#### Frontend (5 arquivos)
+- `ActivityForm.tsx` - Remoção do campo agendamento
+- `LeadsPage.tsx` - Integração dos botões de exportação/importação
+- `package.json` - Adição de dependências
+- `package-lock.json` - Lock das dependências
+
+#### Novos Arquivos (4 arquivos)
+- `leadsExport.ts` (192 linhas)
+- `leadsImport.ts` (332 linhas)
+- `LeadsExportButtons.tsx` (130 linhas)
+- `LeadsImportModal.tsx` (385 linhas)
+
+**Total de linhas adicionadas:** ~1,039 linhas
+
+---
+
+## 🧪 TESTES E VALIDAÇÃO
+
+### Cenários Testados
+
+#### Exportação
+✅ Exportação de todos os leads em PDF
+✅ Exportação de leads filtrados em XLSX
+✅ Exportação em CSV com encoding UTF-8 (BOM)
+✅ Exportação em JSON estruturado
+✅ Formatação de valores monetários
+✅ Formatação de datas
+✅ Download automático dos arquivos
+
+#### Importação
+✅ Importação de arquivo XLSX com cabeçalhos em português
+✅ Importação de arquivo CSV com cabeçalhos em inglês
+✅ Importação de JSON com estrutura completa
+✅ Validação de campo obrigatório (Nome)
+✅ Tratamento de linhas vazias
+✅ Relatório de erros detalhado
+✅ Preview antes de confirmar
+✅ Feedback de sucesso/erro por lead
+
+---
+
+## 🚀 DEPLOY
+
+### Build do Frontend
+```bash
+npm run build
+✓ 2811 modules transformed
+✓ built in 17.18s
+```
+
+**Arquivos Gerados:**
+- `index-CQJpOSk8.js` - 1,493.57 kB (431.72 kB gzip)
+- `html2canvas.esm-CBrSDip1.js` - 201.42 kB (jsPDF dependency)
+- `index.es-Bh6rCAVm.js` - 150.56 kB (XLSX dependency)
+
+### Docker
+```bash
+docker build -t nexus_frontend:v61-export-import
+docker service update --image nexus_frontend:v61-export-import nexus_frontend
+✅ Service converged
+```
+
+---
+
+## 💾 BACKUP
+
+**Arquivo:** `nexus_backup_v61_export_import_20251016_173433.sql`
+**Tamanho:** 75.1 KB
+**Localização:** S3 (IDrive e2) - `s3://backupsistemaonenexus/backups/database/`
+**Data:** 2025-10-16 17:34:33 UTC
+
+---
+
+## 📂 ESTRUTURA DE ARQUIVOS ADICIONADOS
+
+```
+frontend/
+├── src/
+│   ├── components/
+│   │   └── leads/
+│   │       ├── LeadsExportButtons.tsx    # Botão de exportação com dropdown
+│   │       └── LeadsImportModal.tsx      # Modal completo de importação
+│   └── utils/
+│       ├── leadsExport.ts                # Funções de exportação
+│       └── leadsImport.ts                # Funções de importação
+└── package.json                          # Dependências atualizadas
+```
+
+---
+
+## 🎯 RESULTADO FINAL
+
+**Sistema Nexus Atemporal agora possui:**
+
+📤 **Exportação Completa** em 4 formatos profissionais
+📥 **Importação Robusta** com validação e preview
+🔧 **Formulário de Atividades** simplificado e otimizado
+✨ **Interface Intuitiva** com dark mode
+⚡ **Performance Mantida** sem impacto negativo
+🚀 **Pronto para Produção** - Deployado com sucesso
+
+**Versão:** v61-export-import
+**Status:** ✅ PRONTO PARA USO
+**URL:** https://painel.nexusatemporal.com.br
+
+---
+
 ## 🎨 SESSÃO: 2025-10-16 - IMPLEMENTAÇÃO COMPLETA DE DARK MODE (v54-v60)
 
 ---
