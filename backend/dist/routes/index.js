@@ -9,9 +9,10 @@ const data_routes_1 = __importDefault(require("../modules/config/data.routes"));
 const leads_routes_1 = __importDefault(require("../modules/leads/leads.routes"));
 const chat_routes_1 = __importDefault(require("../modules/chat/chat.routes"));
 const appointment_routes_1 = __importDefault(require("../modules/agenda/appointment.routes"));
+const public_appointment_routes_1 = __importDefault(require("../modules/agenda/public-appointment.routes"));
 const medical_record_routes_1 = __importDefault(require("../modules/medical-records/medical-record.routes"));
+const financeiro_routes_1 = __importDefault(require("../modules/financeiro/financeiro.routes"));
 // Import other module routes as they are created
-// import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
 // import estoqueRoutes from '@/modules/estoque/estoque.routes';
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import biRoutes from '@/modules/bi/bi.routes';
@@ -32,9 +33,10 @@ router.use('/data', data_routes_1.default); // Required /api/data endpoint
 router.use('/leads', leads_routes_1.default);
 router.use('/chat', chat_routes_1.default);
 router.use('/appointments', appointment_routes_1.default);
+router.use('/public/appointments', public_appointment_routes_1.default); // Public API for external integrations
 router.use('/medical-records', medical_record_routes_1.default);
+router.use('/financial', financeiro_routes_1.default);
 // Uncomment as modules are implemented
-// router.use('/financeiro', financeiroRoutes);
 // router.use('/estoque', estoqueRoutes);
 // router.use('/colaboracao', colaboracaoRoutes);
 // router.use('/bi', biRoutes);

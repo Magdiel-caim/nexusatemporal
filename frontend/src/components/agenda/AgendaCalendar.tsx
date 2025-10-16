@@ -269,9 +269,6 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                       >
                         <option value="moema">Moema</option>
                         <option value="av_paulista">Av. Paulista</option>
-                        <option value="perdizes">Perdizes</option>
-                        <option value="online">Online</option>
-                        <option value="a_domicilio">A Domicílio</option>
                       </select>
                     </div>
 

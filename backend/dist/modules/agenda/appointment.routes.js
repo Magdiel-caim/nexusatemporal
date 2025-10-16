@@ -13,6 +13,10 @@ router.use(auth_middleware_1.authenticate);
 router.post('/', appointment_controller_1.default.create.bind(appointment_controller_1.default));
 router.get('/', appointment_controller_1.default.findAll.bind(appointment_controller_1.default));
 router.get('/today', appointment_controller_1.default.findToday.bind(appointment_controller_1.default));
+// Rotas de disponibilidade e slots (devem vir antes de /:id para não conflitar)
+router.post('/check-availability', appointment_controller_1.default.checkAvailability.bind(appointment_controller_1.default));
+router.get('/occupied-slots', appointment_controller_1.default.getOccupiedSlots.bind(appointment_controller_1.default));
+router.get('/available-slots', appointment_controller_1.default.getAvailableSlots.bind(appointment_controller_1.default));
 router.get('/:id', appointment_controller_1.default.findById.bind(appointment_controller_1.default));
 // Rotas por relacionamento
 router.get('/lead/:leadId', appointment_controller_1.default.findByLead.bind(appointment_controller_1.default));

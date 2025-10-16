@@ -294,9 +294,6 @@ const AgendaPage: React.FC = () => {
     const locations: Record<string, string> = {
       moema: 'Moema',
       av_paulista: 'Av. Paulista',
-      perdizes: 'Perdizes',
-      online: 'Online',
-      a_domicilio: 'A Domicílio',
     };
     return locations[location] || location;
   };
@@ -779,9 +776,6 @@ const AgendaPage: React.FC = () => {
                   >
                     <option value="moema">Moema</option>
                     <option value="av_paulista">Av. Paulista</option>
-                    <option value="perdizes">Perdizes</option>
-                    <option value="online">Online</option>
-                    <option value="a_domicilio">A Domicílio</option>
                   </select>
                 </div>
 
@@ -937,9 +931,6 @@ const AgendaPage: React.FC = () => {
                   >
                     <option value="moema">Moema</option>
                     <option value="av_paulista">Av. Paulista</option>
-                    <option value="perdizes">Perdizes</option>
-                    <option value="online">Online</option>
-                    <option value="a_domicilio">A Domicílio</option>
                   </select>
                 </div>
 

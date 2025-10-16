@@ -18,7 +18,7 @@ const authenticate = async (req, res, next) => {
         const token = authHeader.substring(7);
         const payload = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET);
         // Optionally verify user still exists and is active
-        const userRepository = data_source_1.AppDataSource.getRepository(user_entity_2.User);
+        const userRepository = data_source_1.CrmDataSource.getRepository(user_entity_2.User);
         const user = await userRepository.findOne({
             where: { id: payload.userId },
             select: ['id', 'email', 'name', 'role', 'status', 'tenantId', 'permissions'],

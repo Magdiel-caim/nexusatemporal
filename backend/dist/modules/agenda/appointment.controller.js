@@ -313,6 +313,69 @@ class AppointmentController {
             });
         }
     }
+    /**
+     * POST /api/appointments/check-availability
+     * Verificar disponibilidade de um horário
+     */
+    async checkAvailability(req, res) {
+        try {
+            const { scheduledDate, duration, location, professionalId, excludeAppointmentId, } = req.body;
+            const tenantId = req.user?.tenantId || 'default';
+            const result = await appointment_service_1.default.checkAvailability(tenantId, new Date(scheduledDate), duration || 60, location, professionalId, excludeAppointmentId);
+            res.json({
+                success: true,
+                data: result,
+            });
+        }
+        catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message,
+            });
+        }
+    }
+    /**
+     * GET /api/appointments/occupied-slots
+     * Obter horários ocupados para uma data
+     */
+    async getOccupiedSlots(req, res) {
+        try {
+            const { date, location, professionalId, interval } = req.query;
+            const tenantId = req.user?.tenantId || 'default';
+            const slots = await appointment_service_1.default.getOccupiedSlots(tenantId, date, location, professionalId, interval ? parseInt(interval) : 5);
+            res.json({
+                success: true,
+                data: slots,
+            });
+        }
+        catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message,
+            });
+        }
+    }
+    /**
+     * GET /api/appointments/available-slots
+     * Obter slots disponíveis para uma data
+     */
+    async getAvailableSlots(req, res) {
+        try {
+            const { date, location, professionalId, startHour, endHour, interval, } = req.query;
+            const tenantId = req.user?.tenantId || 'default';
+            const slots = await appointment_service_1.default.getAvailableSlots(tenantId, date, location, professionalId, startHour ? parseInt(startHour) : 7, endHour ? parseInt(endHour) : 20, interval ? parseInt(interval) : 5);
+            res.json({
+                success: true,
+                data: slots,
+            });
+        }
+        catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message,
+            });
+        }
+    }
 }
 exports.AppointmentController = AppointmentController;
 exports.default = new AppointmentController();

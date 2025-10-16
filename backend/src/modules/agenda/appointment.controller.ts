@@ -356,6 +356,112 @@ export class AppointmentController {
       });
     }
   }
+
+  /**
+   * POST /api/appointments/check-availability
+   * Verificar disponibilidade de um horário
+   */
+  async checkAvailability(req: Request, res: Response) {
+    try {
+      const {
+        scheduledDate,
+        duration,
+        location,
+        professionalId,
+        excludeAppointmentId,
+      } = req.body;
+
+      const tenantId = req.user?.tenantId || 'default';
+
+      const result = await appointmentService.checkAvailability(
+        tenantId,
+        new Date(scheduledDate),
+        duration || 60,
+        location,
+        professionalId,
+        excludeAppointmentId
+      );
+
+      res.json({
+        success: true,
+        data: result,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  /**
+   * GET /api/appointments/occupied-slots
+   * Obter horários ocupados para uma data
+   */
+  async getOccupiedSlots(req: Request, res: Response) {
+    try {
+      const { date, location, professionalId, interval } = req.query;
+
+      const tenantId = req.user?.tenantId || 'default';
+
+      const slots = await appointmentService.getOccupiedSlots(
+        tenantId,
+        date as string,
+        location as string,
+        professionalId as string,
+        interval ? parseInt(interval as string) : 5
+      );
+
+      res.json({
+        success: true,
+        data: slots,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
+
+  /**
+   * GET /api/appointments/available-slots
+   * Obter slots disponíveis para uma data
+   */
+  async getAvailableSlots(req: Request, res: Response) {
+    try {
+      const {
+        date,
+        location,
+        professionalId,
+        startHour,
+        endHour,
+        interval,
+      } = req.query;
+
+      const tenantId = req.user?.tenantId || 'default';
+
+      const slots = await appointmentService.getAvailableSlots(
+        tenantId,
+        date as string,
+        location as string,
+        professionalId as string,
+        startHour ? parseInt(startHour as string) : 7,
+        endHour ? parseInt(endHour as string) : 20,
+        interval ? parseInt(interval as string) : 5
+      );
+
+      res.json({
+        success: true,
+        data: slots,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        success: false,
+        message: error.message,
+      });
+    }
+  }
 }
 
 export default new AppointmentController();

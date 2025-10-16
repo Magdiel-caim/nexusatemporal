@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { AppError } from './error-handler';
 import { UserRole } from '@/modules/auth/user.entity';
-import { AppDataSource } from '@/database/data-source';
+import { CrmDataSource } from '@/database/data-source';
 import { User } from '@/modules/auth/user.entity';
 
 interface TokenPayload {
@@ -25,7 +25,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
     const payload = jwt.verify(token, process.env.JWT_SECRET!) as TokenPayload;
 
     // Optionally verify user still exists and is active
-    const userRepository = AppDataSource.getRepository(User);
+    const userRepository = CrmDataSource.getRepository(User);
     const user = await userRepository.findOne({
       where: { id: payload.userId },
       select: ['id', 'email', 'name', 'role', 'status', 'tenantId', 'permissions'],

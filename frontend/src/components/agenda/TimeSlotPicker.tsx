@@ -105,6 +105,17 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
     return 'Noite';
   };
 
+  const formatLocation = (loc: string): string => {
+    const locationMap: Record<string, string> = {
+      'moema': 'Moema',
+      'av_paulista': 'Av. Paulista',
+      'perdizes': 'Perdizes',
+      'online': 'Online',
+      'a_domicilio': 'A Domicílio'
+    };
+    return locationMap[loc] || loc;
+  };
+
   // Agrupar slots por período do dia
   const groupedSlots = timeSlots.reduce((acc, slot) => {
     const period = getTimeOfDay(slot.time);
@@ -142,7 +153,7 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
             Horários para {new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR')}
           </h3>
           {location && (
-            <p className="text-sm text-gray-600 dark:text-gray-400">Local: {location}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Local: {formatLocation(location)}</p>
           )}
         </div>
         <div className="text-right">

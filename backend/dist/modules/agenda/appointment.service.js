@@ -391,6 +391,130 @@ class AppointmentService {
         });
         return { data, total };
     }
+    /**
+     * Verificar se um horário está disponível
+     * Considera conflitos de horários com base na duração do procedimento
+     */
+    async checkAvailability(tenantId, scheduledDate, duration, location, professionalId, excludeAppointmentId) {
+        const startTime = new Date(scheduledDate);
+        const endTime = new Date(startTime.getTime() + duration * 60000);
+        // Buscar agendamentos que possam conflitar
+        const where = {
+            tenantId,
+            location,
+            status: (0, typeorm_1.In)([
+                appointment_entity_1.AppointmentStatus.AGUARDANDO_PAGAMENTO,
+                appointment_entity_1.AppointmentStatus.PAGAMENTO_CONFIRMADO,
+                appointment_entity_1.AppointmentStatus.AGUARDANDO_CONFIRMACAO,
+                appointment_entity_1.AppointmentStatus.CONFIRMADO,
+                appointment_entity_1.AppointmentStatus.EM_ATENDIMENTO,
+            ]),
+        };
+        if (professionalId) {
+            where.professionalId = professionalId;
+        }
+        const appointments = await this.appointmentRepo.find({
+            where,
+            relations: ['lead', 'procedure'],
+        });
+        // Verificar conflitos
+        const conflicts = [];
+        for (const apt of appointments) {
+            // Pular o próprio agendamento se estiver editando
+            if (excludeAppointmentId && apt.id === excludeAppointmentId) {
+                continue;
+            }
+            const aptStart = new Date(apt.scheduledDate);
+            const aptDuration = apt.estimatedDuration || apt.procedure?.duration || 60;
+            const aptEnd = new Date(aptStart.getTime() + aptDuration * 60000);
+            // Verificar se há sobreposição de horários
+            if ((startTime >= aptStart && startTime < aptEnd) || // Início do novo está dentro de um existente
+                (endTime > aptStart && endTime <= aptEnd) || // Fim do novo está dentro de um existente
+                (startTime <= aptStart && endTime >= aptEnd) // Novo engloba um existente completamente
+            ) {
+                conflicts.push(apt);
+            }
+        }
+        return {
+            available: conflicts.length === 0,
+            conflicts,
+        };
+    }
+    /**
+     * Obter horários ocupados para uma data específica
+     * Retorna lista de horários em formato HH:MM
+     */
+    async getOccupiedSlots(tenantId, date, // YYYY-MM-DD
+    location, professionalId, interval = 5 // Intervalo em minutos
+    ) {
+        const startOfDay = new Date(date + 'T00:00:00');
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date + 'T23:59:59');
+        endOfDay.setHours(23, 59, 59, 999);
+        const where = {
+            tenantId,
+            location,
+            scheduledDate: (0, typeorm_1.Between)(startOfDay, endOfDay),
+            status: (0, typeorm_1.In)([
+                appointment_entity_1.AppointmentStatus.AGUARDANDO_PAGAMENTO,
+                appointment_entity_1.AppointmentStatus.PAGAMENTO_CONFIRMADO,
+                appointment_entity_1.AppointmentStatus.AGUARDANDO_CONFIRMACAO,
+                appointment_entity_1.AppointmentStatus.CONFIRMADO,
+                appointment_entity_1.AppointmentStatus.EM_ATENDIMENTO,
+            ]),
+        };
+        if (professionalId) {
+            where.professionalId = professionalId;
+        }
+        const appointments = await this.appointmentRepo.find({
+            where,
+            relations: ['procedure'],
+            order: { scheduledDate: 'ASC' },
+        });
+        // Gerar todos os slots ocupados baseado na duração de cada agendamento
+        const occupiedSlots = [];
+        for (const apt of appointments) {
+            const start = new Date(apt.scheduledDate);
+            const duration = apt.estimatedDuration || apt.procedure?.duration || 60;
+            const totalSlots = Math.ceil(duration / interval);
+            for (let i = 0; i < totalSlots; i++) {
+                const slotTime = new Date(start.getTime() + i * interval * 60000);
+                const hours = slotTime.getHours().toString().padStart(2, '0');
+                const minutes = slotTime.getMinutes().toString().padStart(2, '0');
+                const timeString = `${hours}:${minutes}`;
+                if (!occupiedSlots.includes(timeString)) {
+                    occupiedSlots.push(timeString);
+                }
+            }
+        }
+        return occupiedSlots.sort();
+    }
+    /**
+     * Obter slots disponíveis para uma data
+     */
+    async getAvailableSlots(tenantId, date, // YYYY-MM-DD
+    location, professionalId, startHour = 7, endHour = 20, interval = 5) {
+        const occupiedSlots = await this.getOccupiedSlots(tenantId, date, location, professionalId, interval);
+        // Gerar todos os slots possíveis
+        const totalMinutes = (endHour - startHour) * 60;
+        const numberOfSlots = Math.floor(totalMinutes / interval);
+        const slots = [];
+        for (let i = 0; i <= numberOfSlots; i++) {
+            const totalMinutesFromStart = startHour * 60 + i * interval;
+            const hours = Math.floor(totalMinutesFromStart / 60);
+            const minutes = totalMinutesFromStart % 60;
+            if (hours >= endHour && minutes > 0)
+                break;
+            if (hours > endHour)
+                break;
+            const timeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            slots.push({
+                time: timeString,
+                available: !occupiedSlots.includes(timeString),
+            });
+        }
+        return slots;
+    }
 }
 exports.AppointmentService = AppointmentService;
 exports.default = new AppointmentService();
