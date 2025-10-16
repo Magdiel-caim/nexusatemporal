@@ -90,24 +90,24 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b flex items-center justify-between bg-blue-50">
+        <div className="p-6 border-b dark:border-gray-700 flex items-center justify-between bg-blue-50 dark:bg-blue-900/20">
           <div>
-            <h2 className="text-2xl font-bold text-gray-800">Editar Prontuário</h2>
-            <p className="text-sm text-gray-600 mt-1">Nº {record.recordNumber}</p>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Editar Prontuário</h2>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Nº {record.recordNumber}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
           >
             <X size={24} />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="border-b">
+        <div className="border-b dark:border-gray-700">
           <div className="flex overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -117,8 +117,8 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 px-6 py-3 border-b-2 transition whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'border-blue-600 text-blue-600 font-medium'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                      ? 'border-blue-600 text-blue-600 dark:text-blue-400 font-medium'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                   }`}
                 >
                   <Icon size={18} />
@@ -133,9 +133,9 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
-                <span className="text-red-700 text-sm">{error}</span>
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+                <AlertCircle className="text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
+                <span className="text-red-700 dark:text-red-400 text-sm">{error}</span>
               </div>
             )}
 
@@ -144,32 +144,32 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Nome Completo *
                     </label>
                     <input
                       type="text"
                       value={formData.fullName}
                       onChange={(e) => handleInputChange('fullName', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Data de Nascimento
                     </label>
                     <input
                       type="date"
                       value={formData.birthDate}
                       onChange={(e) => handleInputChange('birthDate', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       CPF
                     </label>
                     <input
@@ -177,24 +177,24 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
                       value={formData.cpf}
                       onChange={(e) => handleInputChange('cpf', e.target.value)}
                       placeholder="000.000.000-00"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       RG
                     </label>
                     <input
                       type="text"
                       value={formData.rg}
                       onChange={(e) => handleInputChange('rg', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Telefone
                     </label>
                     <input
@@ -202,19 +202,19 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       placeholder="(00) 00000-0000"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       E-mail
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -239,19 +239,19 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Cidade
                     </label>
                     <input
                       type="text"
                       value={formData.city}
                       onChange={(e) => handleInputChange('city', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Estado
                     </label>
                     <input
@@ -260,12 +260,12 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
                       onChange={(e) => handleInputChange('state', e.target.value)}
                       placeholder="SP"
                       maxLength={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       CEP
                     </label>
                     <input
@@ -273,7 +273,7 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
                       value={formData.zipCode}
                       onChange={(e) => handleInputChange('zipCode', e.target.value)}
                       placeholder="00000-000"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -306,7 +306,7 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Alergias <span className="text-xs text-gray-500">(separar por vírgula)</span>
+                    Alergias <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.allergies?.join(', ') || ''}
@@ -319,7 +319,7 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Doenças Crônicas <span className="text-xs text-gray-500">(separar por vírgula)</span>
+                    Doenças Crônicas <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.chronicDiseases?.join(', ') || ''}
@@ -332,7 +332,7 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Medicações Atuais <span className="text-xs text-gray-500">(separar por vírgula)</span>
+                    Medicações Atuais <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.currentMedications?.join(', ') || ''}
@@ -345,7 +345,7 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cirurgias Anteriores <span className="text-xs text-gray-500">(separar por vírgula)</span>
+                    Cirurgias Anteriores <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.previousSurgeries?.join(', ') || ''}
@@ -434,11 +434,11 @@ const EditMedicalRecordForm: React.FC<EditMedicalRecordFormProps> = ({ record, o
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t bg-gray-50 flex items-center justify-end gap-3">
+          <div className="p-6 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
               Cancelar
             </button>

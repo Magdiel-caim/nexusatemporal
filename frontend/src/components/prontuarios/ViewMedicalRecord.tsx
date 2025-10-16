@@ -27,10 +27,10 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
     if (!value) return null;
     return (
       <div className="flex items-start gap-3 py-2">
-        {Icon && <Icon className="text-gray-400 flex-shrink-0 mt-0.5" size={18} />}
+        {Icon && <Icon className="text-gray-400 dark:text-gray-500 flex-shrink-0 mt-0.5" size={18} />}
         <div>
-          <div className="text-sm text-gray-500">{label}</div>
-          <div className="font-medium text-gray-900">{value}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400">{label}</div>
+          <div className="font-medium text-gray-900 dark:text-white">{value}</div>
         </div>
       </div>
     );
@@ -52,9 +52,9 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
   };
 
   const Section = ({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h3 className="text-lg font-bold flex items-center gap-2 mb-4 text-gray-800 border-b pb-3">
-        <Icon className="text-purple-600" size={22} />
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+      <h3 className="text-lg font-bold flex items-center gap-2 mb-4 text-gray-800 dark:text-white border-b dark:border-gray-700 pb-3">
+        <Icon className="text-purple-600 dark:text-purple-400" size={22} />
         {title}
       </h3>
       {children}
@@ -62,14 +62,14 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
       {/* Header */}
       <div className="max-w-7xl mx-auto mb-6">
-        <div className="bg-white rounded-lg shadow p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <button
               onClick={onBack}
-              className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition"
+              className="flex items-center gap-2 px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
             >
               <ArrowLeft size={20} />
               Voltar
@@ -87,39 +87,39 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
 
           <div className="mt-6">
             <div className="flex items-center gap-3">
-              <div className="bg-purple-100 p-3 rounded-full">
-                <User className="text-purple-600" size={32} />
+              <div className="bg-purple-100 dark:bg-purple-900/30 p-3 rounded-full">
+                <User className="text-purple-600 dark:text-purple-400" size={32} />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">{record.fullName}</h1>
-                <p className="text-gray-500 mt-1">Prontuário: {record.recordNumber}</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{record.fullName}</h1>
+                <p className="text-gray-500 dark:text-gray-400 mt-1">Prontuário: {record.recordNumber}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
               {record.birthDate && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Calendar className="text-gray-400" size={16} />
-                  <span className="text-gray-600">
+                  <Calendar className="text-gray-400 dark:text-gray-500" size={16} />
+                  <span className="text-gray-600 dark:text-gray-400">
                     Nascimento: {new Date(record.birthDate).toLocaleDateString('pt-BR')}
                   </span>
                 </div>
               )}
               {record.phone && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Phone className="text-gray-400" size={16} />
-                  <span className="text-gray-600">{record.phone}</span>
+                  <Phone className="text-gray-400 dark:text-gray-500" size={16} />
+                  <span className="text-gray-600 dark:text-gray-400">{record.phone}</span>
                 </div>
               )}
               {record.email && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Mail className="text-gray-400" size={16} />
-                  <span className="text-gray-600">{record.email}</span>
+                  <Mail className="text-gray-400 dark:text-gray-500" size={16} />
+                  <span className="text-gray-600 dark:text-gray-400">{record.email}</span>
                 </div>
               )}
               {record.bloodType && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Droplet className="text-red-500" size={16} />
+                  <Droplet className="text-red-500 dark:text-red-400" size={16} />
                   <Badge color="red">{record.bloodType}</Badge>
                 </div>
               )}
@@ -149,7 +149,7 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
             <InfoRow label="CEP" value={record.zipCode} />
           </div>
           {!record.address && !record.city && (
-            <p className="text-gray-400 text-sm italic">Nenhum endereço cadastrado</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm italic">Nenhum endereço cadastrado</p>
           )}
         </Section>
 
@@ -179,7 +179,7 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
 
             {record.chronicDiseases && record.chronicDiseases.length > 0 && (
               <div>
-                <div className="text-sm text-gray-500 mb-2">Doenças Crônicas</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Doenças Crônicas</div>
                 <div className="flex flex-wrap gap-2">
                   {record.chronicDiseases.map((disease, idx) => (
                     <Badge key={idx} color="yellow">{disease}</Badge>
@@ -190,7 +190,7 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
 
             {record.currentMedications && record.currentMedications.length > 0 && (
               <div>
-                <div className="text-sm text-gray-500 mb-2">Medicações Atuais</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Medicações Atuais</div>
                 <div className="flex flex-wrap gap-2">
                   {record.currentMedications.map((med, idx) => (
                     <Badge key={idx} color="blue">{med}</Badge>
@@ -201,7 +201,7 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
 
             {record.previousSurgeries && record.previousSurgeries.length > 0 && (
               <div>
-                <div className="text-sm text-gray-500 mb-2">Cirurgias Anteriores</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Cirurgias Anteriores</div>
                 <div className="flex flex-wrap gap-2">
                   {record.previousSurgeries.map((surgery, idx) => (
                     <Badge key={idx} color="purple">{surgery}</Badge>
@@ -213,7 +213,7 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
             {record.familyHistory && (
               <div>
                 <div className="text-sm text-gray-500 mb-1">Histórico Familiar</div>
-                <p className="text-gray-700">{record.familyHistory}</p>
+                <p className="text-gray-700 dark:text-gray-300">{record.familyHistory}</p>
               </div>
             )}
           </div>
@@ -227,7 +227,7 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
             <InfoRow label="Relacionamento" value={record.emergencyContactRelationship} />
           </div>
           {!record.emergencyContactName && (
-            <p className="text-gray-400 text-sm italic">Nenhum contato de emergência cadastrado</p>
+            <p className="text-gray-400 dark:text-gray-500 text-sm italic">Nenhum contato de emergência cadastrado</p>
           )}
         </Section>
 
@@ -246,18 +246,18 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
             {record.anamnesisList && record.anamnesisList.length > 0 ? (
               <div className="space-y-3">
                 {record.anamnesisList.map((anamnesis) => (
-                  <div key={anamnesis.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="text-sm text-gray-500">
+                  <div key={anamnesis.id} className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(anamnesis.createdAt).toLocaleDateString('pt-BR')}
                     </div>
                     {anamnesis.complaintMain && (
-                      <div className="mt-1 text-gray-900 font-medium">{anamnesis.complaintMain}</div>
+                      <div className="mt-1 text-gray-900 dark:text-white font-medium">{anamnesis.complaintMain}</div>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm italic">Nenhuma anamnese cadastrada</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm italic">Nenhuma anamnese cadastrada</p>
             )}
           </Section>
 
@@ -265,18 +265,18 @@ const ViewMedicalRecord: React.FC<ViewMedicalRecordProps> = ({ record, onBack, o
             {record.procedureHistory && record.procedureHistory.length > 0 ? (
               <div className="space-y-3">
                 {record.procedureHistory.map((procedure) => (
-                  <div key={procedure.id} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <div className="text-sm text-gray-500">
+                  <div key={procedure.id} className="p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {new Date(procedure.procedureDate).toLocaleDateString('pt-BR')}
                     </div>
                     {procedure.resultsDescription && (
-                      <div className="mt-1 text-gray-900">{procedure.resultsDescription}</div>
+                      <div className="mt-1 text-gray-900 dark:text-white">{procedure.resultsDescription}</div>
                     )}
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-gray-400 text-sm italic">Nenhum procedimento registrado</p>
+              <p className="text-gray-400 dark:text-gray-500 text-sm italic">Nenhum procedimento registrado</p>
             )}
           </Section>
         </div>

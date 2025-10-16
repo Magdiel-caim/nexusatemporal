@@ -125,22 +125,22 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
   ];
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-6 border-b flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-gray-800">Novo Prontuário Médico</h2>
+        <div className="p-6 border-b dark:border-gray-700 flex items-center justify-between">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Novo Prontuário Médico</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
           >
             <X size={24} />
           </button>
         </div>
 
         {/* Lead Selection */}
-        <div className="p-6 border-b bg-purple-50">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="p-6 border-b dark:border-gray-700 bg-purple-50 dark:bg-purple-900/20">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Selecionar Paciente (Lead) *
           </label>
           <input
@@ -148,12 +148,12 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
             placeholder="Buscar por nome, e-mail ou telefone..."
             value={searchLead}
             onChange={(e) => setSearchLead(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
           {searchLead && (
-            <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg bg-white">
+            <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
               {filteredLeads.length === 0 ? (
-                <div className="p-4 text-gray-500 text-sm">Nenhum lead encontrado</div>
+                <div className="p-4 text-gray-500 dark:text-gray-400 text-sm">Nenhum lead encontrado</div>
               ) : (
                 filteredLeads.map((lead) => (
                   <button
@@ -162,10 +162,10 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       setSelectedLead(lead);
                       setSearchLead('');
                     }}
-                    className="w-full p-3 text-left hover:bg-purple-50 border-b border-gray-100 last:border-0"
+                    className="w-full p-3 text-left hover:bg-purple-50 dark:hover:bg-purple-900/30 border-b border-gray-100 dark:border-gray-700 last:border-0"
                   >
-                    <div className="font-medium text-gray-900">{lead.name}</div>
-                    <div className="text-sm text-gray-500">
+                    <div className="font-medium text-gray-900 dark:text-white">{lead.name}</div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {lead.email && <span>{lead.email}</span>}
                       {lead.phone && <span className="ml-2">{lead.phone}</span>}
                     </div>
@@ -175,16 +175,16 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
             </div>
           )}
           {selectedLead && (
-            <div className="mt-3 p-3 bg-white border border-purple-200 rounded-lg flex items-center justify-between">
+            <div className="mt-3 p-3 bg-white dark:bg-gray-800 border border-purple-200 dark:border-purple-700 rounded-lg flex items-center justify-between">
               <div>
-                <div className="font-medium text-gray-900">{selectedLead.name}</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-gray-900 dark:text-white">{selectedLead.name}</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   {selectedLead.email} • {selectedLead.phone}
                 </div>
               </div>
               <button
                 onClick={() => setSelectedLead(null)}
-                className="text-red-500 hover:text-red-700"
+                className="text-red-500 hover:text-red-700 dark:hover:text-red-400"
               >
                 <X size={20} />
               </button>
@@ -193,7 +193,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
         </div>
 
         {/* Tabs */}
-        <div className="border-b">
+        <div className="border-b dark:border-gray-700">
           <div className="flex overflow-x-auto">
             {tabs.map((tab) => {
               const Icon = tab.icon;
@@ -203,8 +203,8 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex items-center gap-2 px-6 py-3 border-b-2 transition whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'border-purple-600 text-purple-600 font-medium'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                      ? 'border-purple-600 text-purple-600 dark:text-purple-400 font-medium'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                   }`}
                 >
                   <Icon size={18} />
@@ -219,9 +219,9 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
         <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
             {error && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
-                <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={20} />
-                <span className="text-red-700 text-sm">{error}</span>
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+                <AlertCircle className="text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" size={20} />
+                <span className="text-red-700 dark:text-red-400 text-sm">{error}</span>
               </div>
             )}
 
@@ -230,32 +230,32 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Nome Completo *
                     </label>
                     <input
                       type="text"
                       value={formData.fullName}
                       onChange={(e) => handleInputChange('fullName', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Data de Nascimento
                     </label>
                     <input
                       type="date"
                       value={formData.birthDate}
                       onChange={(e) => handleInputChange('birthDate', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       CPF
                     </label>
                     <input
@@ -263,24 +263,24 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       value={formData.cpf}
                       onChange={(e) => handleInputChange('cpf', e.target.value)}
                       placeholder="000.000.000-00"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       RG
                     </label>
                     <input
                       type="text"
                       value={formData.rg}
                       onChange={(e) => handleInputChange('rg', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Telefone
                     </label>
                     <input
@@ -288,19 +288,19 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       placeholder="(00) 00000-0000"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       E-mail
                     </label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -325,19 +325,19 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Cidade
                     </label>
                     <input
                       type="text"
                       value={formData.city}
                       onChange={(e) => handleInputChange('city', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Estado
                     </label>
                     <input
@@ -346,12 +346,12 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       onChange={(e) => handleInputChange('state', e.target.value)}
                       placeholder="SP"
                       maxLength={2}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       CEP
                     </label>
                     <input
@@ -359,7 +359,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       value={formData.zipCode}
                       onChange={(e) => handleInputChange('zipCode', e.target.value)}
                       placeholder="00000-000"
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -392,7 +392,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Alergias <span className="text-xs text-gray-500">(separar por vírgula)</span>
+                    Alergias <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.allergies?.join(', ')}
@@ -405,7 +405,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Doenças Crônicas <span className="text-xs text-gray-500">(separar por vírgula)</span>
+                    Doenças Crônicas <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.chronicDiseases?.join(', ')}
@@ -418,7 +418,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Medicações Atuais <span className="text-xs text-gray-500">(separar por vírgula)</span>
+                    Medicações Atuais <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.currentMedications?.join(', ')}
@@ -431,7 +431,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Cirurgias Anteriores <span className="text-xs text-gray-500">(separar por vírgula)</span>
+                    Cirurgias Anteriores <span className="text-xs text-gray-500 dark:text-gray-400">(separar por vírgula)</span>
                   </label>
                   <textarea
                     value={formData.previousSurgeries?.join(', ')}
@@ -520,11 +520,11 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
           </div>
 
           {/* Footer */}
-          <div className="p-6 border-t bg-gray-50 flex items-center justify-end gap-3">
+          <div className="p-6 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition"
+              className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
               Cancelar
             </button>
