@@ -131,7 +131,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
           className={`px-4 py-2 rounded-lg ${
             isOutgoing
               ? 'bg-indigo-600 text-white'
-              : 'bg-white text-gray-900 border border-gray-200'
+              : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
           }`}
         >
           {/* Quoted Message */}
@@ -155,7 +155,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
           {onReply && (
             <button
               onClick={() => onReply(message.id)}
-              className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+              className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded text-gray-600 dark:text-gray-400"
               title="Responder"
             >
               <Reply className="h-4 w-4" />
@@ -164,7 +164,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
           {onDelete && isOutgoing && (
             <button
               onClick={() => onDelete(message.id)}
-              className="p-1.5 hover:bg-red-100 rounded text-red-600"
+              className="p-1.5 hover:bg-red-100 dark:hover:bg-red-900/30 rounded text-red-600 dark:text-red-400"
               title="Excluir"
             >
               <Download className="h-4 w-4 rotate-180" />

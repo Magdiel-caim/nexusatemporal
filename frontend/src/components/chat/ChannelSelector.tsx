@@ -47,23 +47,23 @@ const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onCh
   };
 
   return (
-    <div className="border-b border-gray-200">
+    <div className="border-b border-gray-200 dark:border-gray-700">
       {/* Header - Canais */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+        className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
       >
         <div className="flex items-center gap-2">
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-gray-500" />
+            <ChevronDown className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-gray-500" />
+            <ChevronRight className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           )}
-          <Hash className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-semibold text-gray-700">Canais</span>
+          <Hash className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Canais</span>
         </div>
         {sessions.length > 0 && (
-          <span className="text-xs text-gray-500">{sessions.length}</span>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{sessions.length}</span>
         )}
       </button>
 
@@ -73,32 +73,32 @@ const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onCh
           {/* Opção "Todos os canais" */}
           <button
             onClick={() => onChannelSelect(null)}
-            className={`w-full px-8 py-2 text-left text-sm hover:bg-gray-100 transition-colors ${
-              selectedChannel === null ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700'
+            className={`w-full px-8 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
+              selectedChannel === null ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium' : 'text-gray-700 dark:text-gray-300'
             }`}
           >
             <div className="flex items-center justify-between">
               <span>Todos os canais</span>
               {selectedChannel === null && (
-                <div className="w-2 h-2 bg-indigo-600 rounded-full" />
+                <div className="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
               )}
             </div>
           </button>
 
           {/* Lista de Sessões */}
           {isLoading ? (
-            <div className="px-8 py-4 text-xs text-gray-500">Carregando...</div>
+            <div className="px-8 py-4 text-xs text-gray-500 dark:text-gray-400">Carregando...</div>
           ) : sessions.length === 0 ? (
-            <div className="px-8 py-4 text-xs text-gray-500">Nenhum canal disponível</div>
+            <div className="px-8 py-4 text-xs text-gray-500 dark:text-gray-400">Nenhum canal disponível</div>
           ) : (
             sessions.map((session) => (
               <button
                 key={session.sessionName}
                 onClick={() => onChannelSelect(session.sessionName)}
-                className={`w-full px-8 py-2 text-left text-sm hover:bg-gray-100 transition-colors ${
+                className={`w-full px-8 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
                   selectedChannel === session.sessionName
-                    ? 'bg-indigo-50 text-indigo-700 font-medium'
-                    : 'text-gray-700'
+                    ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium'
+                    : 'text-gray-700 dark:text-gray-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
@@ -111,10 +111,10 @@ const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onCh
                     )}
                   </div>
                   {selectedChannel === session.sessionName && (
-                    <div className="w-2 h-2 bg-indigo-600 rounded-full" />
+                    <div className="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
                   )}
                 </div>
-                <div className="text-xs text-gray-500 mt-0.5">
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                   {session.totalContacts} contatos
                 </div>
               </button>
