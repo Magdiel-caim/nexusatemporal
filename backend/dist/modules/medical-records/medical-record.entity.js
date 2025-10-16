@@ -61,7 +61,7 @@ __decorate([
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'record_number', unique: true }),
+    (0, typeorm_1.Column)({ name: 'record_number', unique: true, type: 'varchar' }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "recordNumber", void 0);
 __decorate([
@@ -69,7 +69,7 @@ __decorate([
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "leadId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'full_name' }),
+    (0, typeorm_1.Column)({ name: 'full_name', type: 'varchar' }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "fullName", void 0);
 __decorate([
@@ -77,19 +77,19 @@ __decorate([
     __metadata("design:type", Date)
 ], MedicalRecord.prototype, "birthDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "cpf", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "rg", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "phone", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "email", void 0);
 __decorate([
@@ -97,19 +97,19 @@ __decorate([
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "address", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "city", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "state", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'zip_code', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'zip_code', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "zipCode", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'blood_type', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'blood_type', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "bloodType", void 0);
 __decorate([
@@ -133,15 +133,15 @@ __decorate([
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "familyHistory", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'emergency_contact_name', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'emergency_contact_name', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "emergencyContactName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'emergency_contact_phone', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'emergency_contact_phone', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "emergencyContactPhone", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'emergency_contact_relationship', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'emergency_contact_relationship', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "emergencyContactRelationship", void 0);
 __decorate([
@@ -161,11 +161,11 @@ __decorate([
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "updatedBy", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'tenant_id', type: 'uuid' }),
+    (0, typeorm_1.Column)({ name: 'tenant_id', type: 'varchar' }),
     __metadata("design:type", String)
 ], MedicalRecord.prototype, "tenantId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'is_active', default: true }),
+    (0, typeorm_1.Column)({ name: 'is_active', type: 'boolean', default: true }),
     __metadata("design:type", Boolean)
 ], MedicalRecord.prototype, "isActive", void 0);
 __decorate([
@@ -262,15 +262,15 @@ __decorate([
     __metadata("design:type", String)
 ], Anamnesis.prototype, "complaintHistory", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "smoker", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'alcohol_consumption', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'alcohol_consumption', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Anamnesis.prototype, "alcoholConsumption", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'physical_activity', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'physical_activity', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Anamnesis.prototype, "physicalActivity", void 0);
 __decorate([
@@ -282,7 +282,7 @@ __decorate([
     __metadata("design:type", Number)
 ], Anamnesis.prototype, "waterIntake", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'skin_type', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'skin_type', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Anamnesis.prototype, "skinType", void 0);
 __decorate([
@@ -302,35 +302,35 @@ __decorate([
     __metadata("design:type", String)
 ], Anamnesis.prototype, "expectations", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'has_diabetes', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'has_diabetes', type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "hasDiabetes", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'has_hypertension', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'has_hypertension', type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "hasHypertension", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'has_heart_disease', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'has_heart_disease', type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "hasHeartDisease", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'has_thyroid_issues', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'has_thyroid_issues', type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "hasThyroidIssues", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'is_pregnant', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'is_pregnant', type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "isPregnant", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'is_breastfeeding', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'is_breastfeeding', type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "isBreastfeeding", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'menstrual_cycle_regular', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'menstrual_cycle_regular', type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "menstrualCycleRegular", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'uses_contraceptive', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'uses_contraceptive', type: 'boolean', nullable: true }),
     __metadata("design:type", Boolean)
 ], Anamnesis.prototype, "usesContraceptive", void 0);
 __decorate([
@@ -354,7 +354,7 @@ __decorate([
     __metadata("design:type", String)
 ], Anamnesis.prototype, "performedBy", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'tenant_id', type: 'uuid' }),
+    (0, typeorm_1.Column)({ name: 'tenant_id', type: 'varchar' }),
     __metadata("design:type", String)
 ], Anamnesis.prototype, "tenantId", void 0);
 __decorate([
@@ -483,7 +483,7 @@ __decorate([
     __metadata("design:type", String)
 ], ProcedureHistory.prototype, "nextSessionRecommendation", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'tenant_id', type: 'uuid' }),
+    (0, typeorm_1.Column)({ name: 'tenant_id', type: 'varchar' }),
     __metadata("design:type", String)
 ], ProcedureHistory.prototype, "tenantId", void 0);
 __decorate([

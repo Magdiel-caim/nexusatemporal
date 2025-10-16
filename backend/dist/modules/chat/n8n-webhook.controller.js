@@ -34,7 +34,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.N8NWebhookController = void 0;
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../../database/data-source");
 class N8NWebhookController {
     /**
      * Recebe mensagens do N8N com mídia em base64 e faz upload no S3
@@ -57,7 +57,7 @@ class N8NWebhookController {
                 });
             }
             // Importar funções S3
-            const { uploadFile } = await Promise.resolve().then(() => __importStar(require('@/integrations/idrive/s3-client')));
+            const { uploadFile } = await Promise.resolve().then(() => __importStar(require('../../integrations/idrive/s3-client')));
             // Converter base64 para Buffer
             const base64Data = mediaBase64.replace(/^data:.+;base64,/, '');
             const buffer = Buffer.from(base64Data, 'base64');

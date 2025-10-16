@@ -16,45 +16,45 @@ export class MedicalRecord {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'record_number', unique: true })
+  @Column({ name: 'record_number', unique: true, type: 'varchar' })
   recordNumber: string;
 
   @Column({ name: 'lead_id', type: 'uuid' })
   leadId: string;
 
   // Informações Pessoais
-  @Column({ name: 'full_name' })
+  @Column({ name: 'full_name', type: 'varchar' })
   fullName: string;
 
   @Column({ name: 'birth_date', type: 'date', nullable: true })
   birthDate?: Date;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   cpf?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   rg?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   phone?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   email?: string;
 
   @Column({ type: 'text', nullable: true })
   address?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   city?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   state?: string;
 
-  @Column({ name: 'zip_code', nullable: true })
+  @Column({ name: 'zip_code', type: 'varchar', nullable: true })
   zipCode?: string;
 
   // Informações Médicas
-  @Column({ name: 'blood_type', nullable: true })
+  @Column({ name: 'blood_type', type: 'varchar', nullable: true })
   bloodType?: string;
 
   @Column({ type: 'text', array: true, nullable: true })
@@ -73,13 +73,13 @@ export class MedicalRecord {
   familyHistory?: string;
 
   // Informações de Emergência
-  @Column({ name: 'emergency_contact_name', nullable: true })
+  @Column({ name: 'emergency_contact_name', type: 'varchar', nullable: true })
   emergencyContactName?: string;
 
-  @Column({ name: 'emergency_contact_phone', nullable: true })
+  @Column({ name: 'emergency_contact_phone', type: 'varchar', nullable: true })
   emergencyContactPhone?: string;
 
-  @Column({ name: 'emergency_contact_relationship', nullable: true })
+  @Column({ name: 'emergency_contact_relationship', type: 'varchar', nullable: true })
   emergencyContactRelationship?: string;
 
   // Observações
@@ -96,10 +96,10 @@ export class MedicalRecord {
   @Column({ name: 'updated_by', type: 'uuid', nullable: true })
   updatedBy?: string;
 
-  @Column({ name: 'tenant_id', type: 'uuid' })
+  @Column({ name: 'tenant_id', type: 'varchar' })
   tenantId: string;
 
-  @Column({ name: 'is_active', default: true })
+  @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -143,13 +143,13 @@ export class Anamnesis {
   complaintHistory?: string;
 
   // Hábitos de Vida
-  @Column({ nullable: true })
+  @Column({ type: 'boolean', nullable: true })
   smoker?: boolean;
 
-  @Column({ name: 'alcohol_consumption', nullable: true })
+  @Column({ name: 'alcohol_consumption', type: 'varchar', nullable: true })
   alcoholConsumption?: string;
 
-  @Column({ name: 'physical_activity', nullable: true })
+  @Column({ name: 'physical_activity', type: 'varchar', nullable: true })
   physicalActivity?: string;
 
   @Column({ name: 'sleep_hours', type: 'int', nullable: true })
@@ -159,7 +159,7 @@ export class Anamnesis {
   waterIntake?: number;
 
   // Estética Específica
-  @Column({ name: 'skin_type', nullable: true })
+  @Column({ name: 'skin_type', type: 'varchar', nullable: true })
   skinType?: string;
 
   @Column({ name: 'skin_issues', type: 'text', array: true, nullable: true })
@@ -175,28 +175,28 @@ export class Anamnesis {
   expectations?: string;
 
   // Saúde Geral
-  @Column({ name: 'has_diabetes', nullable: true })
+  @Column({ name: 'has_diabetes', type: 'boolean', nullable: true })
   hasDiabetes?: boolean;
 
-  @Column({ name: 'has_hypertension', nullable: true })
+  @Column({ name: 'has_hypertension', type: 'boolean', nullable: true })
   hasHypertension?: boolean;
 
-  @Column({ name: 'has_heart_disease', nullable: true })
+  @Column({ name: 'has_heart_disease', type: 'boolean', nullable: true })
   hasHeartDisease?: boolean;
 
-  @Column({ name: 'has_thyroid_issues', nullable: true })
+  @Column({ name: 'has_thyroid_issues', type: 'boolean', nullable: true })
   hasThyroidIssues?: boolean;
 
-  @Column({ name: 'is_pregnant', nullable: true })
+  @Column({ name: 'is_pregnant', type: 'boolean', nullable: true })
   isPregnant?: boolean;
 
-  @Column({ name: 'is_breastfeeding', nullable: true })
+  @Column({ name: 'is_breastfeeding', type: 'boolean', nullable: true })
   isBreastfeeding?: boolean;
 
-  @Column({ name: 'menstrual_cycle_regular', nullable: true })
+  @Column({ name: 'menstrual_cycle_regular', type: 'boolean', nullable: true })
   menstrualCycleRegular?: boolean;
 
-  @Column({ name: 'uses_contraceptive', nullable: true })
+  @Column({ name: 'uses_contraceptive', type: 'boolean', nullable: true })
   usesContraceptive?: boolean;
 
   // Observações
@@ -217,7 +217,7 @@ export class Anamnesis {
   @Column({ name: 'performed_by', type: 'uuid', nullable: true })
   performedBy?: string;
 
-  @Column({ name: 'tenant_id', type: 'uuid' })
+  @Column({ name: 'tenant_id', type: 'varchar' })
   tenantId: string;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -297,7 +297,7 @@ export class ProcedureHistory {
   nextSessionRecommendation?: string;
 
   // Metadata
-  @Column({ name: 'tenant_id', type: 'uuid' })
+  @Column({ name: 'tenant_id', type: 'varchar' })
   tenantId: string;
 
   @CreateDateColumn({ name: 'created_at' })

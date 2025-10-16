@@ -13,6 +13,9 @@ import {
   FileSearch,
 } from 'lucide-react';
 import medicalRecordsService, { MedicalRecord } from '../services/medicalRecordsService';
+import CreateMedicalRecordForm from '../components/prontuarios/CreateMedicalRecordForm';
+import EditMedicalRecordForm from '../components/prontuarios/EditMedicalRecordForm';
+import ViewMedicalRecord from '../components/prontuarios/ViewMedicalRecord';
 
 const ProntuariosPage: React.FC = () => {
   const [medicalRecords, setMedicalRecords] = useState<MedicalRecord[]>([]);
@@ -98,18 +101,24 @@ const ProntuariosPage: React.FC = () => {
   };
 
   if (viewMode === 'view' && selectedRecord) {
-    return <ViewMedicalRecord record={selectedRecord} onBack={handleBackToList} />;
+    return (
+      <ViewMedicalRecord
+        record={selectedRecord}
+        onBack={handleBackToList}
+        onEdit={() => setViewMode('edit')}
+      />
+    );
   }
 
   if (viewMode === 'edit' && selectedRecord) {
     return (
-      <EditMedicalRecord
+      <EditMedicalRecordForm
         record={selectedRecord}
-        onSave={async () => {
+        onSuccess={async () => {
           await loadMedicalRecords();
           handleBackToList();
         }}
-        onCancel={handleBackToList}
+        onClose={handleBackToList}
       />
     );
   }
@@ -292,7 +301,7 @@ const ProntuariosPage: React.FC = () => {
 
       {/* Create Modal */}
       {showCreateModal && (
-        <CreateMedicalRecordModal
+        <CreateMedicalRecordForm
           onClose={() => setShowCreateModal(false)}
           onSuccess={() => {
             setShowCreateModal(false);
@@ -300,84 +309,6 @@ const ProntuariosPage: React.FC = () => {
           }}
         />
       )}
-    </div>
-  );
-};
-
-// Placeholder components (to be implemented)
-const ViewMedicalRecord: React.FC<{ record: MedicalRecord; onBack: () => void }> = ({
-  record,
-  onBack,
-}) => {
-  return (
-    <div className="p-6">
-      <button
-        onClick={onBack}
-        className="mb-4 px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-      >
-        ← Voltar
-      </button>
-      <h1 className="text-2xl font-bold mb-4">Prontuário: {record.recordNumber}</h1>
-      <div className="bg-white p-6 rounded-lg shadow">
-        <pre className="text-sm">{JSON.stringify(record, null, 2)}</pre>
-      </div>
-    </div>
-  );
-};
-
-const EditMedicalRecord: React.FC<{
-  record: MedicalRecord;
-  onSave: () => void;
-  onCancel: () => void;
-}> = ({ record, onSave, onCancel }) => {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Editar Prontuário: {record.recordNumber}</h1>
-      <div className="bg-white p-6 rounded-lg shadow">
-        <p>Formulário de edição em construção...</p>
-        <div className="mt-4 flex gap-2">
-          <button
-            onClick={onSave}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            Salvar
-          </button>
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-          >
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const CreateMedicalRecordModal: React.FC<{
-  onClose: () => void;
-  onSuccess: () => void;
-}> = ({ onClose, onSuccess }) => {
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <h2 className="text-xl font-bold mb-4">Novo Prontuário</h2>
-        <p>Formulário de criação em construção...</p>
-        <div className="mt-4 flex gap-2 justify-end">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={onSuccess}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-          >
-            Criar Prontuário
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

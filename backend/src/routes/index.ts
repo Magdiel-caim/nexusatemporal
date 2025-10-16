@@ -4,8 +4,7 @@ import dataRoutes from '@/modules/config/data.routes';
 import leadsRoutes from '@/modules/leads/leads.routes';
 import chatRoutes from '@/modules/chat/chat.routes';
 import appointmentRoutes from '@/modules/agenda/appointment.routes';
-// TEMPORARIAMENTE DESABILITADO - módulo em desenvolvimento
-// import medicalRecordRoutes from '@/modules/medical-records/medical-record.routes';
+import medicalRecordRoutes from '@/modules/medical-records/medical-record.routes';
 // Import other module routes as they are created
 // import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
 // import estoqueRoutes from '@/modules/estoque/estoque.routes';
@@ -31,8 +30,7 @@ router.use('/data', dataRoutes); // Required /api/data endpoint
 router.use('/leads', leadsRoutes);
 router.use('/chat', chatRoutes);
 router.use('/appointments', appointmentRoutes);
-// TEMPORARIAMENTE DESABILITADO - módulo em desenvolvimento
-// router.use('/medical-records', medicalRecordRoutes);
+router.use('/medical-records', medicalRecordRoutes);
 
 // Uncomment as modules are implemented
 // router.use('/financeiro', financeiroRoutes);
