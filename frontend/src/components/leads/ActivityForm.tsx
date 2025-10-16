@@ -13,7 +13,6 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
     type: 'note',
     title: '',
     description: '',
-    scheduledAt: '',
   });
 
   const handleSubmit = async (e: FormEvent) => {
@@ -30,7 +29,6 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
         type: formData.type as any,
         title: formData.title,
         description: formData.description || undefined,
-        scheduledAt: formData.scheduledAt ? new Date(formData.scheduledAt).toISOString() : undefined,
       };
 
       await onSubmit(submitData);
@@ -97,22 +95,6 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
           placeholder="Detalhes da atividade..."
           rows={3}
         />
-      </div>
-
-      {/* Data/Hora Agendada */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-          Agendar para
-        </label>
-        <input
-          type="datetime-local"
-          value={formData.scheduledAt}
-          onChange={(e) => handleChange('scheduledAt', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-        />
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-          Opcional: Defina uma data/hora para ser lembrado desta atividade
-        </p>
       </div>
 
       {/* Botões */}

@@ -13,6 +13,8 @@ import ListView from '@/components/leads/ListView';
 import GridView from '@/components/leads/GridView';
 import TimelineView from '@/components/leads/TimelineView';
 import DivisionView from '@/components/leads/DivisionView';
+import LeadsExportButtons from '@/components/leads/LeadsExportButtons';
+import LeadsImportModal from '@/components/leads/LeadsImportModal';
 import toast from 'react-hot-toast';
 import { LayoutGrid, List, Columns, Clock, Split, X } from 'lucide-react';
 import {
@@ -41,6 +43,7 @@ export default function LeadsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<LeadFilters>({});
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Appointment modal states
   const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
@@ -482,6 +485,16 @@ export default function LeadsPage() {
                   </span>
                 )}
               </button>
+              <LeadsExportButtons leads={filteredLeads} />
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <span>Importar</span>
+              </button>
               <button onClick={handleCreateLead} className="btn-primary">
                 + Novo Lead
               </button>
@@ -767,6 +780,16 @@ export default function LeadsPage() {
         filters={filters}
         onApplyFilters={handleApplyFilters}
         onClearFilters={handleClearFilters}
+      />
+
+      {/* Modal de Importação */}
+      <LeadsImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          loadLeads();
+          setIsImportModalOpen(false);
+        }}
       />
     </div>
   );
