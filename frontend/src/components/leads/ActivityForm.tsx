@@ -50,13 +50,13 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Tipo de Atividade */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Tipo de Atividade <span className="text-red-500">*</span>
         </label>
         <select
           value={formData.type}
           onChange={(e) => handleChange('type', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           required
         >
           <option value="note">📝 Nota</option>
@@ -72,14 +72,14 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
 
       {/* Título */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Título <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           value={formData.title}
           onChange={(e) => handleChange('title', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           placeholder="Ex: Ligar para agendar consulta"
           required
         />
@@ -87,13 +87,13 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
 
       {/* Descrição */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Descrição
         </label>
         <textarea
           value={formData.description}
           onChange={(e) => handleChange('description', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           placeholder="Detalhes da atividade..."
           rows={3}
         />
@@ -101,26 +101,26 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
 
       {/* Data/Hora Agendada */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Agendar para
         </label>
         <input
           type="datetime-local"
           value={formData.scheduledAt}
           onChange={(e) => handleChange('scheduledAt', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           Opcional: Defina uma data/hora para ser lembrado desta atividade
         </p>
       </div>
 
       {/* Botões */}
-      <div className="flex items-center justify-end gap-3 pt-4 border-t">
+      <div className="flex items-center justify-end gap-3 pt-4 border-t dark:border-gray-700">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+          className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
           disabled={loading}
         >
           Cancelar

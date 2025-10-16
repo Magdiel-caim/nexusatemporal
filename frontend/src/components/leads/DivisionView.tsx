@@ -48,31 +48,31 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
   return (
     <div className="flex gap-4 h-[calc(100vh-18rem)]">
       {/* List Sidebar */}
-      <div className="w-96 flex-shrink-0 bg-white rounded-lg border border-gray-200 overflow-hidden flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <h3 className="font-semibold text-gray-900">
+      <div className="w-96 flex-shrink-0 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="font-semibold text-gray-900 dark:text-white">
             Leads ({leads.length})
           </h3>
         </div>
         <div className="flex-1 overflow-y-auto">
           {leads.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
+            <div className="p-6 text-center text-gray-500 dark:text-gray-400">
               Nenhum lead encontrado
             </div>
           ) : (
-            <div className="divide-y divide-gray-200">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {leads.map((lead) => (
                 <div
                   key={lead.id}
                   onClick={() => handleLeadSelect(lead)}
                   className={`p-4 cursor-pointer transition-colors ${
                     selectedLead?.id === lead.id
-                      ? 'bg-primary-50 border-l-4 border-primary-500'
-                      : 'hover:bg-gray-50'
+                      ? 'bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500 dark:border-primary-400'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
                 >
                   <div className="flex items-start justify-between mb-1">
-                    <h4 className="font-medium text-gray-900 text-sm">
+                    <h4 className="font-medium text-gray-900 dark:text-white text-sm">
                       {lead.name}
                     </h4>
                     <span
@@ -81,10 +81,10 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
                     ></span>
                   </div>
                   {lead.email && (
-                    <p className="text-xs text-gray-500 mb-1">{lead.email}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{lead.email}</p>
                   )}
                   {lead.estimatedValue && (
-                    <p className="text-xs font-semibold text-primary-600">
+                    <p className="text-xs font-semibold text-primary-600 dark:text-primary-400">
                       {formatCurrency(lead.estimatedValue)}
                     </p>
                   )}
@@ -96,14 +96,14 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
       </div>
 
       {/* Detail Panel */}
-      <div className="flex-1 bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="flex-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         {selectedLead ? (
           <div className="h-full overflow-y-auto">
             {/* Header */}
-            <div className="p-6 border-b border-gray-200">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
                     {selectedLead.name}
                   </h2>
                   <div className="flex items-center gap-2">
@@ -136,7 +136,7 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
               {/* Procedure */}
               {selectedLead.procedure && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Procedimento</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Procedimento</h3>
                   <span
                     className="inline-flex px-3 py-1.5 text-sm font-medium rounded-md"
                     style={{
@@ -151,11 +151,11 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
 
               {/* Contact Information */}
               <div>
-                <h3 className="text-sm font-semibold text-gray-700 mb-3">Informações de Contato</h3>
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Informações de Contato</h3>
                 <div className="space-y-2">
                   {selectedLead.email && (
                     <div className="flex items-center gap-3 text-sm">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -163,12 +163,12 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
                           d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                         />
                       </svg>
-                      <span className="text-gray-900">{selectedLead.email}</span>
+                      <span className="text-gray-900 dark:text-white">{selectedLead.email}</span>
                     </div>
                   )}
                   {selectedLead.phone && (
                     <div className="flex items-center gap-3 text-sm">
-                      <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-5 h-5 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
@@ -176,7 +176,7 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
                           d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                         />
                       </svg>
-                      <span className="text-gray-900">{selectedLead.phone}</span>
+                      <span className="text-gray-900 dark:text-white">{selectedLead.phone}</span>
                     </div>
                   )}
                 </div>
@@ -185,8 +185,8 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
               {/* Value */}
               {selectedLead.estimatedValue && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Valor Estimado</h3>
-                  <p className="text-2xl font-bold text-primary-600">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Valor Estimado</h3>
+                  <p className="text-2xl font-bold text-primary-600 dark:text-primary-400">
                     {formatCurrency(selectedLead.estimatedValue)}
                   </p>
                 </div>
@@ -195,7 +195,7 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
               {/* Agendamentos */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-semibold text-gray-700">Agendamentos</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Agendamentos</h3>
                   <button
                     onClick={() => onScheduleAppointment?.(selectedLead)}
                     className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700"
@@ -206,19 +206,19 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
                 </div>
 
                 {leadAppointments.length === 0 ? (
-                  <div className="bg-gray-50 rounded-lg p-4 text-center">
-                    <Calendar size={32} className="mx-auto mb-2 text-gray-400" />
-                    <p className="text-sm text-gray-500">Nenhum agendamento</p>
+                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 text-center">
+                    <Calendar size={32} className="mx-auto mb-2 text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Nenhum agendamento</p>
                   </div>
                 ) : (
                   <div className="space-y-2">
                     {leadAppointments.map((apt) => (
-                      <div key={apt.id} className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+                      <div key={apt.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <Calendar size={14} className="text-gray-500" />
-                              <span className="text-sm font-medium text-gray-900">
+                              <Calendar size={14} className="text-gray-500 dark:text-gray-400" />
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
                                 {new Date(apt.scheduledDate).toLocaleDateString('pt-BR', {
                                   day: '2-digit',
                                   month: 'short',
@@ -229,7 +229,7 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
                                 })}
                               </span>
                             </div>
-                            <p className="text-xs text-gray-600">{apt.procedure?.name}</p>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">{apt.procedure?.name}</p>
                             <span className={`inline-block mt-1 px-2 py-0.5 text-xs rounded-full ${
                               apt.status === 'confirmado' ? 'bg-green-100 text-green-800' :
                               apt.status === 'aguardando_confirmacao' ? 'bg-orange-100 text-orange-800' :
@@ -253,8 +253,8 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
               {/* Notes */}
               {selectedLead.notes && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Observações</h3>
-                  <p className="text-sm text-gray-600 whitespace-pre-wrap bg-gray-50 p-3 rounded-lg">
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Observações</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 whitespace-pre-wrap bg-gray-50 dark:bg-gray-900 p-3 rounded-lg">
                     {selectedLead.notes}
                   </p>
                 </div>
@@ -263,12 +263,12 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
               {/* Tags */}
               {selectedLead.tags && selectedLead.tags.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-2">Tags</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Tags</h3>
                   <div className="flex flex-wrap gap-2">
                     {selectedLead.tags.map((tag, idx) => (
                       <span
                         key={idx}
-                        className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                        className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm"
                       >
                         {tag}
                       </span>
@@ -279,7 +279,7 @@ export default function DivisionView({ leads, stages, formatCurrency, onLeadClic
             </div>
           </div>
         ) : (
-          <div className="h-full flex items-center justify-center text-gray-500">
+          <div className="h-full flex items-center justify-center text-gray-500 dark:text-gray-400">
             Selecione um lead para ver os detalhes
           </div>
         )}
