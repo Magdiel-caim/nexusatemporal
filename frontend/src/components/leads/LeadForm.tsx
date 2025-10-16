@@ -121,7 +121,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               type="text"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Nome completo"
               required
             />
@@ -133,7 +133,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               type="email"
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="email@exemplo.com"
             />
           </div>
@@ -144,7 +144,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               type="tel"
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="(00) 00000-0000"
             />
           </div>
@@ -155,7 +155,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               type="tel"
               value={formData.phone2}
               onChange={(e) => handleChange('phone2', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="(00) 00000-0000"
             />
           </div>
@@ -166,7 +166,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               type="tel"
               value={formData.whatsapp}
               onChange={(e) => handleChange('whatsapp', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="(00) 00000-0000"
             />
           </div>
@@ -177,7 +177,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               type="text"
               value={formData.neighborhood}
               onChange={(e) => handleChange('neighborhood', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Bairro"
             />
           </div>
@@ -188,7 +188,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               type="text"
               value={formData.city}
               onChange={(e) => handleChange('city', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Cidade"
             />
           </div>
@@ -198,7 +198,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             <select
               value={formData.state}
               onChange={(e) => handleChange('state', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Selecione</option>
               <option value="AC">Acre</option>
@@ -238,7 +238,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             <select
               value={formData.stageId}
               onChange={(e) => handleChange('stageId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               required
             >
               {stages.map(stage => (
@@ -254,7 +254,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             <select
               value={formData.procedureId}
               onChange={(e) => handleChange('procedureId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Selecione um procedimento</option>
               {procedures.map(procedure => {
@@ -275,7 +275,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             <select
               value={formData.assignedToId}
               onChange={(e) => handleChange('assignedToId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Selecione um responsável</option>
               {users.map(user => (
@@ -297,7 +297,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             <select
               value={formData.source}
               onChange={(e) => handleChange('source', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="website">Website</option>
               <option value="referral">Indicação</option>
@@ -313,7 +313,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             <select
               value={formData.channel}
               onChange={(e) => handleChange('channel', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="whatsapp">WhatsApp</option>
               <option value="instagram">Instagram</option>
@@ -330,7 +330,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             <select
               value={formData.clientStatus}
               onChange={(e) => handleChange('clientStatus', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="conversa_iniciada">Conversa Iniciada</option>
               <option value="cliente_potencial">Cliente Potencial</option>
@@ -347,7 +347,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             <select
               value={formData.attendanceLocation}
               onChange={(e) => handleChange('attendanceLocation', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="moema">Moema</option>
               <option value="av_paulista">Av. Paulista</option>
@@ -361,7 +361,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               step="0.01"
               value={formData.estimatedValue}
               onChange={(e) => handleChange('estimatedValue', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="0.00"
             />
           </div>
@@ -378,7 +378,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               type="text"
               value={formData.tags}
               onChange={(e) => handleChange('tags', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Separadas por vírgula: tag1, tag2, tag3"
             />
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Separe as tags com vírgulas</p>
@@ -390,7 +390,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Adicione observações sobre este lead..."
             />
           </div>

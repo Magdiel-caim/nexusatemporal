@@ -113,7 +113,7 @@ export default function LeadsFilter({
                 value={localFilters.search || ''}
                 onChange={(e) => handleChange('search', e.target.value)}
                 placeholder="Digite o nome do lead..."
-                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               />
             </div>
           </div>
@@ -246,7 +246,7 @@ export default function LeadsFilter({
                   value={localFilters.minValue || ''}
                   onChange={(e) => handleChange('minValue', e.target.value ? parseFloat(e.target.value) : undefined)}
                   placeholder="R$ 0"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
               <div>
@@ -256,7 +256,7 @@ export default function LeadsFilter({
                   value={localFilters.maxValue || ''}
                   onChange={(e) => handleChange('maxValue', e.target.value ? parseFloat(e.target.value) : undefined)}
                   placeholder="R$ 10.000"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 />
               </div>
             </div>
