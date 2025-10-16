@@ -340,7 +340,7 @@ export default function LeadsPage() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Carregando...</p>
         </div>
       </div>
     );
@@ -350,8 +350,8 @@ export default function LeadsPage() {
     return (
       <div className="p-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Nenhum Pipeline Encontrado</h2>
-          <p className="text-gray-600 mb-6">Crie seu primeiro pipeline para começar a gerenciar leads.</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Nenhum Pipeline Encontrado</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Crie seu primeiro pipeline para começar a gerenciar leads.</p>
           <button className="btn-primary">
             Criar Pipeline
           </button>
@@ -412,23 +412,23 @@ export default function LeadsPage() {
                 return (
                   <div
                     key={stage.id}
-                    className="flex-shrink-0 w-80 bg-gray-100 rounded-lg flex flex-col"
+                    className="flex-shrink-0 w-80 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col"
                   >
                     {/* Stage Header */}
-                    <div className="p-4 border-b border-gray-200">
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: stage.color }}
                           ></div>
-                          <h3 className="font-semibold text-gray-900">{stage.name}</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">{stage.name}</h3>
                         </div>
-                        <span className="text-sm font-medium text-gray-600">
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                           {stageLeads.length}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {formatCurrency(stageValue)} • {stage.probability}% prob.
                       </div>
                     </div>
@@ -436,7 +436,7 @@ export default function LeadsPage() {
                     {/* Leads List */}
                     <DroppableStageColumn id={stage.id}>
                       {stageLeads.length === 0 ? (
-                        <div className="text-center py-8 text-gray-400 text-sm">
+                        <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
                           Nenhum lead neste estágio
                         </div>
                       ) : (
@@ -464,16 +464,16 @@ export default function LeadsPage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-8rem)]">
       {/* Header */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{selectedPipeline.name}</h2>
-              <p className="text-sm text-gray-500">Pipeline de vendas</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{selectedPipeline.name}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Pipeline de vendas</p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setIsFilterOpen(true)}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 relative"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 relative"
               >
                 Filtros
                 {Object.keys(filters).filter(key => filters[key as keyof LeadFilters]).length > 0 && (
@@ -490,14 +490,14 @@ export default function LeadsPage() {
 
           {/* View Mode Selector */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 mr-2">Visualização:</span>
-            <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
+            <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">Visualização:</span>
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 gap-1">
               <button
                 onClick={() => setViewMode('kanban')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'kanban'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Columns size={16} />
@@ -507,8 +507,8 @@ export default function LeadsPage() {
                 onClick={() => setViewMode('list')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'list'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <List size={16} />
@@ -518,8 +518,8 @@ export default function LeadsPage() {
                 onClick={() => setViewMode('grid')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'grid'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <LayoutGrid size={16} />
@@ -529,8 +529,8 @@ export default function LeadsPage() {
                 onClick={() => setViewMode('timeline')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'timeline'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Clock size={16} />
@@ -540,8 +540,8 @@ export default function LeadsPage() {
                 onClick={() => setViewMode('division')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'division'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Split size={16} />
@@ -603,19 +603,19 @@ export default function LeadsPage() {
 
       {/* Modal de Agendamento */}
       {isAppointmentModalOpen && leadForAppointment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10100] p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-[10100] p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold">Novo Agendamento</h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <h2 className="text-2xl font-bold dark:text-white">Novo Agendamento</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     Paciente: <span className="font-medium">{leadForAppointment.name}</span>
                   </p>
                 </div>
                 <button
                   onClick={() => setIsAppointmentModalOpen(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   <X size={24} />
                 </button>
@@ -624,34 +624,34 @@ export default function LeadsPage() {
               <form onSubmit={handleSubmitAppointment} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Data *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data *</label>
                     <input
                       type="date"
                       required
                       value={appointmentData.scheduledDate}
                       onChange={(e) => setAppointmentData({ ...appointmentData, scheduledDate: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Horário *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário *</label>
                     <input
                       type="time"
                       required
                       value={appointmentData.scheduledTime}
                       onChange={(e) => setAppointmentData({ ...appointmentData, scheduledTime: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Local *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Local *</label>
                   <select
                     value={appointmentData.location}
                     onChange={(e) => setAppointmentData({ ...appointmentData, location: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                   >
                     <option value="moema">Moema</option>
                     <option value="av_paulista">Av. Paulista</option>
@@ -663,23 +663,23 @@ export default function LeadsPage() {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Valor</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor</label>
                     <input
                       type="number"
                       step="0.01"
                       value={appointmentData.paymentAmount}
                       onChange={(e) => setAppointmentData({ ...appointmentData, paymentAmount: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                       placeholder="0.00"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Forma de Pagamento</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Forma de Pagamento</label>
                     <select
                       value={appointmentData.paymentMethod}
                       onChange={(e) => setAppointmentData({ ...appointmentData, paymentMethod: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     >
                       <option value="pix">PIX</option>
                       <option value="cartao">Cartão</option>
@@ -696,43 +696,43 @@ export default function LeadsPage() {
                       checked={appointmentData.hasReturn}
                       onChange={(e) => setAppointmentData({ ...appointmentData, hasReturn: e.target.checked })}
                     />
-                    <span className="text-sm font-medium">Agendar retornos automáticos</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Agendar retornos automáticos</span>
                   </label>
                 </div>
 
                 {appointmentData.hasReturn && (
                   <div className="grid grid-cols-2 gap-4 pl-6">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Quantidade de retornos</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade de retornos</label>
                       <input
                         type="number"
                         min="1"
                         max="12"
                         value={appointmentData.returnCount}
                         onChange={(e) => setAppointmentData({ ...appointmentData, returnCount: parseInt(e.target.value) })}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">A cada (dias)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">A cada (dias)</label>
                       <input
                         type="number"
                         min="1"
                         value={appointmentData.returnFrequency}
                         onChange={(e) => setAppointmentData({ ...appointmentData, returnFrequency: parseInt(e.target.value) })}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                       />
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Observações</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
                   <textarea
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     rows={3}
                     placeholder="Observações sobre o agendamento..."
                   />
@@ -742,7 +742,7 @@ export default function LeadsPage() {
                   <button
                     type="button"
                     onClick={() => setIsAppointmentModalOpen(false)}
-                    className="px-4 py-2 border rounded hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Cancelar
                   </button>
