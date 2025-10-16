@@ -320,20 +320,20 @@ const AgendaPage: React.FC = () => {
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
               showFilters
-                ? 'bg-blue-50 border-blue-500 text-blue-700'
-                : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300'
+                : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
             }`}
           >
             <Filter size={20} />
             Filtros
           </button>
-          <div className="flex bg-gray-100 rounded-lg p-1">
+          <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
             <button
               onClick={() => setViewMode('today')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 viewMode === 'today'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               Hoje
@@ -342,8 +342,8 @@ const AgendaPage: React.FC = () => {
               onClick={() => setViewMode('all')}
               className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                 viewMode === 'all'
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
+                  ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
               Todos
@@ -361,12 +361,12 @@ const AgendaPage: React.FC = () => {
 
       {/* Painel de Filtros */}
       {showFilters && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Filtrar Agendamentos</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Filtrar Agendamentos</h3>
             <button
               onClick={clearFilters}
-              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1"
             >
               <X size={16} />
               Limpar Filtros
@@ -375,22 +375,22 @@ const AgendaPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Buscar Paciente</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Buscar Paciente</label>
               <input
                 type="text"
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 placeholder="Nome do paciente..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Todos</option>
                 <option value="aguardando_pagamento">Aguardando Pagamento</option>
@@ -403,11 +403,11 @@ const AgendaPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Local</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Local</label>
               <select
                 value={filters.location}
                 onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Todos</option>
                 <option value="moema">Moema</option>
@@ -416,11 +416,11 @@ const AgendaPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Procedimento</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Procedimento</label>
               <select
                 value={filters.procedureId}
                 onChange={(e) => setFilters({ ...filters, procedureId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Todos</option>
                 {procedures.map((proc) => (
@@ -432,22 +432,22 @@ const AgendaPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data Inicial</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Inicial</label>
               <input
                 type="date"
                 value={filters.dateFrom}
                 onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data Final</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Final</label>
               <input
                 type="date"
                 value={filters.dateTo}
                 onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -654,14 +654,14 @@ const AgendaPage: React.FC = () => {
 
       {/* Modal Novo Agendamento */}
       {showNewForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold">Novo Agendamento</h2>
+                <h2 className="text-2xl font-bold dark:text-white">Novo Agendamento</h2>
                 <button
                   onClick={() => setShowNewForm(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   <XCircle size={24} />
                 </button>
@@ -669,12 +669,12 @@ const AgendaPage: React.FC = () => {
 
               <form onSubmit={handleCreateAppointment} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Paciente *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Paciente *</label>
                   <select
                     required
                     value={formData.leadId}
                     onChange={(e) => setFormData({ ...formData, leadId: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                   >
                     <option value="">Selecione um paciente</option>
                     {leads.map((lead) => (
@@ -686,12 +686,12 @@ const AgendaPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Procedimento *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Procedimento *</label>
                   <select
                     required
                     value={formData.procedureId}
                     onChange={(e) => setFormData({ ...formData, procedureId: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                   >
                     <option value="">Selecione um procedimento</option>
                     {procedures.map((proc) => (
@@ -704,34 +704,34 @@ const AgendaPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Data *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data *</label>
                     <input
                       type="date"
                       required
                       value={formData.scheduledDate}
                       onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Horário *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário *</label>
                     <input
                       type="time"
                       required
                       value={formData.scheduledTime}
                       onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Local *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Local *</label>
                   <select
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                   >
                     <option value="moema">Moema</option>
                     <option value="av_paulista">Av. Paulista</option>
@@ -743,23 +743,23 @@ const AgendaPage: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Valor</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor</label>
                     <input
                       type="number"
                       step="0.01"
                       value={formData.paymentAmount}
                       onChange={(e) => setFormData({ ...formData, paymentAmount: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                       placeholder="0.00"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Forma de Pagamento</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Forma de Pagamento</label>
                     <select
                       value={formData.paymentMethod}
                       onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     >
                       <option value="pix">PIX</option>
                       <option value="cartao">Cartão</option>
@@ -776,43 +776,43 @@ const AgendaPage: React.FC = () => {
                       checked={formData.hasReturn}
                       onChange={(e) => setFormData({ ...formData, hasReturn: e.target.checked })}
                     />
-                    <span className="text-sm font-medium">Agendar retornos automáticos</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Agendar retornos automáticos</span>
                   </label>
                 </div>
 
                 {formData.hasReturn && (
                   <div className="grid grid-cols-2 gap-4 pl-6">
                     <div>
-                      <label className="block text-sm font-medium mb-1">Quantidade de retornos</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade de retornos</label>
                       <input
                         type="number"
                         min="1"
                         max="12"
                         value={formData.returnCount}
                         onChange={(e) => setFormData({ ...formData, returnCount: parseInt(e.target.value) })}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-1">A cada (dias)</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">A cada (dias)</label>
                       <input
                         type="number"
                         min="1"
                         value={formData.returnFrequency}
                         onChange={(e) => setFormData({ ...formData, returnFrequency: parseInt(e.target.value) })}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                       />
                     </div>
                   </div>
                 )}
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Observações</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     rows={3}
                     placeholder="Observações sobre o agendamento..."
                   />
@@ -822,7 +822,7 @@ const AgendaPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowNewForm(false)}
-                    className="px-4 py-2 border rounded hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Cancelar
                   </button>
@@ -841,19 +841,19 @@ const AgendaPage: React.FC = () => {
 
       {/* Modal Editar Agendamento */}
       {showEditForm && selectedAppointment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold">Editar Agendamento</h2>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <h2 className="text-2xl font-bold dark:text-white">Editar Agendamento</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     Paciente: <span className="font-medium">{selectedAppointment.lead?.name}</span>
                   </p>
                 </div>
                 <button
                   onClick={() => setShowEditForm(false)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 >
                   <XCircle size={24} />
                 </button>
@@ -862,34 +862,34 @@ const AgendaPage: React.FC = () => {
               <form onSubmit={handleUpdateAppointment} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Data *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data *</label>
                     <input
                       type="date"
                       required
                       value={editFormData.scheduledDate}
                       onChange={(e) => setEditFormData({ ...editFormData, scheduledDate: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Horário *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário *</label>
                     <input
                       type="time"
                       required
                       value={editFormData.scheduledTime}
                       onChange={(e) => setEditFormData({ ...editFormData, scheduledTime: e.target.value })}
-                      className="w-full p-2 border rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Local *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Local *</label>
                   <select
                     value={editFormData.location}
                     onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                   >
                     <option value="moema">Moema</option>
                     <option value="av_paulista">Av. Paulista</option>
@@ -900,11 +900,11 @@ const AgendaPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-1">Observações</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
                   <textarea
                     value={editFormData.notes}
                     onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
                     rows={3}
                     placeholder="Observações sobre o agendamento..."
                   />
@@ -914,7 +914,7 @@ const AgendaPage: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowEditForm(false)}
-                    className="px-4 py-2 border rounded hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Cancelar
                   </button>
