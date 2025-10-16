@@ -132,11 +132,11 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDel
       {...listeners}
       {...attributes}
       onClick={handleClick}
-      className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing border border-gray-200"
+      className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing border border-gray-200 dark:border-gray-700"
     >
       {/* Header: Nome + Botão Excluir + Responsável */}
       <div className="flex items-start justify-between mb-2">
-        <h4 className="font-semibold text-gray-900 text-sm flex-1 pr-2 line-clamp-2">
+        <h4 className="font-semibold text-gray-900 dark:text-white text-sm flex-1 pr-2 line-clamp-2">
           {lead.name}
         </h4>
         <div className="flex items-center gap-1.5">
@@ -177,7 +177,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDel
 
       {/* Valor Estimado */}
       {lead.estimatedValue && (
-        <p className="text-sm font-bold text-primary-600 mb-2">
+        <p className="text-sm font-bold text-primary-600 dark:text-primary-400 mb-2">
           {formatCurrency(lead.estimatedValue)}
         </p>
       )}
@@ -186,7 +186,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDel
       <div className="space-y-1.5 mb-2">
         {/* Canal */}
         {lead.channel && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             {getChannelIcon(lead.channel)}
             <span>{getChannelLabel(lead.channel)}</span>
           </div>
@@ -194,7 +194,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDel
 
         {/* Situação do Cliente */}
         {lead.clientStatus && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             <User className="w-3.5 h-3.5" />
             <span>{getClientStatusLabel(lead.clientStatus)}</span>
           </div>
@@ -202,7 +202,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDel
 
         {/* Local de Atendimento */}
         {lead.attendanceLocation && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             <MapPin className="w-3.5 h-3.5" />
             <span>{getLocationLabel(lead.attendanceLocation)}</span>
           </div>
@@ -210,7 +210,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDel
       </div>
 
       {/* Contatos (Email e Telefone - apenas ícones) */}
-      <div className="flex items-center gap-2 text-xs text-gray-400">
+      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
         {lead.email && (
           <span title={lead.email}><Mail className="w-3.5 h-3.5" /></span>
         )}
@@ -228,13 +228,13 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDel
           {lead.tags.slice(0, 2).map((tag, idx) => (
             <span
               key={idx}
-              className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded"
+              className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded"
             >
               {tag}
             </span>
           ))}
           {lead.tags.length > 2 && (
-            <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+            <span className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
               +{lead.tags.length - 2}
             </span>
           )}

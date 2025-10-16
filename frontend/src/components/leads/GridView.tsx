@@ -21,7 +21,7 @@ export default function GridView({ leads, stages, formatCurrency, onLeadClick }:
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {leads.length === 0 ? (
-        <div className="col-span-full text-center py-12 text-gray-500">
+        <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
           Nenhum lead encontrado
         </div>
       ) : (
@@ -29,7 +29,7 @@ export default function GridView({ leads, stages, formatCurrency, onLeadClick }:
           <div
             key={lead.id}
             onClick={() => onLeadClick(lead)}
-            className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
+            className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 dark:border-gray-700"
           >
             {/* Header with Stage */}
             <div className="flex items-center justify-between mb-3">
@@ -49,7 +49,7 @@ export default function GridView({ leads, stages, formatCurrency, onLeadClick }:
             </div>
 
             {/* Lead Name */}
-            <h4 className="font-semibold text-gray-900 text-base mb-2">
+            <h4 className="font-semibold text-gray-900 dark:text-white text-base mb-2">
               {lead.name}
             </h4>
 
@@ -70,7 +70,7 @@ export default function GridView({ leads, stages, formatCurrency, onLeadClick }:
 
             {/* Estimated Value */}
             {lead.estimatedValue && (
-              <p className="text-sm font-semibold text-primary-600 mb-3">
+              <p className="text-sm font-semibold text-primary-600 dark:text-primary-400 mb-3">
                 {formatCurrency(lead.estimatedValue)}
               </p>
             )}
@@ -78,7 +78,7 @@ export default function GridView({ leads, stages, formatCurrency, onLeadClick }:
             {/* Contact Info */}
             <div className="space-y-1 mb-3">
               {lead.email && (
-                <div className="flex items-center gap-2 text-xs text-gray-600">
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
@@ -91,7 +91,7 @@ export default function GridView({ leads, stages, formatCurrency, onLeadClick }:
                 </div>
               )}
               {lead.phone && (
-                <div className="flex items-center gap-2 text-xs text-gray-600">
+                <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path
                       strokeLinecap="round"
@@ -107,7 +107,7 @@ export default function GridView({ leads, stages, formatCurrency, onLeadClick }:
 
             {/* Expected Close Date */}
             {lead.expectedCloseDate && (
-              <div className="text-xs text-gray-500 border-t border-gray-100 pt-2">
+              <div className="text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-2">
                 <svg className="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -126,13 +126,13 @@ export default function GridView({ leads, stages, formatCurrency, onLeadClick }:
                 {lead.tags.slice(0, 3).map((tag, idx) => (
                   <span
                     key={idx}
-                    className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded"
+                    className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded"
                   >
                     {tag}
                   </span>
                 ))}
                 {lead.tags.length > 3 && (
-                  <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded">
+                  <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
                     +{lead.tags.length - 3}
                   </span>
                 )}
