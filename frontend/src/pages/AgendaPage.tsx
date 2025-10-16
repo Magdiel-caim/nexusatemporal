@@ -504,16 +504,16 @@ const AgendaPage: React.FC = () => {
       </div>
 
       {/* Appointments List */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-4 border-b">
-          <h2 className="text-xl font-semibold">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+        <div className="p-4 border-b dark:border-gray-700">
+          <h2 className="text-xl font-semibold dark:text-gray-100">
             {viewMode === 'today' ? 'Agendamentos de Hoje' : 'Todos os Agendamentos'}
           </h2>
         </div>
 
-        <div className="divide-y">
+        <div className="divide-y dark:divide-gray-700">
           {filteredAppointments.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
+            <div className="p-8 text-center text-gray-500 dark:text-gray-400">
               <Calendar size={48} className="mx-auto mb-2 opacity-50" />
               <p>
                 {appointments.length === 0
@@ -523,11 +523,11 @@ const AgendaPage: React.FC = () => {
             </div>
           ) : (
             filteredAppointments.map((appointment) => (
-              <div key={appointment.id} className="p-4 hover:bg-gray-50">
+              <div key={appointment.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-700">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold">
+                      <h3 className="text-lg font-semibold dark:text-gray-100">
                         {appointment.lead?.name || 'Lead não encontrado'}
                       </h3>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}>
@@ -571,7 +571,7 @@ const AgendaPage: React.FC = () => {
                     </div>
 
                     {appointment.notes && (
-                      <p className="mt-2 text-sm text-gray-600">{appointment.notes}</p>
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">{appointment.notes}</p>
                     )}
                   </div>
 
