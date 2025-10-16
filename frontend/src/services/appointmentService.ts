@@ -156,6 +156,67 @@ class AppointmentService {
     });
     return response.data.data;
   }
+
+  async checkAvailability(
+    scheduledDate: string,
+    duration: number,
+    location: string,
+    professionalId?: string,
+    excludeAppointmentId?: string
+  ): Promise<{ available: boolean; conflicts: Appointment[] }> {
+    const response = await api.post(`${this.baseUrl}/check-availability`, {
+      scheduledDate,
+      duration,
+      location,
+      professionalId,
+      excludeAppointmentId,
+    });
+    return response.data.data;
+  }
+
+  async getOccupiedSlots(
+    date: string, // YYYY-MM-DD
+    location: string,
+    professionalId?: string,
+    interval = 5
+  ): Promise<string[]> {
+    const params = new URLSearchParams({
+      date,
+      location,
+      interval: interval.toString(),
+    });
+
+    if (professionalId) {
+      params.append('professionalId', professionalId);
+    }
+
+    const response = await api.get(`${this.baseUrl}/occupied-slots?${params.toString()}`);
+    return response.data.data;
+  }
+
+  async getAvailableSlots(
+    date: string, // YYYY-MM-DD
+    location: string,
+    professionalId?: string,
+    startHour = 7,
+    endHour = 20,
+    interval = 5
+  ): Promise<{ time: string; available: boolean }[]> {
+    const params = new URLSearchParams({
+      date,
+      location,
+      startHour: startHour.toString(),
+      endHour: endHour.toString(),
+      interval: interval.toString(),
+    });
+
+    if (professionalId) {
+      params.append('professionalId', professionalId);
+    }
+
+    const response = await api.get(`${this.baseUrl}/available-slots?${params.toString()}`);
+    return response.data.data;
+  }
 }
 
 export default new AppointmentService();

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, User, MapPin, Plus, CheckCircle, XCircle, AlertCircle, Edit, Trash2, Filter, X } from 'lucide-react';
+import { Calendar, Clock, User, MapPin, Plus, CheckCircle, XCircle, AlertCircle, Edit, Trash2, Filter, X, LayoutGrid, List } from 'lucide-react';
 import appointmentService, { Appointment, UpdateAppointmentDto } from '../services/appointmentService';
 import { leadsService } from '../services/leadsService';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
+import AgendaCalendar from '../components/agenda/AgendaCalendar';
 
 const AgendaPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -15,6 +16,7 @@ const AgendaPage: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
   const [viewMode, setViewMode] = useState<'today' | 'all'>('today');
+  const [viewType, setViewType] = useState<'list' | 'calendar'>('calendar'); // Padrão: calendário
 
   // Filtros
   const [filters, setFilters] = useState({
@@ -316,46 +318,76 @@ const AgendaPage: React.FC = () => {
           <p className="text-gray-600 dark:text-gray-300">Gerencie os agendamentos da clínica</p>
         </div>
         <div className="flex gap-3">
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              showFilters
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300'
-                : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-            }`}
-          >
-            <Filter size={20} />
-            Filtros
-          </button>
+          {/* Toggle Calendário/Lista */}
           <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
             <button
-              onClick={() => setViewMode('today')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'today'
+              onClick={() => setViewType('calendar')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                viewType === 'calendar'
                   ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
-              Hoje
+              <LayoutGrid size={18} />
+              Calendário
             </button>
             <button
-              onClick={() => setViewMode('all')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                viewMode === 'all'
+              onClick={() => setViewType('list')}
+              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                viewType === 'list'
                   ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
               }`}
             >
-              Todos
+              <List size={18} />
+              Lista
             </button>
           </div>
-          <button
-            onClick={() => setShowNewForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            <Plus size={20} />
-            Novo Agendamento
-          </button>
+
+          {viewType === 'list' && (
+            <>
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
+                  showFilters
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-300'
+                    : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                }`}
+              >
+                <Filter size={20} />
+                Filtros
+              </button>
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('today')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'today'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  Hoje
+                </button>
+                <button
+                  onClick={() => setViewMode('all')}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === 'all'
+                      ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                  }`}
+                >
+                  Todos
+                </button>
+              </div>
+              <button
+                onClick={() => setShowNewForm(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                <Plus size={20} />
+                Novo Agendamento
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -455,56 +487,67 @@ const AgendaPage: React.FC = () => {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">{viewMode === 'today' ? 'Hoje' : 'Total'}</p>
-              <p className="text-2xl font-bold dark:text-white">{filteredAppointments.length}</p>
+      {viewType === 'list' && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-300">{viewMode === 'today' ? 'Hoje' : 'Total'}</p>
+                <p className="text-2xl font-bold dark:text-white">{filteredAppointments.length}</p>
+              </div>
+              <Calendar className="text-blue-600" size={32} />
             </div>
-            <Calendar className="text-blue-600" size={32} />
           </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Confirmados</p>
-              <p className="text-2xl font-bold text-green-600">
-                {filteredAppointments.filter(a => a.status === 'confirmado').length}
-              </p>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Confirmados</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {filteredAppointments.filter(a => a.status === 'confirmado').length}
+                </p>
+              </div>
+              <CheckCircle className="text-green-600" size={32} />
             </div>
-            <CheckCircle className="text-green-600" size={32} />
           </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Aguardando</p>
-              <p className="text-2xl font-bold text-orange-600">
-                {filteredAppointments.filter(a => a.status === 'aguardando_confirmacao').length}
-              </p>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Aguardando</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {filteredAppointments.filter(a => a.status === 'aguardando_confirmacao').length}
+                </p>
+              </div>
+              <AlertCircle className="text-orange-600" size={32} />
             </div>
-            <AlertCircle className="text-orange-600" size={32} />
           </div>
-        </div>
 
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-300">Em Atendimento</p>
-              <p className="text-2xl font-bold text-purple-600">
-                {filteredAppointments.filter(a => a.status === 'em_atendimento').length}
-              </p>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Em Atendimento</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {filteredAppointments.filter(a => a.status === 'em_atendimento').length}
+                </p>
+              </div>
+              <Clock className="text-purple-600" size={32} />
             </div>
-            <Clock className="text-purple-600" size={32} />
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Calendar View */}
+      {viewType === 'calendar' && (
+        <AgendaCalendar
+          appointments={appointments}
+          onRefresh={loadAppointments}
+        />
+      )}
 
       {/* Appointments List */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
+      {viewType === 'list' && (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div className="p-4 border-b dark:border-gray-700">
           <h2 className="text-xl font-semibold dark:text-gray-100">
             {viewMode === 'today' ? 'Agendamentos de Hoje' : 'Todos os Agendamentos'}
@@ -651,9 +694,10 @@ const AgendaPage: React.FC = () => {
           )}
         </div>
       </div>
+      )}
 
       {/* Modal Novo Agendamento */}
-      {showNewForm && (
+      {showNewForm && viewType === 'list' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
