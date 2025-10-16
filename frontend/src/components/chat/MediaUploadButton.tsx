@@ -82,7 +82,7 @@ const MediaUploadButton: React.FC<MediaUploadButtonProps> = ({ type, onFileSelec
       <button
         onClick={() => fileInputRef.current?.click()}
         disabled={disabled}
-        className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         title={`Enviar ${type === 'any' ? 'arquivo' : type === 'image' ? 'imagem' : type === 'video' ? 'vídeo' : 'documento'}`}
       >
         {getIcon()}
@@ -134,10 +134,10 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
 
     return (
       <div className="flex items-center gap-3 p-4 bg-gray-100 rounded-lg">
-        <FileText className="h-8 w-8 text-gray-600" />
+        <FileText className="h-8 w-8 text-gray-600 dark:text-gray-400" />
         <div>
-          <p className="font-medium text-gray-900">{file.name}</p>
-          <p className="text-sm text-gray-500">
+          <p className="font-medium text-gray-900 dark:text-white">{file.name}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {(file.size / 1024).toFixed(2)} KB
           </p>
         </div>
@@ -147,25 +147,25 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
-          <h3 className="font-semibold text-gray-900">Enviar Arquivo</h3>
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+          <h3 className="font-semibold text-gray-900 dark:text-white">Enviar Arquivo</h3>
           <button
             onClick={onCancel}
-            className="p-2 hover:bg-gray-100 rounded-lg"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Preview Area */}
-        <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
           {renderPreview()}
         </div>
 
         {/* Caption Input */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -180,7 +180,7 @@ export const MediaPreview: React.FC<MediaPreviewProps> = ({
                   onSend();
                 }
               }}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               autoFocus
             />
             <button

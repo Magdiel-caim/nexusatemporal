@@ -272,12 +272,12 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <div className="flex items-center gap-3 mb-6">
         <Smartphone className="h-8 w-8 text-green-600" />
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Conectar WhatsApp</h2>
-          <p className="text-sm text-gray-600">Conecte seu número do WhatsApp ao sistema</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Conectar WhatsApp</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Conecte seu número do WhatsApp ao sistema</p>
         </div>
       </div>
 
@@ -329,7 +329,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
       {status === 'idle' && (
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Nome da Conexão
             </label>
             <input
@@ -342,11 +342,11 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
                 }
               }}
               placeholder="Ex: whatsapp_comercial"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
               maxLength={50}
               autoFocus
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               Use apenas letras, números e underscores (_). Pressione Enter para conectar.
             </p>
           </div>
@@ -364,7 +364,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
       {(status === 'creating' || status === 'starting') && (
         <div className="text-center py-12">
           <Loader className="h-12 w-12 text-green-600 mx-auto mb-4 animate-spin" />
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             {status === 'creating' ? 'Criando conexão...' : 'Gerando QR Code...'}
           </p>
         </div>
@@ -387,10 +387,10 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
           </div>
 
           <div className="text-center space-y-2">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               <strong>Como conectar:</strong>
             </p>
-            <ol className="text-sm text-gray-600 text-left space-y-1 max-w-md mx-auto">
+            <ol className="text-sm text-gray-600 dark:text-gray-400 text-left space-y-1 max-w-md mx-auto">
               <li>1. Abra o WhatsApp no seu celular</li>
               <li>2. Toque em <strong>Configurações</strong> {'>'} <strong>Aparelhos conectados</strong></li>
               <li>3. Toque em <strong>Conectar um aparelho</strong></li>
@@ -400,7 +400,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
           <button
             onClick={handleReset}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg"
+            className="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold py-2 px-4 rounded-lg"
           >
             Cancelar
           </button>
@@ -411,7 +411,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
         <div className="text-center py-12">
           <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-green-800 mb-2">Conectado com Sucesso!</h3>
-          <p className="text-gray-600 mb-6">Seu WhatsApp está conectado e pronto para usar</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Seu WhatsApp está conectado e pronto para usar</p>
           <button
             onClick={handleReset}
             className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg"
@@ -425,7 +425,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
         <div className="text-center py-12">
           <XCircle className="h-16 w-16 text-red-600 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-red-800 mb-2">Falha na Conexão</h3>
-          <p className="text-gray-600 mb-6">Não foi possível conectar seu WhatsApp</p>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Não foi possível conectar seu WhatsApp</p>
           <button
             onClick={handleReset}
             className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg flex items-center justify-center gap-2 mx-auto"

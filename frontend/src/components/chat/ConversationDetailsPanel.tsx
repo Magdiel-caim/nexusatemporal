@@ -70,14 +70,14 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
 
   const renderMacros = () => (
     <div className="space-y-2">
-      <p className="text-xs text-gray-500 px-3">Respostas rápidas disponíveis</p>
-      <button className="w-full px-3 py-2 text-sm text-left hover:bg-gray-100 rounded-lg">
+      <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 px-3">Respostas rápidas disponíveis</p>
+      <button className="w-full px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
         Saudação inicial
       </button>
-      <button className="w-full px-3 py-2 text-sm text-left hover:bg-gray-100 rounded-lg">
+      <button className="w-full px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
         Horário de atendimento
       </button>
-      <button className="w-full px-3 py-2 text-sm text-left hover:bg-gray-100 rounded-lg">
+      <button className="w-full px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
         Informações sobre serviços
       </button>
     </div>
@@ -86,37 +86,37 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
   const renderInfo = () => (
     <div className="space-y-3 text-sm">
       <div className="flex items-start gap-2 px-3">
-        <Phone className="h-4 w-4 text-gray-400 mt-0.5" />
+        <Phone className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5" />
         <div className="flex-1">
-          <p className="text-xs text-gray-500">Telefone</p>
-          <p className="font-medium text-gray-700">{conversation.phoneNumber}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Telefone</p>
+          <p className="font-medium text-gray-700 dark:text-gray-300">{conversation.phoneNumber}</p>
         </div>
       </div>
 
       {conversation.whatsappInstanceId && (
         <div className="flex items-start gap-2 px-3">
-          <Hash className="h-4 w-4 text-gray-400 mt-0.5" />
+          <Hash className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5" />
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Sessão WhatsApp</p>
-            <p className="font-medium text-gray-700 break-all">{conversation.whatsappInstanceId}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Sessão WhatsApp</p>
+            <p className="font-medium text-gray-700 dark:text-gray-300 break-all">{conversation.whatsappInstanceId}</p>
           </div>
         </div>
       )}
 
       <div className="flex items-start gap-2 px-3">
-        <Clock className="h-4 w-4 text-gray-400 mt-0.5" />
+        <Clock className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5" />
         <div className="flex-1">
-          <p className="text-xs text-gray-500">Status</p>
-          <p className="font-medium text-gray-700 capitalize">{conversation.status}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Status</p>
+          <p className="font-medium text-gray-700 dark:text-gray-300 capitalize">{conversation.status}</p>
         </div>
       </div>
 
       {conversation.createdAt && (
         <div className="flex items-start gap-2 px-3">
-          <Calendar className="h-4 w-4 text-gray-400 mt-0.5" />
+          <Calendar className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5" />
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Criada em</p>
-            <p className="font-medium text-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Criada em</p>
+            <p className="font-medium text-gray-700 dark:text-gray-300">
               {format(new Date(conversation.createdAt), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", {
                 locale: ptBR,
               })}
@@ -127,10 +127,10 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
 
       {conversation.lastMessageAt && (
         <div className="flex items-start gap-2 px-3">
-          <MessageSquare className="h-4 w-4 text-gray-400 mt-0.5" />
+          <MessageSquare className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5" />
           <div className="flex-1">
-            <p className="text-xs text-gray-500">Última mensagem</p>
-            <p className="font-medium text-gray-700">
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Última mensagem</p>
+            <p className="font-medium text-gray-700 dark:text-gray-300">
               {format(new Date(conversation.lastMessageAt), "dd/MM/yyyy 'às' HH:mm", {
                 locale: ptBR,
               })}
@@ -144,20 +144,20 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
   const renderAttributes = () => (
     <div className="space-y-3 text-sm">
       <div className="px-3">
-        <p className="text-xs text-gray-500 mb-2">Campos personalizados</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500 mb-2">Campos personalizados</p>
         <div className="space-y-2">
           <div className="flex items-start gap-2">
-            <Mail className="h-4 w-4 text-gray-400 mt-0.5" />
+            <Mail className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5" />
             <div className="flex-1">
-              <p className="text-xs text-gray-500">Email</p>
-              <p className="text-gray-700">Não informado</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Email</p>
+              <p className="text-gray-700 dark:text-gray-300">Não informado</p>
             </div>
           </div>
           <div className="flex items-start gap-2">
-            <MapPin className="h-4 w-4 text-gray-400 mt-0.5" />
+            <MapPin className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5" />
             <div className="flex-1">
-              <p className="text-xs text-gray-500">Cidade</p>
-              <p className="text-gray-700">Não informado</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Cidade</p>
+              <p className="text-gray-700 dark:text-gray-300">Não informado</p>
             </div>
           </div>
         </div>
@@ -170,8 +170,8 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
 
   const renderHistory = () => (
     <div className="space-y-2 px-3">
-      <p className="text-xs text-gray-500">Histórico de conversas anteriores</p>
-      <div className="text-sm text-gray-600">
+      <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Histórico de conversas anteriores</p>
+      <div className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500">
         <p>Nenhuma conversa anterior encontrada</p>
       </div>
     </div>
@@ -186,8 +186,8 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
           </span>
         </div>
         <div>
-          <p className="font-medium text-gray-700">{conversation.contactName}</p>
-          <p className="text-xs text-gray-500">Cliente</p>
+          <p className="font-medium text-gray-700 dark:text-gray-300">{conversation.contactName}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">Cliente</p>
         </div>
       </div>
       {conversation.assignedUserId && (
@@ -196,8 +196,8 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
             <Users className="h-4 w-4 text-green-700" />
           </div>
           <div>
-            <p className="font-medium text-gray-700">Atendente</p>
-            <p className="text-xs text-gray-500">ID: {conversation.assignedUserId}</p>
+            <p className="font-medium text-gray-700 dark:text-gray-300">Atendente</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">ID: {conversation.assignedUserId}</p>
           </div>
         </div>
       )}
@@ -205,9 +205,9 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
   );
 
   return (
-    <div className="w-80 bg-white border-l border-gray-200 flex flex-col h-full overflow-hidden">
+    <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 dark:border-gray-700 flex flex-col h-full overflow-hidden">
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center">
             <span className="text-lg font-semibold text-indigo-700">
@@ -215,8 +215,8 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
             </span>
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-gray-900">{conversation.contactName}</h3>
-            <p className="text-xs text-gray-500">{conversation.phoneNumber}</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white">{conversation.contactName}</h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">{conversation.phoneNumber}</p>
           </div>
         </div>
 
@@ -238,20 +238,20 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto">
         {sections.map((section) => (
-          <div key={section.id} className="border-b border-gray-200">
+          <div key={section.id} className="border-b border-gray-200 dark:border-gray-700">
             {/* Section Header */}
             <button
               onClick={() => toggleSection(section.id)}
-              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               <div className="flex items-center gap-2">
-                <div className="text-gray-600">{section.icon}</div>
-                <span className="text-sm font-medium text-gray-700">{section.title}</span>
+                <div className="text-gray-600 dark:text-gray-400 dark:text-gray-500">{section.icon}</div>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{section.title}</span>
               </div>
               {section.isOpen ? (
-                <ChevronDown className="h-4 w-4 text-gray-400" />
+                <ChevronDown className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               ) : (
-                <ChevronRight className="h-4 w-4 text-gray-400" />
+                <ChevronRight className="h-4 w-4 text-gray-400 dark:text-gray-500" />
               )}
             </button>
 

@@ -151,24 +151,24 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
       <button
         onClick={startRecording}
         disabled={disabled || isRecording}
-        className="p-2 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         title="Gravar áudio"
       >
-        <Mic className={`h-5 w-5 ${isRecording ? 'text-red-500' : 'text-gray-600'}`} />
+        <Mic className={`h-5 w-5 ${isRecording ? 'text-red-500' : 'text-gray-600 dark:text-gray-400'}`} />
       </button>
 
       {/* Recording Modal */}
       {showRecordingModal && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-md w-full p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-              <h3 className="font-semibold text-gray-900">
+              <h3 className="font-semibold text-gray-900 dark:text-white">
                 {isRecording ? 'Gravando Áudio' : 'Pré-visualizar Áudio'}
               </h3>
               <button
                 onClick={cancelRecording}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -181,7 +181,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
                   <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                   <span className="font-mono text-lg">{formatTime(recordingTime)}</span>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {isPaused ? 'Gravação pausada' : 'Gravando...'}
                 </p>
               </div>
@@ -196,7 +196,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
                   onEnded={() => setIsPlaying(false)}
                   className="hidden"
                 />
-                <div className="flex items-center gap-3 p-4 bg-gray-100 rounded-lg">
+                <div className="flex items-center gap-3 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
                   <button
                     onClick={togglePlayPause}
                     className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full"
@@ -205,10 +205,10 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
                   </button>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-gray-900">Áudio gravado</span>
-                      <span className="text-sm text-gray-600">{formatTime(recordingTime)}</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Áudio gravado</span>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">{formatTime(recordingTime)}</span>
                     </div>
-                    <div className="w-full h-1 bg-gray-300 rounded-full overflow-hidden">
+                    <div className="w-full h-1 bg-gray-300 dark:bg-gray-600 rounded-full overflow-hidden">
                       <div className="h-full bg-indigo-600 transition-all"></div>
                     </div>
                   </div>
@@ -251,7 +251,7 @@ const AudioRecorder: React.FC<AudioRecorderProps> = ({ onAudioReady, disabled })
                 <>
                   <button
                     onClick={cancelRecording}
-                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg flex items-center gap-2"
+                    className="px-4 py-2 bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:bg-gray-600 dark:hover:bg-gray-500 text-gray-700 dark:text-gray-200 rounded-lg flex items-center gap-2"
                   >
                     <Trash2 className="h-4 w-4" />
                     Descartar

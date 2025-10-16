@@ -572,12 +572,12 @@ const ChatPage: React.FC = () => {
       {/* Modal de Conexão WhatsApp */}
       {showWhatsAppConnection && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between sticky top-0 bg-white">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between sticky top-0 bg-white dark:bg-gray-800">
               <h2 className="text-xl font-bold">Conectar WhatsApp</h2>
               <button
                 onClick={() => setShowWhatsAppConnection(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -596,22 +596,22 @@ const ChatPage: React.FC = () => {
         </div>
       )}
 
-      <div className="h-screen flex bg-gray-50">
+      <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
       {/* Left Panel - Conversations List */}
-      <div className="w-96 bg-white border-r border-gray-200 flex flex-col">
+      <div className="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <h1 className="text-xl font-bold text-gray-800 mb-3">Chat</h1>
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <h1 className="text-xl font-bold text-gray-800 dark:text-white mb-3">Chat</h1>
 
           {/* Search */}
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
+            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Buscar conversas..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
 
@@ -620,7 +620,7 @@ const ChatPage: React.FC = () => {
             <button
               onClick={() => setFilterStatus('')}
               className={`px-3 py-1.5 text-sm rounded-lg ${
-                filterStatus === '' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'
+                filterStatus === '' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-500'
               }`}
             >
               Todas
@@ -628,7 +628,7 @@ const ChatPage: React.FC = () => {
             <button
               onClick={() => setFilterStatus('active')}
               className={`px-3 py-1.5 text-sm rounded-lg ${
-                filterStatus === 'active' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'
+                filterStatus === 'active' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-500'
               }`}
             >
               Ativas
@@ -636,7 +636,7 @@ const ChatPage: React.FC = () => {
             <button
               onClick={() => setFilterStatus('waiting')}
               className={`px-3 py-1.5 text-sm rounded-lg ${
-                filterStatus === 'waiting' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'
+                filterStatus === 'waiting' ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-500'
               }`}
             >
               Aguardando
@@ -648,7 +648,7 @@ const ChatPage: React.FC = () => {
             <button
               onClick={() => setFilterChatType('')}
               className={`px-3 py-1.5 text-sm rounded-lg ${
-                filterChatType === '' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                filterChatType === '' ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-500'
               }`}
             >
               Todos
@@ -656,7 +656,7 @@ const ChatPage: React.FC = () => {
             <button
               onClick={() => setFilterChatType('individual')}
               className={`px-3 py-1.5 text-sm rounded-lg ${
-                filterChatType === 'individual' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                filterChatType === 'individual' ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-500'
               }`}
             >
               Individuais
@@ -664,7 +664,7 @@ const ChatPage: React.FC = () => {
             <button
               onClick={() => setFilterChatType('group')}
               className={`px-3 py-1.5 text-sm rounded-lg ${
-                filterChatType === 'group' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                filterChatType === 'group' ? 'bg-green-100 text-green-700' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 dark:text-gray-500'
               }`}
             >
               Grupos
@@ -693,7 +693,7 @@ const ChatPage: React.FC = () => {
             <div
               key={conversation.id}
               onClick={() => setSelectedConversation(conversation)}
-              className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
+              className={`p-4 border-b border-gray-100 dark:border-gray-700 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 dark:bg-gray-900 ${
                 selectedConversation?.id === conversation.id ? 'bg-indigo-50' : ''
               }`}
             >
@@ -706,14 +706,14 @@ const ChatPage: React.FC = () => {
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-sm font-semibold text-gray-900 truncate">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                       {conversation.contactName}
                     </h3>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-500">
                       {formatConversationTime(conversation.lastMessageAt)}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 truncate">{conversation.lastMessagePreview}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 dark:text-gray-500 truncate">{conversation.lastMessagePreview}</p>
 
                   {/* Tags */}
                   {conversation.tags && conversation.tags.length > 0 && (
@@ -741,7 +741,7 @@ const ChatPage: React.FC = () => {
           ))}
 
           {filteredConversations.length === 0 && (
-            <div className="text-center py-12 text-gray-500">
+            <div className="text-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500">
               <p>Nenhuma conversa encontrada</p>
             </div>
           )}
@@ -750,36 +750,36 @@ const ChatPage: React.FC = () => {
 
       {/* Middle Panel - Messages */}
       {selectedConversation ? (
-        <div className="flex-1 flex flex-col bg-white">
+        <div className="flex-1 flex flex-col bg-white dark:bg-gray-800">
           {/* Chat Header */}
-          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
                 <User className="h-5 w-5 text-indigo-600" />
               </div>
               <div>
-                <h2 className="font-semibold text-gray-900">{selectedConversation.contactName}</h2>
-                <p className="text-sm text-gray-500">{selectedConversation.phoneNumber}</p>
+                <h2 className="font-semibold text-gray-900 dark:text-white">{selectedConversation.contactName}</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-500">{selectedConversation.phoneNumber}</p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Phone className="h-5 w-5 text-gray-600" />
+              <button className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg">
+                <Phone className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Video className="h-5 w-5 text-gray-600" />
+              <button className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg">
+                <Video className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
               </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <MoreVertical className="h-5 w-5 text-gray-600" />
+              <button className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg">
+                <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
               </button>
             </div>
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
             {isLoading ? (
-              <div className="text-center py-12 text-gray-500">Carregando mensagens...</div>
+              <div className="text-center py-12 text-gray-500 dark:text-gray-400 dark:text-gray-500">Carregando mensagens...</div>
             ) : (
               <>
                 {messages.map((message) => (
@@ -797,10 +797,10 @@ const ChatPage: React.FC = () => {
 
           {/* Quick Replies Panel */}
           {showQuickReplies && (
-            <div className="border-t border-gray-200 bg-white p-3 max-h-48 overflow-y-auto">
+            <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 max-h-48 overflow-y-auto">
               <div className="flex items-center justify-between mb-2">
-                <h3 className="text-sm font-semibold text-gray-700">Respostas Rápidas</h3>
-                <button onClick={() => setShowQuickReplies(false)} className="text-gray-400 hover:text-gray-600">
+                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">Respostas Rápidas</h3>
+                <button onClick={() => setShowQuickReplies(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:text-gray-500">
                   <X className="h-4 w-4" />
                 </button>
               </div>
@@ -809,7 +809,7 @@ const ChatPage: React.FC = () => {
                   <button
                     key={reply.id}
                     onClick={() => insertQuickReply(reply)}
-                    className="text-left p-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg truncate"
+                    className="text-left p-2 text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:bg-gray-700 rounded-lg truncate"
                   >
                     {reply.title}
                   </button>
@@ -819,17 +819,17 @@ const ChatPage: React.FC = () => {
           )}
 
           {/* Message Input */}
-          <div className="p-4 border-t border-gray-200 bg-white">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             {/* Quoted Message Display */}
             {quotedMessage && (
               <div className="mb-3 p-3 bg-blue-50 border-l-4 border-blue-500 flex items-center justify-between rounded">
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold text-blue-700">Respondendo:</p>
-                  <p className="text-sm text-gray-700 truncate">{quotedMessage.content}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{quotedMessage.content}</p>
                 </div>
                 <button
                   onClick={() => setQuotedMessage(null)}
-                  className="ml-2 text-gray-500 hover:text-gray-700"
+                  className="ml-2 text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -840,10 +840,10 @@ const ChatPage: React.FC = () => {
               {/* Respostas Rápidas */}
               <button
                 onClick={() => setShowQuickReplies(!showQuickReplies)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg"
                 title="Respostas Rápidas"
               >
-                <TagIcon className="h-5 w-5 text-gray-600" />
+                <TagIcon className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
               </button>
 
               {/* Upload de Documento */}
@@ -874,16 +874,16 @@ const ChatPage: React.FC = () => {
                   handleTyping();
                 }}
                 onKeyDown={handleKeyDown}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
 
               {/* Emoji Picker */}
               <button
                 onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
+                className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg"
                 title="Emojis"
               >
-                <Smile className="h-5 w-5 text-gray-600" />
+                <Smile className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
               </button>
 
               {/* Enviar ou Gravar Áudio */}
@@ -910,13 +910,13 @@ const ChatPage: React.FC = () => {
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
           <div className="text-center">
-            <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4 flex items-center justify-center">
-              <User className="h-12 w-12 text-gray-400" />
+            <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-4 flex items-center justify-center">
+              <User className="h-12 w-12 text-gray-400 dark:text-gray-500" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">Selecione uma conversa</h2>
-            <p className="text-gray-500">Escolha uma conversa para começar a conversar</p>
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Selecione uma conversa</h2>
+            <p className="text-gray-500 dark:text-gray-400 dark:text-gray-500">Escolha uma conversa para começar a conversar</p>
           </div>
         </div>
       )}
