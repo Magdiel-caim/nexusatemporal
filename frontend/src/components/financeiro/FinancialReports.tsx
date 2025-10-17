@@ -4,6 +4,8 @@ import {
   Bar,
   LineChart,
   Line,
+  AreaChart,
+  Area,
   PieChart,
   Pie,
   Cell,
@@ -25,6 +27,8 @@ import {
 } from 'lucide-react';
 import { financialService } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 interface MonthlyData {
   month: string;
@@ -220,7 +224,139 @@ export default function FinancialReports() {
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
 
   const exportToPDF = () => {
-    toast.success('Exportação de PDF em desenvolvimento...');
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.width;
+      let yPos = 20;
+
+      // Title
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Relatório Financeiro', pageWidth / 2, yPos, { align: 'center' });
+      yPos += 10;
+
+      // Period
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Período: ${new Date(startDate).toLocaleDateString('pt-BR')} a ${new Date(endDate).toLocaleDateString('pt-BR')}`, pageWidth / 2, yPos, { align: 'center' });
+      yPos += 15;
+
+      // DRE Section
+      if (dreData) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('DRE - Demonstrativo de Resultado', 14, yPos);
+        yPos += 10;
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Descrição', 'Valor']],
+          body: [
+            ['Receita Bruta', formatCurrency(dreData.receitaBruta)],
+            ['(-) Deduções', formatCurrency(0)],
+            ['(=) Receita Líquida', formatCurrency(dreData.receitaLiquida)],
+            ['(-) Custos', formatCurrency(dreData.custos)],
+            ['(=) Lucro Bruto', formatCurrency(dreData.lucroBruto)],
+            ['(-) Despesas Operacionais', formatCurrency(dreData.despesasOperacionais)],
+            ['(=) Lucro Operacional', formatCurrency(dreData.lucroOperacional)],
+            ['(=) Lucro Líquido', formatCurrency(dreData.lucroLiquido)],
+          ],
+          theme: 'striped',
+          headStyles: { fillColor: [59, 130, 246] },
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 15;
+      }
+
+      // Monthly Data
+      if (monthlyData.length > 0) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Receitas e Despesas Mensais', 14, yPos);
+        yPos += 10;
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Mês', 'Receitas', 'Despesas', 'Saldo']],
+          body: monthlyData.map(m => [
+            m.month,
+            formatCurrency(m.receitas),
+            formatCurrency(m.despesas),
+            formatCurrency(m.saldo),
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [59, 130, 246] },
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 15;
+      }
+
+      // New page for categories
+      doc.addPage();
+      yPos = 20;
+
+      // Income Categories
+      if (categoryIncome.length > 0) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Principais Fontes de Receita', 14, yPos);
+        yPos += 10;
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Categoria', 'Valor', '%']],
+          body: categoryIncome.map(c => [
+            c.name,
+            formatCurrency(c.value),
+            `${c.percentage.toFixed(1)}%`,
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [16, 185, 129] },
+        });
+
+        yPos = (doc as any).lastAutoTable.finalY + 15;
+      }
+
+      // Expense Categories
+      if (categoryExpense.length > 0) {
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Principais Despesas', 14, yPos);
+        yPos += 10;
+
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Categoria', 'Valor', '%']],
+          body: categoryExpense.map(c => [
+            c.name,
+            formatCurrency(c.value),
+            `${c.percentage.toFixed(1)}%`,
+          ]),
+          theme: 'striped',
+          headStyles: { fillColor: [239, 68, 68] },
+        });
+      }
+
+      // Footer
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'normal');
+        doc.text(
+          `Página ${i} de ${pageCount} - Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`,
+          pageWidth / 2,
+          doc.internal.pageSize.height - 10,
+          { align: 'center' }
+        );
+      }
+
+      // Save
+      doc.save(`relatorio_financeiro_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('PDF exportado com sucesso!');
+    } catch (error: any) {
+      toast.error('Erro ao exportar PDF: ' + error.message);
+    }
   };
 
   if (loading) {
@@ -457,6 +593,122 @@ export default function FinancialReports() {
               <p>Nenhuma despesa no período</p>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Area Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue Trend Area Chart */}
+        <div className="card">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Tendência de Receitas
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={monthlyData}>
+              <defs>
+                <linearGradient id="colorReceitas" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+              <Legend />
+              <Area
+                type="monotone"
+                dataKey="receitas"
+                stroke="#10b981"
+                fillOpacity={1}
+                fill="url(#colorReceitas)"
+                name="Receitas"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Expense Trend Area Chart */}
+        <div className="card">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <TrendingUp className="w-5 h-5" />
+            Tendência de Despesas
+          </h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={monthlyData}>
+              <defs>
+                <linearGradient id="colorDespesas" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+              <Legend />
+              <Area
+                type="monotone"
+                dataKey="despesas"
+                stroke="#ef4444"
+                fillOpacity={1}
+                fill="url(#colorDespesas)"
+                name="Despesas"
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Combined Area Chart */}
+        <div className="card lg:col-span-2">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5" />
+            Comparativo: Receitas, Despesas e Saldo
+          </h3>
+          <ResponsiveContainer width="100%" height={350}>
+            <AreaChart data={monthlyData}>
+              <defs>
+                <linearGradient id="colorReceitasCombined" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.6}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                </linearGradient>
+                <linearGradient id="colorDespesasCombined" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.6}/>
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip formatter={(value) => formatCurrency(Number(value))} />
+              <Legend />
+              <Area
+                type="monotone"
+                dataKey="receitas"
+                stroke="#10b981"
+                fillOpacity={1}
+                fill="url(#colorReceitasCombined)"
+                name="Receitas"
+              />
+              <Area
+                type="monotone"
+                dataKey="despesas"
+                stroke="#ef4444"
+                fillOpacity={1}
+                fill="url(#colorDespesasCombined)"
+                name="Despesas"
+              />
+              <Line
+                type="monotone"
+                dataKey="saldo"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                name="Saldo"
+                dot={{ r: 4 }}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import CashFlowDaily from './CashFlowDaily';
+import CashFlowHistory from './CashFlowHistory';
 import { History, Calendar } from 'lucide-react';
 
 export default function CashFlowView() {
@@ -37,15 +38,7 @@ export default function CashFlowView() {
 
       {/* Content */}
       {activeView === 'today' && <CashFlowDaily />}
-      {activeView === 'history' && (
-        <div className="card">
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <History className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <p className="text-lg font-medium mb-2">Histórico de Caixas</p>
-            <p className="text-sm">Funcionalidade em desenvolvimento...</p>
-          </div>
-        </div>
-      )}
+      {activeView === 'history' && <CashFlowHistory />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { financialService, Transaction, Supplier, Invoice } from '@/services/financialService';
 import {
   DollarSign,
@@ -12,15 +12,18 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import TransactionList from '../components/financeiro/TransactionList';
+// Eager imports for critical components
 import TransactionForm from '../components/financeiro/TransactionForm';
-import SupplierList from '../components/financeiro/SupplierList';
 import SupplierForm from '../components/financeiro/SupplierForm';
-import InvoiceList from '../components/financeiro/InvoiceList';
 import InvoiceForm from '../components/financeiro/InvoiceForm';
-import CashFlowView from '../components/financeiro/CashFlowView';
-import PurchaseOrderView from '../components/financeiro/PurchaseOrderView';
-import FinancialReports from '../components/financeiro/FinancialReports';
+
+// Lazy imports for heavy components
+const TransactionList = lazy(() => import('../components/financeiro/TransactionList'));
+const SupplierList = lazy(() => import('../components/financeiro/SupplierList'));
+const InvoiceList = lazy(() => import('../components/financeiro/InvoiceList'));
+const CashFlowView = lazy(() => import('../components/financeiro/CashFlowView'));
+const PurchaseOrderView = lazy(() => import('../components/financeiro/PurchaseOrderView'));
+const FinancialReports = lazy(() => import('../components/financeiro/FinancialReports'));
 
 interface FinancialStats {
   totalIncome: number;
@@ -214,6 +217,12 @@ export default function FinanceiroPage() {
   const handleInvoiceSuccess = () => {
     loadFinancialData();
   };
+
+  const LoadingComponent = () => (
+    <div className="flex items-center justify-center h-64">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -558,36 +567,54 @@ export default function FinanceiroPage() {
 
       {/* Transactions Tab */}
       {activeTab === 'transactions' && (
-        <TransactionList
-          onEditTransaction={handleEditTransaction}
-          onCreateTransaction={handleCreateTransaction}
-        />
+        <Suspense fallback={<LoadingComponent />}>
+          <TransactionList
+            onEditTransaction={handleEditTransaction}
+            onCreateTransaction={handleCreateTransaction}
+          />
+        </Suspense>
       )}
 
       {/* Suppliers Tab */}
       {activeTab === 'suppliers' && (
-        <SupplierList
-          onEditSupplier={handleEditSupplier}
-          onCreateSupplier={handleCreateSupplier}
-        />
+        <Suspense fallback={<LoadingComponent />}>
+          <SupplierList
+            onEditSupplier={handleEditSupplier}
+            onCreateSupplier={handleCreateSupplier}
+          />
+        </Suspense>
       )}
 
       {/* Invoices Tab */}
       {activeTab === 'invoices' && (
-        <InvoiceList
-          onEditInvoice={handleEditInvoice}
-          onCreateInvoice={handleCreateInvoice}
-        />
+        <Suspense fallback={<LoadingComponent />}>
+          <InvoiceList
+            onEditInvoice={handleEditInvoice}
+            onCreateInvoice={handleCreateInvoice}
+          />
+        </Suspense>
       )}
 
       {/* Cash Flow Tab */}
-      {activeTab === 'cash-flow' && <CashFlowView />}
+      {activeTab === 'cash-flow' && (
+        <Suspense fallback={<LoadingComponent />}>
+          <CashFlowView />
+        </Suspense>
+      )}
 
       {/* Purchase Orders Tab */}
-      {activeTab === 'purchase-orders' && <PurchaseOrderView />}
+      {activeTab === 'purchase-orders' && (
+        <Suspense fallback={<LoadingComponent />}>
+          <PurchaseOrderView />
+        </Suspense>
+      )}
 
       {/* Reports Tab */}
-      {activeTab === 'reports' && <FinancialReports />}
+      {activeTab === 'reports' && (
+        <Suspense fallback={<LoadingComponent />}>
+          <FinancialReports />
+        </Suspense>
+      )}
 
       {/* Transaction Form Modal */}
       {showTransactionForm && (

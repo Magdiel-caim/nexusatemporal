@@ -9,10 +9,10 @@ import {
   Truck,
   Clock,
   XCircle,
-  AlertCircle,
 } from 'lucide-react';
 import { financialService, PurchaseOrder, Supplier } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
+import PurchaseOrderForm from './PurchaseOrderForm';
 
 export default function PurchaseOrderView() {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
@@ -367,31 +367,12 @@ export default function PurchaseOrderView() {
         )}
       </div>
 
-      {/* Simple Form Modal */}
+      {/* Form Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="flex min-h-screen items-center justify-center p-4">
-            <div className="fixed inset-0 bg-black bg-opacity-50" onClick={() => setShowForm(false)} />
-            <div className="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Nova Ordem de Compra
-              </h3>
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                <AlertCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                <p>Formulário em desenvolvimento...</p>
-                <p className="text-sm mt-2">Use a API diretamente por enquanto</p>
-              </div>
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowForm(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300"
-                >
-                  Fechar
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PurchaseOrderForm
+          onClose={() => setShowForm(false)}
+          onSuccess={loadData}
+        />
       )}
     </div>
   );
