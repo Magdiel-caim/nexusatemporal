@@ -1,463 +1,547 @@
-# 🚀 Próxima Sessão de Desenvolvimento
+# 🚀 PRÓXIMA SESSÃO - Sistema de Automações Nexus
 
-**Branch:** feature/leads-procedures-config
-**Objetivo Original:** Configuração de procedimentos para leads
-**Status Atual:** Infraestrutura RBAC completa (v73-v75)
-
----
-
-## 🎯 Objetivo Principal da Próxima Sessão
-
-### Implementar Sistema de Configuração de Procedimentos
-
-A branch atual `feature/leads-procedures-config` foi criada para implementar o sistema de configuração de procedimentos, que permitirá:
-
-1. Cadastrar procedimentos disponíveis na clínica
-2. Definir valores padrão para cada procedimento
-3. Associar procedimentos aos leads
-4. Calcular automaticamente valor estimado baseado nos procedimentos selecionados
-
-**Por que parou aqui?**
-Antes de implementar os procedimentos, foi necessário criar o sistema completo de permissões e gerenciamento de usuários (v73-v75). Agora que isso está pronto, podemos voltar ao objetivo original.
+**Data da Última Sessão:** 2025-10-17
+**Versão Atual:** v82-automation-system
+**Status:** ✅ Infraestrutura Completa - APIs em Desenvolvimento
 
 ---
 
-## 📋 Tarefas Prioritárias
+## 📊 PROGRESSO ATUAL
 
-### 1. Backend - Tabela de Procedimentos
+### ✅ CONCLUÍDO (Sessão Anterior)
 
-**Criar migration:** `backend/migrations/create_procedures_table.sql`
+#### 1. Infraestrutura Base (100%)
+- [x] **n8n** deployado e acessível
+  - URL: https://automacao.nexusatemporal.com.br
+  - Webhooks: https://automahook.nexusatemporal.com.br
+  - Auth: admin / NexusN8n2025!Secure
+- [x] **RabbitMQ** integrado
+  - Host: rabbitmq.nexusatemporal.com.br
+  - Topic exchange configurado
+- [x] **DNS Cloudflare** propagado
+- [x] **SSL/TLS** automático (Let's Encrypt)
 
-```sql
--- Tabela de procedimentos
-CREATE TABLE procedures (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    "tenantId" VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    category VARCHAR(100),
-    "defaultPrice" DECIMAL(10,2),
-    duration INTEGER, -- em minutos
-    active BOOLEAN DEFAULT true,
-    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    "updatedAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
+#### 2. Database (100%)
+- [x] 13 tabelas criadas e testadas
+- [x] 6 workflow templates pré-configurados
+- [x] Migration aplicada com sucesso
+- [x] Foreign keys e indexes criados
 
-CREATE INDEX idx_procedures_tenant ON procedures("tenantId");
-CREATE INDEX idx_procedures_active ON procedures(active);
+#### 3. Backend - Sistema de Eventos (100%)
+- [x] **RabbitMQService** - Conexão, pub/sub, retry
+- [x] **EventEmitterService** - 25+ tipos de eventos
+- [x] **TriggerProcessorService** - Processamento em tempo real
+- [x] **Estrutura das APIs REST** criada (módulo automation)
 
--- Tabela de relação leads <-> procedures
-CREATE TABLE lead_procedures (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    "leadId" UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
-    "procedureId" UUID NOT NULL REFERENCES procedures(id) ON DELETE CASCADE,
-    quantity INTEGER DEFAULT 1,
-    "customPrice" DECIMAL(10,2), -- permite override do preço padrão
-    notes TEXT,
-    "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    UNIQUE("leadId", "procedureId")
-);
+#### 4. Deploy & Documentação (100%)
+- [x] Compilação TypeScript corrigida
+- [x] Docker image build (v82-automation-system)
+- [x] Deploy em produção realizado
+- [x] CHANGELOG.md atualizado
+- [x] Backup do banco de dados
+- [x] Git commit e tag v82-automation-system
 
-CREATE INDEX idx_lead_procedures_lead ON lead_procedures("leadId");
-CREATE INDEX idx_lead_procedures_procedure ON lead_procedures("procedureId");
+---
 
--- Comentários
-COMMENT ON TABLE procedures IS 'Procedimentos disponíveis na clínica';
-COMMENT ON TABLE lead_procedures IS 'Relação entre leads e procedimentos de interesse';
-COMMENT ON COLUMN procedures."defaultPrice" IS 'Preço padrão do procedimento em BRL';
-COMMENT ON COLUMN procedures.duration IS 'Duração estimada do procedimento em minutos';
-COMMENT ON COLUMN lead_procedures."customPrice" IS 'Preço customizado para este lead (override do padrão)';
+## 🎯 TAREFAS PRIORITÁRIAS (PRÓXIMA SESSÃO)
+
+### 🔴 ALTA PRIORIDADE
+
+#### 1. Finalizar APIs REST de Automação
+
+**Arquivo:** `backend/src/modules/automation/`
+
+##### Triggers API
+```typescript
+POST   /api/automation/triggers           - Criar trigger
+GET    /api/automation/triggers           - Listar triggers (com filtros)
+GET    /api/automation/triggers/:id       - Buscar trigger por ID
+PUT    /api/automation/triggers/:id       - Atualizar trigger
+DELETE /api/automation/triggers/:id       - Deletar trigger
+PATCH  /api/automation/triggers/:id/toggle - Ativar/desativar trigger
+GET    /api/automation/triggers/:id/stats  - Estatísticas do trigger
 ```
 
-### 2. Backend - Controller e Routes
+**Validações Necessárias:**
+- Nome obrigatório
+- Event type válido
+- Conditions JSON válido
+- Actions array com pelo menos 1 ação
+- TenantId obrigatório
 
-**Criar:** `backend/src/modules/procedures/procedures.controller.ts`
-
+##### Workflows API
 ```typescript
-// Endpoints necessários:
-// GET    /api/procedures              - Listar procedimentos (filtrar por tenant)
-// POST   /api/procedures              - Criar procedimento
-// GET    /api/procedures/:id          - Obter procedimento
-// PUT    /api/procedures/:id          - Atualizar procedimento
-// DELETE /api/procedures/:id          - Excluir procedimento (soft delete)
-
-// GET    /api/leads/:id/procedures    - Listar procedimentos de um lead
-// POST   /api/leads/:id/procedures    - Adicionar procedimento a um lead
-// DELETE /api/leads/:leadId/procedures/:procedureId - Remover procedimento do lead
+POST   /api/automation/workflows          - Criar workflow
+GET    /api/automation/workflows          - Listar workflows
+GET    /api/automation/workflows/:id      - Buscar workflow por ID
+PUT    /api/automation/workflows/:id      - Atualizar workflow
+DELETE /api/automation/workflows/:id      - Deletar workflow
+POST   /api/automation/workflows/:id/execute - Executar workflow manualmente
+GET    /api/automation/workflows/:id/logs - Logs de execução
+GET    /api/automation/workflows/templates - Listar templates disponíveis
+POST   /api/automation/workflows/from-template/:templateId - Criar a partir de template
 ```
 
-**Permissões necessárias:**
+##### Events API
 ```typescript
-// Adicionar em backend/src/modules/permissions/permission.types.ts
-export enum Permission {
-  // ... outras permissões
+GET    /api/automation/events             - Listar eventos (paginado)
+GET    /api/automation/events/:id         - Buscar evento por ID
+POST   /api/automation/events/:id/reprocess - Reprocessar evento
+GET    /api/automation/events/stats       - Estatísticas de eventos
+DELETE /api/automation/events             - Limpar eventos antigos (soft delete)
+```
 
-  // Procedures
-  PROCEDURES_VIEW_ALL = 'procedures.view_all',
-  PROCEDURES_CREATE = 'procedures.create',
-  PROCEDURES_UPDATE = 'procedures.update',
-  PROCEDURES_DELETE = 'procedures.delete',
-  PROCEDURES_MANAGE_PRICES = 'procedures.manage_prices',
+##### Integrations API
+```typescript
+GET    /api/automation/integrations       - Listar integrações
+GET    /api/automation/integrations/:id   - Buscar integração por ID
+POST   /api/automation/integrations/:id/test - Testar conexão
+GET    /api/automation/integrations/:id/logs - Logs da integração
+PATCH  /api/automation/integrations/:id/sync - Sincronizar integração
+```
+
+---
+
+#### 2. Implementar Serviços de Integração
+
+##### WahaService (`backend/src/services/WahaService.ts`)
+```typescript
+class WahaService {
+  // Envio de mensagens
+  sendTextMessage(sessionId, phone, text)
+  sendImageMessage(sessionId, phone, imageUrl, caption)
+  sendDocumentMessage(sessionId, phone, documentUrl, caption)
+  sendButtonMessage(sessionId, phone, text, buttons)
+
+  // Gerenciamento de sessões
+  getSessions()
+  getSession(sessionId)
+  startSession(sessionId)
+  stopSession(sessionId)
+  getQRCode(sessionId)
+
+  // Webhooks
+  handleIncomingMessage(webhook_data)
+  handleSessionStatus(webhook_data)
 }
 ```
 
-**Adicionar permissões ao OWNER e ADMIN:**
-```sql
--- Executar após criar as permissões
-INSERT INTO permissions (name, description, module) VALUES
-('procedures.view_all', 'Visualizar todos os procedimentos', 'procedures'),
-('procedures.create', 'Criar procedimentos', 'procedures'),
-('procedures.update', 'Atualizar procedimentos', 'procedures'),
-('procedures.delete', 'Excluir procedimentos', 'procedures'),
-('procedures.manage_prices', 'Gerenciar preços dos procedimentos', 'procedures');
+**URL Base:** https://apiwts.nexusatemporal.com.br
+**Token:** dckr_pat_AwZ9EnyGOTseBUaEPb4Yj384leA
 
--- Atribuir ao OWNER
-INSERT INTO role_permissions (role, permission_id)
-SELECT 'owner', id FROM permissions WHERE module = 'procedures';
+##### OpenAIService (`backend/src/services/OpenAIService.ts`)
+```typescript
+class OpenAIService {
+  // Análise de Leads
+  qualifyLead(leadData): Promise<QualificationResult>
+  predictNoShow(appointmentData): Promise<NoShowPrediction>
+  analyzeSentiment(messageText): Promise<SentimentAnalysis>
 
--- Atribuir ao ADMIN
-INSERT INTO role_permissions (role, permission_id)
-SELECT 'admin', id FROM permissions WHERE module = 'procedures';
+  // Sugestões
+  generateResponseSuggestion(conversationHistory)
+  generateFollowUpMessage(leadData)
+
+  // AI Interactions (salvar no banco)
+  logInteraction(type, input, output, metadata)
+  getInteractionHistory(leadId)
+}
 ```
 
-### 3. Frontend - Interface de Procedimentos
+**API Key:** (Ver AUTOMATION_CREDENTIALS.md)
+**Modelos:** gpt-4, gpt-3.5-turbo
 
-**Criar:** `frontend/src/pages/ProceduresPage.tsx`
+##### N8nService (`backend/src/services/N8nService.ts`)
+```typescript
+class N8nService {
+  // Execução de Workflows
+  executeWorkflow(workflowId, payload)
+  triggerWebhook(webhookPath, payload)
 
-Estrutura similar a `UsersManagement.tsx`:
-- Lista de procedimentos
-- Busca por nome/categoria
-- Filtro por categoria
-- Cards com: Nome, Categoria, Preço, Duração, Status
-- Botões: Novo, Editar, Excluir
+  // Gerenciamento
+  getWorkflows()
+  getWorkflow(workflowId)
+  getExecutions(workflowId)
+  getExecutionDetails(executionId)
 
-**Criar:** `frontend/src/components/procedures/ProcedureFormModal.tsx`
+  // Logs
+  logExecution(workflowId, status, duration, result)
+}
+```
 
-Campos:
-- Nome do procedimento*
+**URL Base:** https://automacao.nexusatemporal.com.br
+**Webhooks:** https://automahook.nexusatemporal.com.br
+**Auth:** admin / NexusN8n2025!Secure
+
+---
+
+#### 3. Integrar EventEmitter nas Rotas Existentes
+
+**Locais para adicionar eventos:**
+
+##### Leads
+```typescript
+// backend/src/modules/leads/lead.service.ts
+
+createLead() {
+  // ... criar lead
+  await eventEmitter.emitLeadCreated(lead, tenantId);
+}
+
+updateLeadStatus() {
+  // ... atualizar status
+  await eventEmitter.emitLeadStatusChanged(lead, oldStatus, newStatus, tenantId);
+}
+
+convertLead() {
+  // ... converter
+  await eventEmitter.emitLeadConverted(lead, tenantId);
+}
+```
+
+##### Appointments
+```typescript
+// backend/src/modules/appointments/appointment.service.ts
+
+scheduleAppointment() {
+  // ... agendar
+  await eventEmitter.emitAppointmentScheduled(appointment, tenantId);
+}
+
+markAsCompleted() {
+  // ... completar
+  await eventEmitter.emitAppointmentCompleted(appointment, tenantId);
+}
+
+markAsNoShow() {
+  // ... no-show
+  await eventEmitter.emitAppointmentNoShow(appointment, tenantId);
+}
+```
+
+##### Payments/Transactions
+```typescript
+// backend/src/modules/financeiro/transaction.service.ts
+
+createTransaction() {
+  // ... criar transação
+  if (transaction.status === 'pendente' && isPastDue) {
+    await eventEmitter.emitPaymentOverdue(transaction, tenantId);
+  }
+}
+
+confirmPayment() {
+  // ... confirmar
+  await eventEmitter.emitPaymentPaid(transaction, tenantId);
+}
+```
+
+##### WhatsApp
+```typescript
+// backend/src/modules/chat/waha-webhook.controller.ts
+
+handleIncomingMessage() {
+  // ... receber mensagem
+  await eventEmitter.emitWhatsAppMessageReceived(message, tenantId);
+}
+```
+
+---
+
+### 🟡 MÉDIA PRIORIDADE
+
+#### 4. Dashboard de Automações (Frontend)
+
+**Componente:** `frontend/src/pages/Automation/AutomationDashboard.tsx`
+
+##### Cards de Estatísticas
+- Total de triggers ativos
+- Eventos processados (últimas 24h)
+- Taxa de sucesso de workflows
+- Integrações ativas
+
+##### Lista de Triggers
+- Tabela com triggers configurados
+- Status (ativo/inativo)
+- Última execução
+- Taxa de sucesso
+- Ações: editar, desativar, deletar
+
+##### Lista de Workflows Recentes
+- Últimas execuções
+- Status (sucesso/falha)
+- Duração
+- Ver logs
+
+##### Gráficos
+- Eventos por hora (últimas 24h)
+- Tipos de eventos mais frequentes
+- Taxa de sucesso por trigger
+
+---
+
+#### 5. Builder de Triggers (Frontend)
+
+**Componente:** `frontend/src/pages/Automation/TriggerBuilder.tsx`
+
+##### Passo 1: Configuração Básica
+- Nome do trigger
 - Descrição
-- Categoria (select: Facial, Corporal, Capilar, Estética, etc.)
-- Preço padrão*
-- Duração (minutos)
-- Status (Ativo/Inativo)
+- Status (ativo/inativo)
 
-**Criar:** `frontend/src/components/procedures/ProcedureSelector.tsx`
+##### Passo 2: Seleção de Evento
+- Dropdown com tipos de eventos
+- Descrição do evento selecionado
+- Exemplo de payload
 
-Componente reutilizável para selecionar procedimentos:
-- Usado em formulário de leads
-- Multi-select com quantidade
-- Mostra preço de cada procedimento
-- Calcula total automaticamente
+##### Passo 3: Condições
+- Builder visual de condições JSON
+- Campos disponíveis do payload
+- Operadores (equals, contains, greater_than, etc)
+- Preview do JSON gerado
 
-### 4. Integração com Leads
+##### Passo 4: Ações
+- Lista de ações disponíveis:
+  - Send Webhook
+  - Execute Workflow (n8n)
+  - Send WhatsApp
+  - Send Notification
+  - Create Activity
+- Configuração específica de cada ação
+- Template de variáveis
 
-**Atualizar:** `frontend/src/components/leads/LeadForm.tsx`
-
-Adicionar seção:
-```tsx
-<div className="space-y-4">
-  <h3>Procedimentos de Interesse</h3>
-  <ProcedureSelector
-    selectedProcedures={formData.procedures}
-    onChange={(procedures) => setFormData({ ...formData, procedures })}
-  />
-  <div className="text-lg font-bold">
-    Valor Estimado Total: R$ {calculateTotal(formData.procedures)}
-  </div>
-</div>
-```
-
-**Atualizar backend:** `backend/src/modules/leads/leads.controller.ts`
-
-- Ao criar/atualizar lead, salvar procedimentos selecionados
-- Calcular e armazenar `estimatedValue` automaticamente
-
-### 5. Menu de Navegação
-
-**Atualizar:** `frontend/src/components/Layout.tsx` (ou onde está o menu)
-
-Adicionar item:
-```tsx
-{
-  path: '/procedimentos',
-  icon: <Scissors />, // ou outro ícone apropriado
-  label: 'Procedimentos',
-  permission: Permission.PROCEDURES_VIEW_ALL,
-}
-```
+##### Passo 5: Revisão
+- Preview completo do trigger
+- Teste de trigger
+- Salvar
 
 ---
 
-## 🗺️ Roadmap de Implementação
+#### 6. Biblioteca de Workflows (Frontend)
 
-### Sessão 1: Backend Base (2-3 horas)
+**Componente:** `frontend/src/pages/Automation/WorkflowLibrary.tsx`
 
-1. ✅ Ler este documento
-2. ⬜ Criar migration `create_procedures_table.sql`
-3. ⬜ Executar migration no banco
-4. ⬜ Adicionar permissões ao `permission.types.ts`
-5. ⬜ Criar `procedures.controller.ts`
-6. ⬜ Criar `procedures.routes.ts`
-7. ⬜ Registrar rotas no `backend/src/routes/index.ts`
-8. ⬜ Testar endpoints via Postman/curl
-9. ⬜ Build e deploy backend
-10. ⬜ Commit: `feat(backend): Implementa API de procedimentos`
+##### Lista de Templates
+- Cards com templates disponíveis
+- Categoria (leads, appointments, financial, retention)
+- Descrição
+- Preview do workflow
+- Botão "Usar Template"
 
-### Sessão 2: Frontend UI (2-3 horas)
+##### Criação a partir de Template
+- Formulário para customizar variáveis
+- Preview do workflow gerado
+- Salvar e ativar
 
-1. ⬜ Criar types em `frontend/src/types/procedures.ts`
-2. ⬜ Criar `ProceduresPage.tsx`
-3. ⬜ Criar `ProcedureFormModal.tsx`
-4. ⬜ Criar `DeleteProcedureModal.tsx`
-5. ⬜ Adicionar rota em `App.tsx` ou `routes.tsx`
-6. ⬜ Adicionar item no menu
-7. ⬜ Testar CRUD completo na UI
-8. ⬜ Build e deploy frontend
-9. ⬜ Commit: `feat(frontend): Implementa interface de procedimentos`
-
-### Sessão 3: Integração com Leads (1-2 horas)
-
-1. ⬜ Criar `ProcedureSelector.tsx`
-2. ⬜ Atualizar `LeadForm.tsx`
-3. ⬜ Atualizar backend `leads.controller.ts`
-4. ⬜ Criar endpoint `GET/POST/DELETE /api/leads/:id/procedures`
-5. ⬜ Testar fluxo completo: criar lead → adicionar procedimentos → ver valor total
-6. ⬜ Build e deploy
-7. ⬜ Commit: `feat: Integra procedimentos aos leads`
-
-### Sessão 4: Finalização (1 hora)
-
-1. ⬜ Adicionar procedimentos padrão via seed (opcional)
-2. ⬜ Testar em produção
-3. ⬜ Documentar no CHANGELOG.md
-4. ⬜ Criar backup do banco
-5. ⬜ Merge para main/master (ou criar PR)
-6. ⬜ Tag: `v76-procedures-system`
-7. ⬜ GitHub Release
+##### Workflows Personalizados
+- Lista de workflows criados
+- Status
+- Última execução
+- Editar/Deletar
 
 ---
 
-## 🧪 Scripts de Teste
+### 🟢 BAIXA PRIORIDADE
 
-### Testar API de Procedimentos
+#### 7. Testes End-to-End
+
+```typescript
+// Teste 1: Lead criado → Webhook disparado
+// Teste 2: Appointment agendado → WhatsApp enviado
+// Teste 3: Payment overdue → n8n workflow executado
+// Teste 4: Trigger desativado → Não processa eventos
+// Teste 5: Condição falsa → Não executa ações
+```
+
+#### 8. Métricas e Analytics
+
+- Dashboard com métricas detalhadas
+- Exportação de relatórios
+- Alertas de falhas
+
+#### 9. Configuração de Integrações via UI
+
+- Página para configurar credenciais
+- Teste de conexão
+- Logs de sincronização
+
+---
+
+## 🔧 CONFIGURAÇÕES IMPORTANTES
+
+### Credenciais (AUTOMATION_CREDENTIALS.md)
 
 ```bash
-# Login
-TOKEN=$(curl -s -X POST https://api.nexusatemporal.com.br/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"ti.nexus@nexusatemporal.com.br","password":"sua_senha"}' \
-  | jq -r '.token')
+# Arquivo já criado com chmod 600
+# Localização: /root/nexusatemporal/AUTOMATION_CREDENTIALS.md
 
-# Criar procedimento
-curl -X POST https://api.nexusatemporal.com.br/api/procedures \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Limpeza de Pele Profunda",
-    "description": "Limpeza facial completa com extração",
-    "category": "Facial",
-    "defaultPrice": 150.00,
-    "duration": 60
-  }'
+Contém:
+- n8n (user, pass, URLs)
+- Waha (URL, token)
+- OpenAI (API key)
+- RabbitMQ (host, port, user, pass)
+```
 
-# Listar procedimentos
-curl -H "Authorization: Bearer $TOKEN" \
-  https://api.nexusatemporal.com.br/api/procedures
+### Variáveis de Ambiente
 
-# Adicionar procedimento a um lead
-LEAD_ID="uuid-do-lead"
-PROCEDURE_ID="uuid-do-procedimento"
+```bash
+# Backend (.env)
+N8N_URL=https://automacao.nexusatemporal.com.br
+N8N_WEBHOOK_URL=https://automahook.nexusatemporal.com.br
+N8N_API_KEY=admin:NexusN8n2025!Secure
 
-curl -X POST https://api.nexusatemporal.com.br/api/leads/$LEAD_ID/procedures \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "procedureId": "'$PROCEDURE_ID'",
-    "quantity": 1,
-    "customPrice": 140.00,
-    "notes": "Cliente pediu desconto"
-  }'
+WAHA_API_URL=https://apiwts.nexusatemporal.com.br
+WAHA_API_TOKEN=dckr_pat_AwZ9EnyGOTseBUaEPb4Yj384leA
+
+OPENAI_API_KEY=sk-proj-NYyVCgVep6oF6cVI6E__oCM...
+OPENAI_MODEL=gpt-4
+
+RABBITMQ_HOST=rabbitmq.nexusatemporal.com.br
+RABBITMQ_PORT=5672
+RABBITMQ_USER=nexus_mq
+RABBITMQ_PASSWORD=ZSGbN3hQJnl3Rnq6TE1wsFVQCi47EJgR
 ```
 
 ---
 
-## 📊 Dados de Exemplo
+## 📚 ARQUIVOS IMPORTANTES
 
-### Procedimentos Padrão para Seeding
+### Backend
+```
+backend/src/services/
+  ├── RabbitMQService.ts           ✅ Implementado
+  ├── EventEmitterService.ts       ✅ Implementado
+  ├── TriggerProcessorService.ts   ✅ Implementado
+  ├── WahaService.ts               ⏳ TODO
+  ├── OpenAIService.ts             ⏳ TODO
+  └── N8nService.ts                ⏳ TODO
 
-```sql
--- Procedimentos de exemplo (executar após migration)
-INSERT INTO procedures ("tenantId", name, description, category, "defaultPrice", duration) VALUES
-('default', 'Limpeza de Pele Profunda', 'Limpeza facial completa com extração de cravos', 'Facial', 150.00, 60),
-('default', 'Peeling Químico', 'Renovação celular com ácidos', 'Facial', 200.00, 45),
-('default', 'Drenagem Linfática', 'Massagem para redução de inchaço', 'Corporal', 120.00, 60),
-('default', 'Massagem Modeladora', 'Massagem para redução de medidas', 'Corporal', 140.00, 60),
-('default', 'Hidratação Facial', 'Hidratação profunda da pele', 'Facial', 100.00, 45),
-('default', 'Depilação a Laser', 'Remoção de pelos com laser', 'Estética', 180.00, 30),
-('default', 'Botox', 'Aplicação de toxina botulínica', 'Estética', 800.00, 30),
-('default', 'Preenchimento Labial', 'Preenchimento com ácido hialurônico', 'Estética', 1200.00, 45),
-('default', 'Microagulhamento', 'Estímulo de colágeno', 'Facial', 250.00, 60),
-('default', 'Criolipólise', 'Redução de gordura localizada por congelamento', 'Corporal', 600.00, 90);
+backend/src/modules/automation/
+  ├── trigger.controller.ts        🔄 Implementar rotas
+  ├── trigger.service.ts           🔄 Implementar lógica
+  ├── workflow.controller.ts       🔄 Implementar rotas
+  ├── workflow.service.ts          🔄 Implementar lógica
+  └── automation.routes.ts         ✅ Estrutura criada
 ```
 
-### Categorias Sugeridas
+### Frontend
+```
+frontend/src/pages/Automation/
+  ├── AutomationDashboard.tsx      ⏳ TODO
+  ├── TriggerBuilder.tsx           ⏳ TODO
+  ├── TriggerList.tsx              ⏳ TODO
+  ├── WorkflowLibrary.tsx          ⏳ TODO
+  └── IntegrationConfig.tsx        ⏳ TODO
+```
 
-```typescript
-// frontend/src/types/procedures.ts
-export enum ProcedureCategory {
-  FACIAL = 'Facial',
-  CORPORAL = 'Corporal',
-  CAPILAR = 'Capilar',
-  ESTETICA = 'Estética',
-  DEPILACAO = 'Depilação',
-  MASSAGEM = 'Massagem',
-  OUTROS = 'Outros',
+---
+
+## 🧪 TESTES SUGERIDOS
+
+### 1. Teste Manual de EventEmitter
+```bash
+# Criar lead via API
+curl -X POST https://api.nexusatemporal.com.br/api/leads/leads \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{"name": "Test Lead", ...}'
+
+# Verificar na tabela automation_events
+SELECT * FROM automation_events
+WHERE event_type = 'lead.created'
+ORDER BY created_at DESC LIMIT 1;
+
+# Verificar no RabbitMQ Management
+# https://rabbitmq.nexusatemporal.com.br
+```
+
+### 2. Teste de Trigger
+```bash
+# Criar trigger via API
+POST /api/automation/triggers
+{
+  "name": "Test Trigger",
+  "event_type": "lead.created",
+  "conditions": {},
+  "actions": [{
+    "type": "send_webhook",
+    "config": {
+      "url": "https://webhook.site/YOUR_UNIQUE_ID"
+    }
+  }]
 }
+
+# Criar lead e verificar webhook
+```
+
+### 3. Teste de Workflow n8n
+```bash
+# Acessar n8n
+https://automacao.nexusatemporal.com.br
+
+# Criar workflow simples
+# Testar webhook: https://automahook.nexusatemporal.com.br/test
+
+# Disparar via API
+POST /api/automation/workflows/:id/execute
 ```
 
 ---
 
-## 🎨 Design da Interface
+## 🎯 OBJETIVO DA PRÓXIMA SESSÃO
 
-### ProceduresPage Layout
+**Meta Principal:**
+✅ Sistema de automações funcionando end-to-end (criar lead → trigger → ação)
 
+**Entregas Esperadas:**
+1. ✅ APIs REST completas e testadas
+2. ✅ 3 serviços de integração implementados (Waha, OpenAI, n8n)
+3. ✅ EventEmitter integrado em pelo menos 3 módulos (leads, appointments, payments)
+4. ✅ Dashboard básico de automações (frontend)
+5. ✅ 1 workflow completo funcionando (exemplo: lead criado → webhook disparado)
+
+**Tempo Estimado:** 3-4 horas
+
+---
+
+## 📝 NOTAS IMPORTANTES
+
+1. **RabbitMQ:** Já está configurado e funcionando, não precisa mexer
+2. **n8n:** Já está deployado e acessível, pronto para uso
+3. **Database:** Todas as tabelas já estão criadas
+4. **TypeScript:** Compilação corrigida, sem erros
+
+**Problemas Conhecidos:**
+- Nenhum no momento
+
+**Dependências Externas:**
+- Typebot: Ainda não definido, deixar para depois
+
+---
+
+## 🚀 COMANDO PARA INICIAR
+
+```bash
+# 1. Acessar diretório
+cd /root/nexusatemporal/backend
+
+# 2. Verificar status dos serviços
+docker service ls | grep nexus
+
+# 3. Ver logs do backend
+docker service logs nexus_backend --tail 50 --follow
+
+# 4. Verificar n8n
+curl -k -I https://automacao.nexusatemporal.com.br
+
+# 5. Testar banco de dados
+PGPASSWORD='nexus2024@secure' psql -h 46.202.144.210 -U nexus_admin -d nexus_crm -c "SELECT COUNT(*) FROM triggers;"
+
+# 6. Iniciar desenvolvimento
+npm run dev
 ```
-┌─────────────────────────────────────────────────────────┐
-│ 🔧 Procedimentos                        [+ Novo]         │
-├─────────────────────────────────────────────────────────┤
-│ 🔍 [Buscar...] [Categoria ▼] [Status ▼]                │
-├─────────────────────────────────────────────────────────┤
-│ ┌─────────────┬──────────┬─────────┬─────┬─────────┐   │
-│ │ Nome        │ Categoria│ Preço   │ Dur.│ Ações   │   │
-│ ├─────────────┼──────────┼─────────┼─────┼─────────┤   │
-│ │ Limpeza ... │ Facial   │ R$ 150  │ 60m │ ✏️ 🗑️  │   │
-│ │ Peeling ... │ Facial   │ R$ 200  │ 45m │ ✏️ 🗑️  │   │
-│ │ Drenagem... │ Corporal │ R$ 120  │ 60m │ ✏️ 🗑️  │   │
-│ └─────────────┴──────────┴─────────┴─────┴─────────┘   │
-├─────────────────────────────────────────────────────────┤
-│ 📊 Total: 10 procedimentos | Ativos: 9                  │
-└─────────────────────────────────────────────────────────┘
-```
-
-### ProcedureSelector in LeadForm
-
-```
-┌─────────────────────────────────────────────────┐
-│ Procedimentos de Interesse                      │
-├─────────────────────────────────────────────────┤
-│ [+ Adicionar Procedimento]                      │
-│                                                  │
-│ ┌─────────────────────────────────────────────┐ │
-│ │ ✓ Limpeza de Pele Profunda                  │ │
-│ │   Qtd: [1] | Preço: R$ 150,00      [Remover]│ │
-│ └─────────────────────────────────────────────┘ │
-│                                                  │
-│ ┌─────────────────────────────────────────────┐ │
-│ │ ✓ Botox                                      │ │
-│ │   Qtd: [1] | Preço: R$ 800,00      [Remover]│ │
-│ └─────────────────────────────────────────────┘ │
-│                                                  │
-│ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  │
-│ 💰 Valor Estimado Total: R$ 950,00              │
-└─────────────────────────────────────────────────┘
-```
 
 ---
 
-## ⚠️ Pontos de Atenção
-
-### 1. Multi-tenancy
-- Sempre filtrar procedimentos por `tenantId`
-- Não permitir que um tenant veja procedimentos de outro
-- Validar `tenantId` no backend em todas as operações
-
-### 2. Cálculo de Valor Estimado
-- Permitir override de preço por lead
-- Multiplicar por quantidade
-- Armazenar no campo `leads.estimatedValue`
-- Recalcular quando procedimentos são adicionados/removidos
-
-### 3. Soft Delete
-- Não deletar procedimentos do banco
-- Marcar como `active: false`
-- Manter histórico de leads que usaram procedimentos deletados
-
-### 4. Performance
-- Criar índices nas tabelas
-- Usar joins eficientes em queries
-- Paginar lista de procedimentos se houver muitos
-
-### 5. Validações
-- Preço não pode ser negativo
-- Duração não pode ser negativa
-- Nome é obrigatório
-- Categoria deve ser de uma lista pré-definida
-
----
-
-## 📞 Perguntas para o Usuário (se necessário)
-
-Durante a implementação, você pode precisar perguntar:
-
-1. **Quais categorias de procedimentos usar?**
-   - Usar lista sugerida acima ou customizar?
-
-2. **Permitir múltiplos procedimentos do mesmo tipo em um lead?**
-   - Ex: 3x Limpeza de Pele
-
-3. **Como calcular desconto?**
-   - Desconto por procedimento individual?
-   - Desconto no total?
-   - Ambos?
-
-4. **Histórico de preços?**
-   - Manter histórico de alterações de preço?
-   - Ou apenas usar preço atual?
-
-5. **Procedimentos obrigatórios?**
-   - Todo lead deve ter ao menos 1 procedimento?
-   - Ou é opcional?
-
----
-
-## ✅ Checklist de Conclusão
-
-Ao finalizar a implementação, verificar:
-
-- [ ] Migration executada com sucesso
-- [ ] Permissões criadas e atribuídas
-- [ ] API de procedimentos funcionando
-- [ ] UI de procedimentos acessível
-- [ ] CRUD de procedimentos completo
-- [ ] Integração com leads funcionando
-- [ ] Cálculo de valor estimado correto
-- [ ] Multi-tenancy funcionando
-- [ ] Testes manuais passando
-- [ ] Backend deployado
-- [ ] Frontend deployado
-- [ ] Backup do banco criado
-- [ ] Commit e push realizados
-- [ ] Tag criada
-- [ ] Release no GitHub
-- [ ] CHANGELOG atualizado
-- [ ] Documentação atualizada
-
----
-
-## 🔗 Links Rápidos
-
-**Documentação de referência:**
-- SESSAO_CHECKPOINT.md - Estado atual completo
-- /root/nexusatemporal/prompt/Especificacoesdosistema.pdf
-
-**Exemplos de código:**
-- UsersManagement: `frontend/src/components/users/UsersManagement.tsx`
-- UserFormModal: `frontend/src/components/users/UserFormModal.tsx`
-- Users Controller: `backend/src/modules/users/users.controller.ts`
-- Permissions Migration: `backend/migrations/create_permissions_system.sql`
-
----
-
-**📅 Última atualização:** 2025-10-17 10:45
-**🎯 Foco:** Sistema de Procedimentos (branch feature/leads-procedures-config)
-**🚀 Pronto para começar!**
+**Criado por:** Claude Code 🤖
+**Data:** 2025-10-17 22:15 UTC
+**Versão:** v82-automation-system
+**Status:** ✅ Pronto para próxima sessão
