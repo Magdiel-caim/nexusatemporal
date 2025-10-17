@@ -10,6 +10,8 @@ import ChatPage from './pages/ChatPage';
 import AgendaPage from './pages/AgendaPage';
 import ProntuariosPage from './pages/ProntuariosPage';
 import FinanceiroPage from './pages/FinanceiroPage';
+import ConfiguracoesPage from './pages/ConfiguracoesPage';
+import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 
@@ -151,6 +153,26 @@ function App() {
                     <h2 className="text-2xl font-bold mb-4">Marketing</h2>
                     <p className="text-gray-600">Em desenvolvimento...</p>
                   </div>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/configuracoes"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <ConfiguracoesPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/configuracoes/integracoes/pagamentos"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <IntegracoesPagamentosPage />
                 </MainLayout>
               </ProtectedRoute>
             }

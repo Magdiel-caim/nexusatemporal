@@ -39,7 +39,7 @@ const menuItems = [
   { icon: Users2, label: 'Colaboração', path: '/colaboracao' },
   { icon: BarChart3, label: 'BI & Analytics', path: '/bi' },
   { icon: Megaphone, label: 'Marketing', path: '/marketing' },
-  { icon: Settings, label: 'Configurações', path: '/settings' },
+  { icon: Settings, label: 'Configurações', path: '/configuracoes' },
 ];
 
 export default function MainLayout({ children }: MainLayoutProps) {
@@ -89,7 +89,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <nav className="flex-1 overflow-y-auto py-4">
           {menuItems.map((item) => {
             const Icon = item.icon;
-            const isActive = location.pathname === item.path;
+            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
             return (
               <Link
                 key={item.path}
