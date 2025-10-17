@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { financialService, Transaction, Supplier } from '@/services/financialService';
+import { financialService, Transaction, Supplier, Invoice } from '@/services/financialService';
 import {
   DollarSign,
   TrendingUp,
@@ -16,6 +16,8 @@ import TransactionList from '../components/financeiro/TransactionList';
 import TransactionForm from '../components/financeiro/TransactionForm';
 import SupplierList from '../components/financeiro/SupplierList';
 import SupplierForm from '../components/financeiro/SupplierForm';
+import InvoiceList from '../components/financeiro/InvoiceList';
+import InvoiceForm from '../components/financeiro/InvoiceForm';
 
 interface FinancialStats {
   totalIncome: number;
@@ -26,7 +28,7 @@ interface FinancialStats {
   overdueCount: number;
 }
 
-type ActiveTab = 'dashboard' | 'transactions' | 'suppliers' | 'reports' | 'cash-flow';
+type ActiveTab = 'dashboard' | 'transactions' | 'suppliers' | 'invoices' | 'cash-flow' | 'reports';
 
 export default function FinanceiroPage() {
   const [loading, setLoading] = useState(true);
@@ -46,6 +48,8 @@ export default function FinanceiroPage() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | undefined>();
   const [showSupplierForm, setShowSupplierForm] = useState(false);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
+  const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | undefined>();
 
   useEffect(() => {
     loadFinancialData();
@@ -189,6 +193,25 @@ export default function FinanceiroPage() {
     loadFinancialData();
   };
 
+  const handleCreateInvoice = () => {
+    setSelectedInvoice(undefined);
+    setShowInvoiceForm(true);
+  };
+
+  const handleEditInvoice = (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    setShowInvoiceForm(true);
+  };
+
+  const handleCloseInvoiceForm = () => {
+    setShowInvoiceForm(false);
+    setSelectedInvoice(undefined);
+  };
+
+  const handleInvoiceSuccess = () => {
+    loadFinancialData();
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -247,6 +270,16 @@ export default function FinanceiroPage() {
             }`}
           >
             Fornecedores
+          </button>
+          <button
+            onClick={() => setActiveTab('invoices')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'invoices'
+                ? 'border-primary-600 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Recibos/NF
           </button>
           <button
             onClick={() => setActiveTab('cash-flow')}
@@ -526,6 +559,14 @@ export default function FinanceiroPage() {
         />
       )}
 
+      {/* Invoices Tab */}
+      {activeTab === 'invoices' && (
+        <InvoiceList
+          onEditInvoice={handleEditInvoice}
+          onCreateInvoice={handleCreateInvoice}
+        />
+      )}
+
       {activeTab === 'cash-flow' && (
         <div className="card">
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -559,6 +600,15 @@ export default function FinanceiroPage() {
           supplier={selectedSupplier}
           onClose={handleCloseSupplierForm}
           onSuccess={handleSupplierSuccess}
+        />
+      )}
+
+      {/* Invoice Form Modal */}
+      {showInvoiceForm && (
+        <InvoiceForm
+          invoice={selectedInvoice}
+          onClose={handleCloseInvoiceForm}
+          onSuccess={handleInvoiceSuccess}
         />
       )}
     </div>
