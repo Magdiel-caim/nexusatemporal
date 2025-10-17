@@ -7,6 +7,7 @@ import appointmentRoutes from '@/modules/agenda/appointment.routes';
 import publicAppointmentRoutes from '@/modules/agenda/public-appointment.routes';
 import medicalRecordRoutes from '@/modules/medical-records/medical-record.routes';
 import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
+import paymentGatewayRoutes from '@/modules/payment-gateway/payment-gateway.routes';
 // Import other module routes as they are created
 // import estoqueRoutes from '@/modules/estoque/estoque.routes';
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
@@ -34,6 +35,7 @@ router.use('/appointments', appointmentRoutes);
 router.use('/public/appointments', publicAppointmentRoutes); // Public API for external integrations
 router.use('/medical-records', medicalRecordRoutes);
 router.use('/financial', financeiroRoutes);
+router.use('/payment-gateway', paymentGatewayRoutes); // Payment gateway integration (Asaas, PagBank)
 
 // Uncomment as modules are implemented
 // router.use('/estoque', estoqueRoutes);
