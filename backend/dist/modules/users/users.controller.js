@@ -7,6 +7,8 @@ exports.UsersController = void 0;
 const user_entity_1 = require("../auth/user.entity");
 const permissions_service_1 = require("../permissions/permissions.service");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
+const email_1 = require("../../shared/utils/email");
+const crypto_1 = __importDefault(require("crypto"));
 /**
  * UsersController
  *
@@ -167,10 +169,43 @@ class UsersController {
             // Criar usuário
             const hashedPassword = await bcryptjs_1.default.hash(password, 12);
             const tenantId = user.tenantId; // Herda o tenant do criador
-            const result = await client.query(`INSERT INTO users (email, password, name, phone, role, status, "tenantId")
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         RETURNING id, email, name, phone, role, status, "tenantId", "createdAt"`, [email, hashedPassword, name, phone || null, role, status, tenantId]);
+            // Gerar token de primeiro acesso (válido por 24 horas)
+            const firstAccessToken = crypto_1.default.randomBytes(32).toString('hex');
+            const tokenExpires = new Date(Date.now() + 24 * 3600000); // 24 horas
+            const result = await client.query(`INSERT INTO users (email, password, name, phone, role, status, "tenantId", "passwordResetToken", "passwordResetExpires")
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING id, email, name, phone, role, status, "tenantId", "createdAt"`, [email, hashedPassword, name, phone || null, role, status, tenantId, firstAccessToken, tokenExpires]);
             await client.query('COMMIT');
+            // Enviar email de boas-vindas com link de primeiro acesso
+            try {
+                const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${firstAccessToken}`;
+                await (0, email_1.sendEmail)({
+                    to: email,
+                    subject: 'Bem-vindo ao Nexus Atemporal - Primeiro Acesso',
+                    html: `
+            <h1>Bem-vindo ao Nexus Atemporal!</h1>
+            <p>Olá <strong>${name}</strong>,</p>
+            <p>Uma conta foi criada para você no sistema Nexus Atemporal CRM.</p>
+            <p><strong>Suas credenciais de acesso:</strong></p>
+            <ul>
+              <li><strong>Email:</strong> ${email}</li>
+              <li><strong>Senha temporária:</strong> ${password}</li>
+            </ul>
+            <p>Por segurança, recomendamos que você altere sua senha no primeiro acesso.</p>
+            <p>Clique no link abaixo para definir uma nova senha:</p>
+            <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">Definir Nova Senha</a>
+            <p>Ou acesse diretamente o sistema em: <a href="${process.env.FRONTEND_URL}">${process.env.FRONTEND_URL}</a></p>
+            <p>Este link de redefinição de senha expira em 24 horas.</p>
+            <p>Se você não solicitou esta conta, por favor ignore este email.</p>
+            <br>
+            <p>Atenciosamente,<br>Equipe Nexus Atemporal</p>
+          `,
+                });
+            }
+            catch (emailError) {
+                console.error('Error sending welcome email:', emailError);
+                // Não falha a criação do usuário se o email falhar
+            }
             // Criar audit log
             await this.permissionsService.createAuditLog({
                 userId: user.userId,
@@ -336,10 +371,11 @@ class UsersController {
                 });
             }
             await client.query('BEGIN');
-            // Soft delete - marca como inativo
+            // Soft delete - marca como inativo e registra data de exclusão
+            const deletedAt = new Date();
             await client.query(`UPDATE users
-         SET status = $1, "updatedAt" = NOW()
-         WHERE id = $2`, [user_entity_1.UserStatus.INACTIVE, id]);
+         SET status = $1, "deletedAt" = $2, "updatedAt" = NOW()
+         WHERE id = $3`, [user_entity_1.UserStatus.INACTIVE, deletedAt, id]);
             await client.query('COMMIT');
             // Criar audit log
             await this.permissionsService.createAuditLog({
@@ -355,7 +391,7 @@ class UsersController {
             });
             res.json({
                 success: true,
-                message: 'Usuário excluído com sucesso',
+                message: 'Usuário desativado com sucesso. O usuário será removido permanentemente do sistema após 30 dias. Seus leads e atendimentos serão automaticamente transferidos para o gerente.',
             });
         }
         catch (error) {
@@ -426,6 +462,84 @@ class UsersController {
             res.status(500).json({
                 success: false,
                 message: 'Erro ao buscar logs de auditoria',
+            });
+        }
+    };
+    /**
+     * POST /api/users/:id/resend-welcome-email
+     * Reenvia email de boas-vindas
+     * Permissão: users.update ou users.update_basic
+     */
+    resendWelcomeEmail = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const user = req.user;
+            // Buscar usuário
+            const result = await this.pool.query('SELECT id, email, name, "passwordResetToken", "passwordResetExpires" FROM users WHERE id = $1', [id]);
+            if (result.rows.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Usuário não encontrado',
+                });
+            }
+            const targetUser = result.rows[0];
+            // Gerar novo token se não existir ou estiver expirado
+            let token = targetUser.passwordResetToken;
+            let tokenExpires = targetUser.passwordResetExpires;
+            if (!token || !tokenExpires || new Date(tokenExpires) < new Date()) {
+                token = crypto_1.default.randomBytes(32).toString('hex');
+                tokenExpires = new Date(Date.now() + 24 * 3600000); // 24 horas
+                await this.pool.query(`UPDATE users
+           SET "passwordResetToken" = $1, "passwordResetExpires" = $2, "updatedAt" = NOW()
+           WHERE id = $3`, [token, tokenExpires, id]);
+            }
+            // Gerar senha temporária aleatória para mostrar no email
+            const tempPassword = crypto_1.default.randomBytes(8).toString('hex');
+            // Enviar email
+            const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
+            await (0, email_1.sendEmail)({
+                to: targetUser.email,
+                subject: 'Bem-vindo ao Nexus Atemporal - Acesso ao Sistema',
+                html: `
+          <h1>Bem-vindo ao Nexus Atemporal!</h1>
+          <p>Olá <strong>${targetUser.name}</strong>,</p>
+          <p>Este é seu email de acesso ao sistema Nexus Atemporal CRM.</p>
+          <p><strong>Suas credenciais:</strong></p>
+          <ul>
+            <li><strong>Email:</strong> ${targetUser.email}</li>
+            <li><strong>Link de primeiro acesso:</strong> Clique no botão abaixo</li>
+          </ul>
+          <p>Por segurança, recomendamos que você defina sua própria senha no primeiro acesso.</p>
+          <p>Clique no link abaixo para definir sua senha:</p>
+          <a href="${resetUrl}" style="display: inline-block; padding: 10px 20px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">Definir Minha Senha</a>
+          <p>Ou acesse diretamente o sistema em: <a href="${process.env.FRONTEND_URL}">${process.env.FRONTEND_URL}</a></p>
+          <p>Este link expira em 24 horas.</p>
+          <p>Se você não solicitou esta conta, por favor ignore este email.</p>
+          <br>
+          <p>Atenciosamente,<br>Equipe Nexus Atemporal</p>
+        `,
+            });
+            // Criar audit log
+            await this.permissionsService.createAuditLog({
+                userId: user.userId,
+                tenantId: user.tenantId || null,
+                action: 'resend_email',
+                module: 'users',
+                entityType: 'User',
+                entityId: id,
+                ipAddress: req.ip,
+                userAgent: req.get('user-agent'),
+            });
+            res.json({
+                success: true,
+                message: 'Email de boas-vindas reenviado com sucesso',
+            });
+        }
+        catch (error) {
+            console.error('Error resending welcome email:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao reenviar email',
             });
         }
     };

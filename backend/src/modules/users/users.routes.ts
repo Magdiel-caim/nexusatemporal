@@ -110,6 +110,19 @@ router.put('/:id', (req, res, next) => {
 });
 
 /**
+ * POST /api/users/:id/resend-welcome-email
+ * Reenvia email de boas-vindas
+ * Permissão: users.update ou users.update_basic
+ */
+router.post('/:id/resend-welcome-email', (req, res, next) => {
+  initController();
+  const pool = getPool();
+  auditLog('users', 'resend_email', pool)(req, res, () => {
+    controller.resendWelcomeEmail(req, res);
+  });
+});
+
+/**
  * DELETE /api/users/:id
  * Exclui um usuário (soft delete)
  * Permissão: users.delete

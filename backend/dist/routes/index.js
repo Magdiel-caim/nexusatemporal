@@ -14,6 +14,7 @@ const medical_record_routes_1 = __importDefault(require("../modules/medical-reco
 const financeiro_routes_1 = __importDefault(require("../modules/financeiro/financeiro.routes"));
 const payment_gateway_routes_1 = __importDefault(require("../modules/payment-gateway/payment-gateway.routes"));
 const users_routes_1 = __importDefault(require("../modules/users/users.routes"));
+const automation_routes_1 = __importDefault(require("../modules/automation/automation.routes"));
 // Import other module routes as they are created
 // import estoqueRoutes from '@/modules/estoque/estoque.routes';
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
@@ -40,6 +41,7 @@ router.use('/medical-records', medical_record_routes_1.default);
 router.use('/financial', financeiro_routes_1.default);
 router.use('/payment-gateway', payment_gateway_routes_1.default); // Payment gateway integration (Asaas, PagBank)
 router.use('/users', users_routes_1.default); // User management and permissions
+router.use('/automation', automation_routes_1.default); // Automation system (triggers, workflows, integrations)
 // Uncomment as modules are implemented
 // router.use('/estoque', estoqueRoutes);
 // router.use('/colaboracao', colaboracaoRoutes);

@@ -9,6 +9,7 @@ import medicalRecordRoutes from '@/modules/medical-records/medical-record.routes
 import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
 import paymentGatewayRoutes from '@/modules/payment-gateway/payment-gateway.routes';
 import usersRoutes from '@/modules/users/users.routes';
+import automationRoutes from '@/modules/automation/automation.routes';
 // Import other module routes as they are created
 // import estoqueRoutes from '@/modules/estoque/estoque.routes';
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
@@ -38,6 +39,7 @@ router.use('/medical-records', medicalRecordRoutes);
 router.use('/financial', financeiroRoutes);
 router.use('/payment-gateway', paymentGatewayRoutes); // Payment gateway integration (Asaas, PagBank)
 router.use('/users', usersRoutes); // User management and permissions
+router.use('/automation', automationRoutes); // Automation system (triggers, workflows, integrations)
 
 // Uncomment as modules are implemented
 // router.use('/estoque', estoqueRoutes);

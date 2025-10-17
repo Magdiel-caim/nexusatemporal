@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Plus, Edit, Trash2, Shield, CheckCircle, XCircle, Search } from 'lucide-react';
+import { Users, Plus, Edit, Trash2, Shield, CheckCircle, XCircle, Search, Mail } from 'lucide-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
@@ -167,6 +167,26 @@ const UsersManagement: React.FC = () => {
     }
   };
 
+  const handleResendEmail = async (user: User) => {
+    try {
+      toast.loading('Reenviando email...', { id: 'resend-email' });
+
+      const response = await axios.post<{
+        success: boolean;
+        message: string;
+      }>(`${API_URL}/users/${user.id}/resend-welcome-email`, {}, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data.success) {
+        toast.success(response.data.message || 'Email reenviado com sucesso!', { id: 'resend-email' });
+      }
+    } catch (error: any) {
+      console.error('Error resending email:', error);
+      toast.error(error.response?.data?.message || 'Erro ao reenviar email', { id: 'resend-email' });
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -294,6 +314,16 @@ const UsersManagement: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
+                        <Protected permission={[Permission.USERS_UPDATE, Permission.USERS_UPDATE_BASIC]}>
+                          <button
+                            onClick={() => handleResendEmail(user)}
+                            className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
+                            title="Reenviar email de boas-vindas"
+                          >
+                            <Mail className="w-4 h-4" />
+                          </button>
+                        </Protected>
+
                         <Protected permission={[Permission.USERS_UPDATE, Permission.USERS_UPDATE_BASIC]}>
                           <button
                             onClick={() => handleEditUser(user)}
