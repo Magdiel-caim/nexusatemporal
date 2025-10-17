@@ -19,6 +19,7 @@ import SupplierForm from '../components/financeiro/SupplierForm';
 import InvoiceList from '../components/financeiro/InvoiceList';
 import InvoiceForm from '../components/financeiro/InvoiceForm';
 import CashFlowView from '../components/financeiro/CashFlowView';
+import PurchaseOrderView from '../components/financeiro/PurchaseOrderView';
 
 interface FinancialStats {
   totalIncome: number;
@@ -29,7 +30,7 @@ interface FinancialStats {
   overdueCount: number;
 }
 
-type ActiveTab = 'dashboard' | 'transactions' | 'suppliers' | 'invoices' | 'cash-flow' | 'reports';
+type ActiveTab = 'dashboard' | 'transactions' | 'suppliers' | 'invoices' | 'cash-flow' | 'purchase-orders' | 'reports';
 
 export default function FinanceiroPage() {
   const [loading, setLoading] = useState(true);
@@ -291,6 +292,16 @@ export default function FinanceiroPage() {
             }`}
           >
             Fluxo de Caixa
+          </button>
+          <button
+            onClick={() => setActiveTab('purchase-orders')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'purchase-orders'
+                ? 'border-primary-600 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Ordens de Compra
           </button>
           <button
             onClick={() => setActiveTab('reports')}
@@ -570,6 +581,9 @@ export default function FinanceiroPage() {
 
       {/* Cash Flow Tab */}
       {activeTab === 'cash-flow' && <CashFlowView />}
+
+      {/* Purchase Orders Tab */}
+      {activeTab === 'purchase-orders' && <PurchaseOrderView />}
 
       {activeTab === 'reports' && (
         <div className="card">
