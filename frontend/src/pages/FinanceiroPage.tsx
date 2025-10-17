@@ -20,6 +20,7 @@ import InvoiceList from '../components/financeiro/InvoiceList';
 import InvoiceForm from '../components/financeiro/InvoiceForm';
 import CashFlowView from '../components/financeiro/CashFlowView';
 import PurchaseOrderView from '../components/financeiro/PurchaseOrderView';
+import FinancialReports from '../components/financeiro/FinancialReports';
 
 interface FinancialStats {
   totalIncome: number;
@@ -585,14 +586,8 @@ export default function FinanceiroPage() {
       {/* Purchase Orders Tab */}
       {activeTab === 'purchase-orders' && <PurchaseOrderView />}
 
-      {activeTab === 'reports' && (
-        <div className="card">
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <p className="text-lg font-medium mb-2">Módulo de Relatórios</p>
-            <p className="text-sm">Em desenvolvimento...</p>
-          </div>
-        </div>
-      )}
+      {/* Reports Tab */}
+      {activeTab === 'reports' && <FinancialReports />}
 
       {/* Transaction Form Modal */}
       {showTransactionForm && (
