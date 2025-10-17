@@ -5,6 +5,8 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/authStore';
 import Protected from '@/components/permissions/Protected';
 import { Permission } from '@/types/permissions';
+import UserFormModal from './UserFormModal';
+import DeleteUserModal from './DeleteUserModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -50,6 +52,11 @@ const UsersManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const fetchUsers = async () => {
     try {
@@ -81,6 +88,85 @@ const UsersManagement: React.FC = () => {
     fetchUsers();
   };
 
+  const handleCreateUser = () => {
+    setSelectedUser(null);
+    setModalMode('create');
+    setIsFormModalOpen(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setModalMode('edit');
+    setIsFormModalOpen(true);
+  };
+
+  const handleDeleteClick = (user: User) => {
+    setSelectedUser(user);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleSaveUser = async (userData: Partial<User> & { password?: string }) => {
+    try {
+      if (modalMode === 'create') {
+        const response = await axios.post<{
+          success: boolean;
+          data: User;
+          message: string;
+        }>(`${API_URL}/users`, userData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.data.success) {
+          toast.success(response.data.message || 'Usuário criado com sucesso!');
+          fetchUsers();
+        }
+      } else {
+        const response = await axios.put<{
+          success: boolean;
+          data: User;
+          message: string;
+        }>(`${API_URL}/users/${selectedUser?.id}`, userData, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.data.success) {
+          toast.success(response.data.message || 'Usuário atualizado com sucesso!');
+          fetchUsers();
+        }
+      }
+    } catch (error: any) {
+      console.error('Error saving user:', error);
+      toast.error(error.response?.data?.message || 'Erro ao salvar usuário');
+      throw error;
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!selectedUser) return;
+
+    try {
+      setDeleteLoading(true);
+      const response = await axios.delete<{
+        success: boolean;
+        message: string;
+      }>(`${API_URL}/users/${selectedUser.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data.success) {
+        toast.success(response.data.message || 'Usuário excluído com sucesso!');
+        setIsDeleteModalOpen(false);
+        setSelectedUser(null);
+        fetchUsers();
+      }
+    } catch (error: any) {
+      console.error('Error deleting user:', error);
+      toast.error(error.response?.data?.message || 'Erro ao excluir usuário');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -92,7 +178,10 @@ const UsersManagement: React.FC = () => {
         </div>
 
         <Protected permission={[Permission.USERS_CREATE, Permission.USERS_CREATE_BASIC]}>
-          <button className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+          <button
+            onClick={handleCreateUser}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
             <Plus className="w-4 h-4 mr-2" />
             Novo Usuário
           </button>
@@ -206,13 +295,21 @@ const UsersManagement: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end gap-2">
                         <Protected permission={[Permission.USERS_UPDATE, Permission.USERS_UPDATE_BASIC]}>
-                          <button className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            title="Editar usuário"
+                          >
                             <Edit className="w-4 h-4" />
                           </button>
                         </Protected>
 
                         <Protected permission={Permission.USERS_DELETE}>
-                          <button className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                          <button
+                            onClick={() => handleDeleteClick(user)}
+                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                            title="Excluir usuário"
+                          >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </Protected>
@@ -262,6 +359,29 @@ const UsersManagement: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <UserFormModal
+        isOpen={isFormModalOpen}
+        onClose={() => {
+          setIsFormModalOpen(false);
+          setSelectedUser(null);
+        }}
+        onSave={handleSaveUser}
+        user={selectedUser}
+        mode={modalMode}
+      />
+
+      <DeleteUserModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setSelectedUser(null);
+        }}
+        onConfirm={handleConfirmDelete}
+        userName={selectedUser?.name || ''}
+        loading={deleteLoading}
+      />
     </div>
   );
 };
