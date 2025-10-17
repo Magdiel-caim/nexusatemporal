@@ -10,12 +10,15 @@ import {
 import bcrypt from 'bcryptjs';
 
 export enum UserRole {
-  SUPER_ADMIN = 'super_admin',
+  SUPERADMIN = 'superadmin',
+  SUPER_ADMIN = 'super_admin', // Compatibilidade
+  OWNER = 'owner',
   ADMIN = 'admin',
-  MANAGER = 'manager',
-  DOCTOR = 'doctor',
-  RECEPTIONIST = 'receptionist',
+  MANAGER = 'manager', // Compatibilidade - equivalente a OWNER
   USER = 'user',
+  RECEPTIONIST = 'receptionist', // Compatibilidade - equivalente a USER
+  PROFESSIONAL = 'professional',
+  DOCTOR = 'doctor', // Compatibilidade - equivalente a PROFESSIONAL
 }
 
 export enum UserStatus {

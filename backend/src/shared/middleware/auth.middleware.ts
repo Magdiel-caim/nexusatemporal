@@ -12,6 +12,21 @@ interface TokenPayload {
   tenantId?: string;
 }
 
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        userId: string;
+        email: string;
+        name?: string;
+        role: UserRole;
+        tenantId?: string | null;
+        permissions?: string[] | null;
+      };
+    }
+  }
+}
+
 export const authenticate = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;

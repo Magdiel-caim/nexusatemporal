@@ -17,12 +17,15 @@ const typeorm_1 = require("typeorm");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 var UserRole;
 (function (UserRole) {
+    UserRole["SUPERADMIN"] = "superadmin";
     UserRole["SUPER_ADMIN"] = "super_admin";
+    UserRole["OWNER"] = "owner";
     UserRole["ADMIN"] = "admin";
     UserRole["MANAGER"] = "manager";
-    UserRole["DOCTOR"] = "doctor";
-    UserRole["RECEPTIONIST"] = "receptionist";
     UserRole["USER"] = "user";
+    UserRole["RECEPTIONIST"] = "receptionist";
+    UserRole["PROFESSIONAL"] = "professional";
+    UserRole["DOCTOR"] = "doctor";
 })(UserRole || (exports.UserRole = UserRole = {}));
 var UserStatus;
 (function (UserStatus) {
