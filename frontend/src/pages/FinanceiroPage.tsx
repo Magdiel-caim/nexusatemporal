@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { financialService, Transaction } from '@/services/financialService';
+import { financialService, Transaction, Supplier } from '@/services/financialService';
 import {
   DollarSign,
   TrendingUp,
@@ -14,6 +14,8 @@ import {
 import toast from 'react-hot-toast';
 import TransactionList from '../components/financeiro/TransactionList';
 import TransactionForm from '../components/financeiro/TransactionForm';
+import SupplierList from '../components/financeiro/SupplierList';
+import SupplierForm from '../components/financeiro/SupplierForm';
 
 interface FinancialStats {
   totalIncome: number;
@@ -42,6 +44,8 @@ export default function FinanceiroPage() {
   const [accountsPayable, setAccountsPayable] = useState<Transaction[]>([]);
   const [showTransactionForm, setShowTransactionForm] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | undefined>();
+  const [showSupplierForm, setShowSupplierForm] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
 
   useEffect(() => {
     loadFinancialData();
@@ -163,6 +167,25 @@ export default function FinanceiroPage() {
   };
 
   const handleTransactionSuccess = () => {
+    loadFinancialData();
+  };
+
+  const handleCreateSupplier = () => {
+    setSelectedSupplier(undefined);
+    setShowSupplierForm(true);
+  };
+
+  const handleEditSupplier = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+    setShowSupplierForm(true);
+  };
+
+  const handleCloseSupplierForm = () => {
+    setShowSupplierForm(false);
+    setSelectedSupplier(undefined);
+  };
+
+  const handleSupplierSuccess = () => {
     loadFinancialData();
   };
 
@@ -495,14 +518,12 @@ export default function FinanceiroPage() {
         />
       )}
 
-      {/* Other Tabs (Placeholder) */}
+      {/* Suppliers Tab */}
       {activeTab === 'suppliers' && (
-        <div className="card">
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <p className="text-lg font-medium mb-2">Módulo de Fornecedores</p>
-            <p className="text-sm">Em desenvolvimento...</p>
-          </div>
-        </div>
+        <SupplierList
+          onEditSupplier={handleEditSupplier}
+          onCreateSupplier={handleCreateSupplier}
+        />
       )}
 
       {activeTab === 'cash-flow' && (
@@ -529,6 +550,15 @@ export default function FinanceiroPage() {
           transaction={selectedTransaction}
           onClose={handleCloseTransactionForm}
           onSuccess={handleTransactionSuccess}
+        />
+      )}
+
+      {/* Supplier Form Modal */}
+      {showSupplierForm && (
+        <SupplierForm
+          supplier={selectedSupplier}
+          onClose={handleCloseSupplierForm}
+          onSuccess={handleSupplierSuccess}
         />
       )}
     </div>
