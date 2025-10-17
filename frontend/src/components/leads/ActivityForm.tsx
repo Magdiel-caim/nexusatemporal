@@ -54,7 +54,7 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
         <select
           value={formData.type}
           onChange={(e) => handleChange('type', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           required
         >
           <option value="note">📝 Nota</option>
@@ -77,7 +77,7 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
           type="text"
           value={formData.title}
           onChange={(e) => handleChange('title', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           placeholder="Ex: Ligar para agendar consulta"
           required
         />
@@ -91,7 +91,7 @@ export default function ActivityForm({ onSubmit, onCancel }: ActivityFormProps) 
         <textarea
           value={formData.description}
           onChange={(e) => handleChange('description', e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           placeholder="Detalhes da atividade..."
           rows={3}
         />

@@ -1,5 +1,99 @@
 # 📋 CHANGELOG - Nexus Atemporal CRM
 
+## 📦 HOTFIX: 2025-10-16 - CORREÇÃO DE VISIBILIDADE DE TEXTO (v64-v66)
+
+---
+
+## 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Corrigir visibilidade de texto em campos de formulários no modo dark
+
+**Status Final:** ✅ **100% CORRIGIDO** - Todos os inputs/textareas/selects visíveis em ambos os modos
+
+**Versões:** v64-fix-enums / v65-fix-text-visibility / v66-fix-chat-input
+
+**Data:** 2025-10-16 22:00-23:00 UTC
+
+---
+
+## 🐛 BUGS CORRIGIDOS
+
+### v64 - Correção de Enums de Leads
+**Problema:** Erro 400 ao atualizar status de leads - valores dos enums não correspondiam ao backend
+
+**Arquivos Modificados:**
+- `frontend/src/components/leads/LeadForm.tsx`
+
+**Correções:**
+- ✅ **Origem (source):** Corrigido valores `social_media` → `facebook`, `instagram`, `whatsapp`, `walk_in`
+- ✅ **Canal (channel):** Corrigido valores `site`, `campanha`, `bairro` → `website`, `in_person`, `other`
+- ✅ **Situação do Cliente:** Corrigido valores `cliente_potencial`, `sem_potencial` → `agendamento_pendente`, `agendado`, `em_tratamento`, `finalizado`, `cancelado`
+- ✅ **Local de Atendimento:** Corrigido valores `av_paulista` → `perdizes`, `online`, `a_domicilio`
+
+### v65 - Correção Global de Visibilidade de Texto
+**Problema:** Texto digitado invisível no modo dark em todos os formulários (texto claro sobre fundo claro)
+
+**Solução Aplicada:**
+Adicionado `text-gray-900 dark:text-white` em todos os inputs/textareas/selects do sistema
+
+**Arquivos Corrigidos:**
+- `frontend/src/components/prontuarios/CreateMedicalRecordForm.tsx` (13 campos)
+- `frontend/src/components/prontuarios/EditMedicalRecordForm.tsx` (13 campos)
+- `frontend/src/components/leads/LeadForm.tsx` (15 campos)
+- `frontend/src/components/leads/LeadsFilter.tsx` (7 campos)
+- `frontend/src/components/financeiro/TransactionForm.tsx`
+- `frontend/src/components/leads/ActivityForm.tsx`
+- Todos os demais componentes `.tsx` do sistema (correção em massa via sed)
+
+**Campos Corrigidos:**
+- ✅ Inputs de texto (text, email, tel, number, date)
+- ✅ Textareas
+- ✅ Selects
+- ✅ Todos os formulários de todos os módulos
+
+### v66 - Correção de Input do Chat
+**Problema:** Campo de digitação de mensagem invisível no chat
+
+**Arquivos Modificados:**
+- `frontend/src/pages/ChatPage.tsx`
+
+**Correções:**
+- ✅ Campo de busca de conversas (linha 609-615)
+- ✅ Campo de input de mensagem (linha 868-878)
+
+---
+
+## 🎨 IMPACTO VISUAL
+
+**Antes:**
+- ❌ Texto invisível no modo dark (texto claro em fundo claro)
+- ❌ Usuários não conseguiam ver o que digitavam
+- ❌ Experiência de usuário comprometida
+
+**Depois:**
+- ✅ Texto **PRETO** no modo light
+- ✅ Texto **BRANCO** no modo dark
+- ✅ Visibilidade perfeita em ambos os modos
+- ✅ Experiência de usuário consistente
+
+---
+
+## 🚀 DEPLOYMENT
+
+**Build Times:**
+- v64: 15.61s
+- v65: 11.38s
+- v66: 9.75s
+
+**Docker Images:**
+- `nexus_frontend:v64-fix-enums`
+- `nexus_frontend:v65-fix-text-visibility`
+- `nexus_frontend:v66-fix-chat-input`
+
+**Status:** ✅ Todos deployados em produção
+
+---
+
 ## 📦 SESSÃO: 2025-10-16 - CALENDÁRIO VISUAL E API PÚBLICA (v62)
 
 ---

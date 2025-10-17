@@ -260,7 +260,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
                   placeholder="Descrição..."
-                  className="pl-10 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -273,7 +273,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
               <select
                 value={filters.type}
                 onChange={(e) => handleFilterChange('type', e.target.value)}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="">Todos</option>
                 <option value="receita">Receita</option>
@@ -290,7 +290,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
               <select
                 value={filters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="">Todos</option>
                 <option value="pendente">Pendente</option>
@@ -308,7 +308,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
               <select
                 value={filters.paymentMethod}
                 onChange={(e) => handleFilterChange('paymentMethod', e.target.value)}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
               >
                 <option value="">Todos</option>
                 <option value="pix">PIX</option>
@@ -330,7 +330,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
                 type="date"
                 value={filters.dueDateFrom}
                 onChange={(e) => handleFilterChange('dueDateFrom', e.target.value)}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -342,7 +342,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
                 type="date"
                 value={filters.dueDateTo}
                 onChange={(e) => handleFilterChange('dueDateTo', e.target.value)}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -355,7 +355,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
                 type="date"
                 value={filters.dateFrom}
                 onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
 
@@ -367,7 +367,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
                 type="date"
                 value={filters.dateTo}
                 onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
               />
             </div>
           </div>

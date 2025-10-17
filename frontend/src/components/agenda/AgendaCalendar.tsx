@@ -215,7 +215,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                         required
                         value={formData.leadId}
                         onChange={(e) => setFormData({ ...formData, leadId: e.target.value })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
                       >
                         <option value="">Selecione um paciente</option>
                         {leads.map((lead) => (
@@ -234,7 +234,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                         required
                         value={formData.procedureId}
                         onChange={(e) => setFormData({ ...formData, procedureId: e.target.value })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
                       >
                         <option value="">Selecione um procedimento</option>
                         {procedures.map((proc) => (
@@ -254,7 +254,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                         required
                         value={formData.scheduledDate}
                         onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
                       />
                     </div>
 
@@ -265,7 +265,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                       <select
                         value={formData.location}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
                       >
                         <option value="moema">Moema</option>
                         <option value="av_paulista">Av. Paulista</option>
@@ -279,7 +279,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                       <textarea
                         value={formData.notes}
                         onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
                         rows={3}
                         placeholder="Observações sobre o agendamento..."
                       />

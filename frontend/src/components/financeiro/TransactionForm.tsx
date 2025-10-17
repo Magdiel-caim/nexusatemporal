@@ -226,7 +226,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                   value={formData.type}
                   onChange={(e) => handleChange('type', e.target.value)}
                   disabled={!!transaction}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed"
                 >
                   <option value="receita">Receita</option>
                   <option value="despesa">Despesa</option>
@@ -241,7 +241,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                 <select
                   value={formData.category}
                   onChange={(e) => handleChange('category', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   {categoryOptions[formData.type].map(option => (
                     <option key={option.value} value={option.value}>
@@ -267,7 +267,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                   min="0"
                   value={formData.amount}
                   onChange={(e) => handleChange('amount', parseFloat(e.target.value) || 0)}
-                  className="pl-10 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="pl-10 w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="0,00"
                 />
               </div>
@@ -282,7 +282,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 rows={3}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Descreva a transação..."
               />
             </div>
@@ -297,7 +297,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                   type="date"
                   value={formData.dueDate}
                   onChange={(e) => handleChange('dueDate', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
 
@@ -309,7 +309,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                   type="date"
                   value={formData.paymentDate}
                   onChange={(e) => handleChange('paymentDate', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
 
@@ -321,7 +321,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                   type="date"
                   value={formData.referenceDate}
                   onChange={(e) => handleChange('referenceDate', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 />
               </div>
             </div>
@@ -335,7 +335,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                 <select
                   value={formData.paymentMethod}
                   onChange={(e) => handleChange('paymentMethod', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="">Selecione...</option>
                   {paymentMethodOptions.map(option => (
@@ -353,7 +353,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                 <select
                   value={formData.status}
                   onChange={(e) => handleChange('status', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 >
                   <option value="pendente">Pendente</option>
                   <option value="confirmada">Confirmada</option>
@@ -374,7 +374,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                   type="text"
                   value={formData.leadId}
                   onChange={(e) => handleChange('leadId', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="UUID do lead..."
                 />
               </div>
@@ -388,7 +388,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                   type="text"
                   value={formData.appointmentId}
                   onChange={(e) => handleChange('appointmentId', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="UUID do agendamento..."
                 />
               </div>
@@ -402,7 +402,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                   type="text"
                   value={formData.supplierId}
                   onChange={(e) => handleChange('supplierId', e.target.value)}
-                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                   placeholder="UUID do fornecedor..."
                 />
               </div>
@@ -435,7 +435,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                       max="48"
                       value={formData.totalInstallments}
                       onChange={(e) => handleChange('totalInstallments', parseInt(e.target.value) || 1)}
-                      className="w-full md:w-32 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      className="w-full md:w-32 rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                     />
                     <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       Valor por parcela: R$ {(formData.amount / formData.totalInstallments).toFixed(2)}
@@ -454,7 +454,7 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
                 value={formData.notes}
                 onChange={(e) => handleChange('notes', e.target.value)}
                 rows={3}
-                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 placeholder="Informações adicionais..."
               />
             </div>

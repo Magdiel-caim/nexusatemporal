@@ -643,7 +643,7 @@ export default function LeadsPage() {
                       required
                       value={appointmentData.scheduledDate}
                       onChange={(e) => setAppointmentData({ ...appointmentData, scheduledDate: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     />
                   </div>
 
@@ -654,7 +654,7 @@ export default function LeadsPage() {
                       required
                       value={appointmentData.scheduledTime}
                       onChange={(e) => setAppointmentData({ ...appointmentData, scheduledTime: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     />
                   </div>
                 </div>
@@ -664,7 +664,7 @@ export default function LeadsPage() {
                   <select
                     value={appointmentData.location}
                     onChange={(e) => setAppointmentData({ ...appointmentData, location: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                   >
                     <option value="moema">Moema</option>
                     <option value="av_paulista">Av. Paulista</option>
@@ -682,7 +682,7 @@ export default function LeadsPage() {
                       step="0.01"
                       value={appointmentData.paymentAmount}
                       onChange={(e) => setAppointmentData({ ...appointmentData, paymentAmount: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                       placeholder="0.00"
                     />
                   </div>
@@ -692,7 +692,7 @@ export default function LeadsPage() {
                     <select
                       value={appointmentData.paymentMethod}
                       onChange={(e) => setAppointmentData({ ...appointmentData, paymentMethod: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     >
                       <option value="pix">PIX</option>
                       <option value="cartao">Cartão</option>
@@ -723,7 +723,7 @@ export default function LeadsPage() {
                         max="12"
                         value={appointmentData.returnCount}
                         onChange={(e) => setAppointmentData({ ...appointmentData, returnCount: parseInt(e.target.value) })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                       />
                     </div>
 
@@ -734,7 +734,7 @@ export default function LeadsPage() {
                         min="1"
                         value={appointmentData.returnFrequency}
                         onChange={(e) => setAppointmentData({ ...appointmentData, returnFrequency: parseInt(e.target.value) })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                       />
                     </div>
                   </div>
@@ -745,7 +745,7 @@ export default function LeadsPage() {
                   <textarea
                     value={appointmentData.notes}
                     onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     rows={3}
                     placeholder="Observações sobre o agendamento..."
                   />

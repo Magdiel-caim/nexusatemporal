@@ -148,7 +148,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
             placeholder="Buscar por nome, e-mail ou telefone..."
             value={searchLead}
             onChange={(e) => setSearchLead(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
           {searchLead && (
             <div className="mt-2 max-h-40 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
@@ -237,7 +237,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       type="text"
                       value={formData.fullName}
                       onChange={(e) => handleInputChange('fullName', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                       required
                     />
                   </div>
@@ -250,7 +250,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       type="date"
                       value={formData.birthDate}
                       onChange={(e) => handleInputChange('birthDate', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
@@ -263,7 +263,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       value={formData.cpf}
                       onChange={(e) => handleInputChange('cpf', e.target.value)}
                       placeholder="000.000.000-00"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
@@ -275,7 +275,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       type="text"
                       value={formData.rg}
                       onChange={(e) => handleInputChange('rg', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
@@ -288,7 +288,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       value={formData.phone}
                       onChange={(e) => handleInputChange('phone', e.target.value)}
                       placeholder="(00) 00000-0000"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
@@ -300,7 +300,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -319,7 +319,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     rows={3}
                     placeholder="Rua, número, complemento"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
@@ -332,7 +332,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       type="text"
                       value={formData.city}
                       onChange={(e) => handleInputChange('city', e.target.value)}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
@@ -346,7 +346,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       onChange={(e) => handleInputChange('state', e.target.value)}
                       placeholder="SP"
                       maxLength={2}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
 
@@ -359,7 +359,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       value={formData.zipCode}
                       onChange={(e) => handleInputChange('zipCode', e.target.value)}
                       placeholder="00000-000"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     />
                   </div>
                 </div>
@@ -376,7 +376,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                   <select
                     value={formData.bloodType}
                     onChange={(e) => handleInputChange('bloodType', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   >
                     <option value="">Selecione...</option>
                     <option value="A+">A+</option>
@@ -399,7 +399,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     onChange={(e) => handleArrayInput('allergies', e.target.value)}
                     rows={2}
                     placeholder="Ex: Dipirona, Penicilina, Látex"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
@@ -412,7 +412,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     onChange={(e) => handleArrayInput('chronicDiseases', e.target.value)}
                     rows={2}
                     placeholder="Ex: Diabetes, Hipertensão"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
@@ -425,7 +425,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     onChange={(e) => handleArrayInput('currentMedications', e.target.value)}
                     rows={2}
                     placeholder="Ex: Losartana 50mg, Metformina 500mg"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
@@ -438,7 +438,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     onChange={(e) => handleArrayInput('previousSurgeries', e.target.value)}
                     rows={2}
                     placeholder="Ex: Apendicectomia (2015), Cesariana (2018)"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
@@ -451,7 +451,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     onChange={(e) => handleInputChange('familyHistory', e.target.value)}
                     rows={3}
                     placeholder="Doenças relevantes na família..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -468,7 +468,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     type="text"
                     value={formData.emergencyContactName}
                     onChange={(e) => handleInputChange('emergencyContactName', e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
@@ -481,7 +481,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     value={formData.emergencyContactPhone}
                     onChange={(e) => handleInputChange('emergencyContactPhone', e.target.value)}
                     placeholder="(00) 00000-0000"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
 
@@ -494,7 +494,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     value={formData.emergencyContactRelationship}
                     onChange={(e) => handleInputChange('emergencyContactRelationship', e.target.value)}
                     placeholder="Ex: Mãe, Cônjuge, Filho(a)"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
               </div>
@@ -512,7 +512,7 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                     onChange={(e) => handleInputChange('generalNotes', e.target.value)}
                     rows={8}
                     placeholder="Informações adicionais relevantes..."
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   />
                 </div>
               </div>

@@ -410,7 +410,7 @@ const AgendaPage: React.FC = () => {
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
                 placeholder="Nome do paciente..."
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -419,7 +419,7 @@ const AgendaPage: React.FC = () => {
               <select
                 value={filters.status}
                 onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Todos</option>
                 <option value="aguardando_pagamento">Aguardando Pagamento</option>
@@ -436,7 +436,7 @@ const AgendaPage: React.FC = () => {
               <select
                 value={filters.location}
                 onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Todos</option>
                 <option value="moema">Moema</option>
@@ -449,7 +449,7 @@ const AgendaPage: React.FC = () => {
               <select
                 value={filters.procedureId}
                 onChange={(e) => setFilters({ ...filters, procedureId: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="all">Todos</option>
                 {procedures.map((proc) => (
@@ -466,7 +466,7 @@ const AgendaPage: React.FC = () => {
                 type="date"
                 value={filters.dateFrom}
                 onChange={(e) => setFilters({ ...filters, dateFrom: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
 
@@ -476,7 +476,7 @@ const AgendaPage: React.FC = () => {
                 type="date"
                 value={filters.dateTo}
                 onChange={(e) => setFilters({ ...filters, dateTo: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
           </div>
@@ -715,7 +715,7 @@ const AgendaPage: React.FC = () => {
                     required
                     value={formData.leadId}
                     onChange={(e) => setFormData({ ...formData, leadId: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                   >
                     <option value="">Selecione um paciente</option>
                     {leads.map((lead) => (
@@ -732,7 +732,7 @@ const AgendaPage: React.FC = () => {
                     required
                     value={formData.procedureId}
                     onChange={(e) => setFormData({ ...formData, procedureId: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                   >
                     <option value="">Selecione um procedimento</option>
                     {procedures.map((proc) => (
@@ -751,7 +751,7 @@ const AgendaPage: React.FC = () => {
                       required
                       value={formData.scheduledDate}
                       onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     />
                   </div>
 
@@ -762,7 +762,7 @@ const AgendaPage: React.FC = () => {
                       required
                       value={formData.scheduledTime}
                       onChange={(e) => setFormData({ ...formData, scheduledTime: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     />
                   </div>
                 </div>
@@ -772,7 +772,7 @@ const AgendaPage: React.FC = () => {
                   <select
                     value={formData.location}
                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                   >
                     <option value="moema">Moema</option>
                     <option value="av_paulista">Av. Paulista</option>
@@ -787,7 +787,7 @@ const AgendaPage: React.FC = () => {
                       step="0.01"
                       value={formData.paymentAmount}
                       onChange={(e) => setFormData({ ...formData, paymentAmount: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                       placeholder="0.00"
                     />
                   </div>
@@ -797,7 +797,7 @@ const AgendaPage: React.FC = () => {
                     <select
                       value={formData.paymentMethod}
                       onChange={(e) => setFormData({ ...formData, paymentMethod: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     >
                       <option value="pix">PIX</option>
                       <option value="cartao">Cartão</option>
@@ -828,7 +828,7 @@ const AgendaPage: React.FC = () => {
                         max="12"
                         value={formData.returnCount}
                         onChange={(e) => setFormData({ ...formData, returnCount: parseInt(e.target.value) })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                       />
                     </div>
 
@@ -839,7 +839,7 @@ const AgendaPage: React.FC = () => {
                         min="1"
                         value={formData.returnFrequency}
                         onChange={(e) => setFormData({ ...formData, returnFrequency: parseInt(e.target.value) })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                       />
                     </div>
                   </div>
@@ -850,7 +850,7 @@ const AgendaPage: React.FC = () => {
                   <textarea
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     rows={3}
                     placeholder="Observações sobre o agendamento..."
                   />
@@ -906,7 +906,7 @@ const AgendaPage: React.FC = () => {
                       required
                       value={editFormData.scheduledDate}
                       onChange={(e) => setEditFormData({ ...editFormData, scheduledDate: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     />
                   </div>
 
@@ -917,7 +917,7 @@ const AgendaPage: React.FC = () => {
                       required
                       value={editFormData.scheduledTime}
                       onChange={(e) => setEditFormData({ ...editFormData, scheduledTime: e.target.value })}
-                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     />
                   </div>
                 </div>
@@ -927,7 +927,7 @@ const AgendaPage: React.FC = () => {
                   <select
                     value={editFormData.location}
                     onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                   >
                     <option value="moema">Moema</option>
                     <option value="av_paulista">Av. Paulista</option>
@@ -939,7 +939,7 @@ const AgendaPage: React.FC = () => {
                   <textarea
                     value={editFormData.notes}
                     onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
                     rows={3}
                     placeholder="Observações sobre o agendamento..."
                   />
