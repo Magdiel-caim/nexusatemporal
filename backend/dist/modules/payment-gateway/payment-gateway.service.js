@@ -10,6 +10,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentGatewayService = void 0;
 const asaas_service_1 = require("./asaas.service");
+const pagbank_service_1 = require("./pagbank.service");
 const crypto_1 = __importDefault(require("crypto"));
 class PaymentGatewayService {
     pool;
@@ -153,6 +154,25 @@ class PaymentGatewayService {
         }
         return new asaas_service_1.AsaasService(config);
     }
+    /**
+     * Get PagBank service instance
+     */
+    async getPagBankService(tenantId, environment) {
+        let config;
+        if (environment) {
+            config = await this.getConfig(tenantId, 'pagbank', environment);
+        }
+        else {
+            config = await this.getActiveConfig(tenantId, 'pagbank');
+        }
+        if (!config) {
+            throw new Error('PagBank configuration not found. Please configure your API key first.');
+        }
+        if (!config.isActive) {
+            throw new Error('PagBank integration is not active.');
+        }
+        return new pagbank_service_1.PagBankService(config);
+    }
     // ==========================================
     // CUSTOMER METHODS
     // ==========================================
@@ -177,6 +197,37 @@ class PaymentGatewayService {
                 postalCode: data.postalCode?.replace(/\D/g, ''),
                 externalReference: data.externalReference,
                 observations: data.observations,
+            });
+            gatewayCustomerId = response.id;
+        }
+        else if (gateway === 'pagbank') {
+            const pagbankService = await this.getPagBankService(tenantId);
+            // Format phone for PagBank
+            const phones = [];
+            if (data.mobilePhone) {
+                const phoneData = pagbankService.formatPhone(data.mobilePhone);
+                phones.push({
+                    country: '55',
+                    area: phoneData.area,
+                    number: phoneData.number,
+                    type: 'MOBILE',
+                });
+            }
+            const response = await pagbankService.createCustomer({
+                name: data.name,
+                email: data.email,
+                tax_id: data.cpfCnpj?.replace(/\D/g, ''),
+                phones: phones.length > 0 ? phones : undefined,
+                address: data.address ? {
+                    street: data.address,
+                    number: data.addressNumber,
+                    complement: data.complement,
+                    locality: data.province,
+                    city: data.city,
+                    region_code: data.state,
+                    country: 'BRA',
+                    postal_code: data.postalCode?.replace(/\D/g, ''),
+                } : undefined,
             });
             gatewayCustomerId = response.id;
         }

@@ -10,6 +10,7 @@ import { PaymentCustomer } from './payment-customer.entity';
 import { PaymentCharge } from './payment-charge.entity';
 import { PaymentWebhook } from './payment-webhook.entity';
 import { AsaasService } from './asaas.service';
+import { PagBankService } from './pagbank.service';
 import crypto from 'crypto';
 
 export class PaymentGatewayService {
@@ -194,6 +195,29 @@ export class PaymentGatewayService {
     return new AsaasService(config);
   }
 
+  /**
+   * Get PagBank service instance
+   */
+  async getPagBankService(tenantId: string, environment?: 'production' | 'sandbox'): Promise<PagBankService> {
+    let config: PaymentConfig | null;
+
+    if (environment) {
+      config = await this.getConfig(tenantId, 'pagbank', environment);
+    } else {
+      config = await this.getActiveConfig(tenantId, 'pagbank');
+    }
+
+    if (!config) {
+      throw new Error('PagBank configuration not found. Please configure your API key first.');
+    }
+
+    if (!config.isActive) {
+      throw new Error('PagBank integration is not active.');
+    }
+
+    return new PagBankService(config);
+  }
+
   // ==========================================
   // CUSTOMER METHODS
   // ==========================================
@@ -240,6 +264,38 @@ export class PaymentGatewayService {
         postalCode: data.postalCode?.replace(/\D/g, ''),
         externalReference: data.externalReference,
         observations: data.observations,
+      });
+      gatewayCustomerId = response.id;
+    } else if (gateway === 'pagbank') {
+      const pagbankService = await this.getPagBankService(tenantId);
+
+      // Format phone for PagBank
+      const phones = [];
+      if (data.mobilePhone) {
+        const phoneData = pagbankService.formatPhone(data.mobilePhone);
+        phones.push({
+          country: '55',
+          area: phoneData.area,
+          number: phoneData.number,
+          type: 'MOBILE' as const,
+        });
+      }
+
+      const response = await pagbankService.createCustomer({
+        name: data.name,
+        email: data.email,
+        tax_id: data.cpfCnpj?.replace(/\D/g, ''),
+        phones: phones.length > 0 ? phones : undefined,
+        address: data.address ? {
+          street: data.address,
+          number: data.addressNumber,
+          complement: data.complement,
+          locality: data.province,
+          city: data.city,
+          region_code: data.state,
+          country: 'BRA',
+          postal_code: data.postalCode?.replace(/\D/g, ''),
+        } : undefined,
       });
       gatewayCustomerId = response.id;
     } else {

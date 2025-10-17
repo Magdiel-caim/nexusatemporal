@@ -111,7 +111,6 @@ export default function DashboardPage() {
         : 45;
 
       // Separar agendamentos por clínica (com filtro robusto)
-      console.log('Debug - All appointments locations:', appointments.map(apt => apt.location));
       const moemaAppointments = appointments.filter(apt =>
         apt.location?.toLowerCase().includes('moema')
       );

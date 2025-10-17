@@ -5,7 +5,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { CheckCircle, AlertCircle, Settings, CreditCard, DollarSign, Loader } from 'lucide-react';
+import { CheckCircle, Settings, CreditCard, DollarSign, Loader } from 'lucide-react';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 
@@ -357,15 +357,255 @@ const PaymentGatewayConfig: React.FC = () => {
   };
 
   const renderPagBankConfig = () => {
+    const config = pagbankConfig;
+
     return (
-      <div className="text-center py-12">
-        <AlertCircle className="w-16 h-16 mx-auto text-yellow-500 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">PagBank - Em Breve</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          A integração com PagBank está em desenvolvimento.
-          <br />
-          A estrutura está pronta, aguardando documentação da API.
-        </p>
+      <div className="space-y-6">
+        {/* Environment */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ambiente</label>
+          <div className="flex space-x-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="sandbox"
+                checked={config.environment === 'sandbox'}
+                onChange={(e) => setPagbankConfig({ ...config, environment: e.target.value as any })}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                Sandbox (Testes)
+                <span className="ml-2 text-xs text-gray-500">Recomendado para iniciar</span>
+              </span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                value="production"
+                checked={config.environment === 'production'}
+                onChange={(e) => setPagbankConfig({ ...config, environment: e.target.value as any })}
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Production (Real)</span>
+            </label>
+          </div>
+        </div>
+
+        {/* API Key (Token) */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Token de Acesso (API Key) *
+          </label>
+          <input
+            type="password"
+            value={config.apiKey}
+            onChange={(e) => setPagbankConfig({ ...config, apiKey: e.target.value })}
+            placeholder="Bearer token..."
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"
+          />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Obtenha em: PagBank → Conta → Integrações → Gerar Token OAuth
+          </p>
+        </div>
+
+        {/* Webhook Secret */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Webhook Secret (Opcional)
+          </label>
+          <input
+            type="password"
+            value={config.webhookSecret || ''}
+            onChange={(e) => setPagbankConfig({ ...config, webhookSecret: e.target.value })}
+            placeholder="Secret compartilhado para validação"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-green-500"
+          />
+        </div>
+
+        {/* Payment Methods */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            Formas de Pagamento
+          </label>
+          <div className="space-y-2">
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={config.config.enableBoleto}
+                onChange={(e) =>
+                  setPagbankConfig({
+                    ...config,
+                    config: { ...config.config, enableBoleto: e.target.checked },
+                  })
+                }
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Boleto Bancário</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={config.config.enablePix}
+                onChange={(e) =>
+                  setPagbankConfig({
+                    ...config,
+                    config: { ...config.config, enablePix: e.target.checked },
+                  })
+                }
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">PIX</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={config.config.enableCreditCard}
+                onChange={(e) =>
+                  setPagbankConfig({
+                    ...config,
+                    config: { ...config.config, enableCreditCard: e.target.checked },
+                  })
+                }
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Cartão de Crédito</span>
+            </label>
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={config.config.enableDebit}
+                onChange={(e) =>
+                  setPagbankConfig({
+                    ...config,
+                    config: { ...config.config, enableDebit: e.target.checked },
+                  })
+                }
+                className="mr-2"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">Cartão de Débito</span>
+            </label>
+          </div>
+        </div>
+
+        {/* Default Settings */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Dias para Vencimento
+            </label>
+            <input
+              type="number"
+              value={config.config.defaultDueDays || 7}
+              onChange={(e) =>
+                setPagbankConfig({
+                  ...config,
+                  config: { ...config.config, defaultDueDays: parseInt(e.target.value) },
+                })
+              }
+              min="1"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Multa (%)</label>
+            <input
+              type="number"
+              value={config.config.defaultFine || 2}
+              onChange={(e) =>
+                setPagbankConfig({
+                  ...config,
+                  config: { ...config.config, defaultFine: parseFloat(e.target.value) },
+                })
+              }
+              min="0"
+              step="0.1"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Juros/mês (%)
+            </label>
+            <input
+              type="number"
+              value={config.config.defaultInterest || 1}
+              onChange={(e) =>
+                setPagbankConfig({
+                  ...config,
+                  config: { ...config.config, defaultInterest: parseFloat(e.target.value) },
+                })
+              }
+              min="0"
+              step="0.1"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+          </div>
+        </div>
+
+        {/* Active */}
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={config.isActive}
+            onChange={(e) => setPagbankConfig({ ...config, isActive: e.target.checked })}
+            className="mr-2"
+          />
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Ativar integração</label>
+        </div>
+
+        {/* Actions */}
+        <div className="flex space-x-4">
+          <button
+            onClick={() => handleTestConnection('pagbank')}
+            disabled={!config.apiKey || testing}
+            className="flex items-center px-4 py-2 border border-green-600 text-green-600 rounded-lg hover:bg-green-50 dark:hover:bg-green-900 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {testing ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+            Testar Conexão
+          </button>
+          <button
+            onClick={() => handleSaveConfig(config)}
+            disabled={!config.apiKey || saving}
+            className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {saving ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : <Settings className="w-4 h-4 mr-2" />}
+            Salvar Configuração
+          </button>
+        </div>
+
+        {/* Webhook URL Info */}
+        <div className="mt-6 p-4 bg-green-50 dark:bg-green-900 rounded-lg">
+          <h4 className="text-sm font-semibold text-green-900 dark:text-green-100 mb-2">
+            📡 Configure o Webhook no PagBank
+          </h4>
+          <p className="text-sm text-green-800 dark:text-green-200 mb-2">
+            Cole esta URL no painel do PagBank para receber notificações automáticas:
+          </p>
+          <code className="block p-2 bg-white dark:bg-gray-800 rounded text-xs text-gray-900 dark:text-gray-100 break-all">
+            https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank
+          </code>
+          <p className="mt-2 text-xs text-green-700 dark:text-green-300">
+            💡 Acesse: PagBank → Configurações → Notificações de Webhook
+          </p>
+        </div>
+
+        {/* OAuth Authorization Info */}
+        <div className="p-4 bg-yellow-50 dark:bg-yellow-900 rounded-lg">
+          <h4 className="text-sm font-semibold text-yellow-900 dark:text-yellow-100 mb-2">
+            🔐 Autorização OAuth - PagBank
+          </h4>
+          <p className="text-sm text-yellow-800 dark:text-yellow-200 mb-3">
+            O PagBank utiliza OAuth 2.0 para autenticação. Você precisará autorizar o aplicativo para usar a API.
+          </p>
+          <ol className="text-xs text-yellow-700 dark:text-yellow-300 space-y-1 list-decimal list-inside">
+            <li>Acesse o painel do PagBank e vá em "Integrações"</li>
+            <li>Crie uma nova aplicação OAuth</li>
+            <li>Copie o Client ID e Client Secret</li>
+            <li>Configure as permissões necessárias (payments, customers, webhooks)</li>
+            <li>Autorize a aplicação e copie o Access Token</li>
+            <li>Cole o Access Token no campo acima</li>
+          </ol>
+        </div>
       </div>
     );
   };

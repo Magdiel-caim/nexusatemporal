@@ -217,8 +217,11 @@ const ChatPage: React.FC = () => {
       try {
         const whatsappData = await chatService.getWhatsAppConversations();
 
+        // Garantir que whatsappData seja um array
+        const whatsappArray = Array.isArray(whatsappData) ? whatsappData : [];
+
         // Converter conversas WhatsApp para o formato Conversation
-        whatsappConversations = whatsappData.map((conv: any) => ({
+        whatsappConversations = whatsappArray.map((conv: any) => ({
           id: `whatsapp-${conv.sessionName}-${conv.phoneNumber}`, // Usar hífen ao invés de underscore
           contactName: conv.contactName || conv.phoneNumber,
           phoneNumber: conv.phoneNumber,
@@ -269,10 +272,13 @@ const ChatPage: React.FC = () => {
 
         const whatsappMessages = await chatService.getWhatsAppMessages(sessionName!, phoneNumber);
 
-        console.log('📨 Total de mensagens recebidas:', whatsappMessages.length);
+        // Garantir que whatsappMessages seja um array
+        const messagesArray = Array.isArray(whatsappMessages) ? whatsappMessages : [];
+
+        console.log('📨 Total de mensagens recebidas:', messagesArray.length);
 
         // Converter para formato Message
-        const messages: Message[] = whatsappMessages.map((msg: any) => {
+        const messages: Message[] = messagesArray.map((msg: any) => {
           // DEBUG: Log completo da mensagem
           console.log('🔍 Processando mensagem:', {
             id: msg.id,

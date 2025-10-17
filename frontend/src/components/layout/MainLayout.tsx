@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 import {
@@ -28,18 +28,50 @@ interface MainLayoutProps {
   children: React.ReactNode;
 }
 
-const menuItems = [
+interface MenuItem {
+  icon: any;
+  label: string;
+  path: string;
+  roles?: string[]; // Se não definido, todos podem acessar
+}
+
+const allMenuItems: MenuItem[] = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
   { icon: Users, label: 'Leads', path: '/leads' },
   { icon: MessageSquare, label: 'Chat', path: '/chat' },
   { icon: Calendar, label: 'Agenda', path: '/agenda' },
   { icon: FileText, label: 'Prontuários', path: '/prontuarios' },
-  { icon: DollarSign, label: 'Financeiro', path: '/financeiro' },
-  { icon: Package, label: 'Estoque', path: '/estoque' },
+  {
+    icon: DollarSign,
+    label: 'Financeiro',
+    path: '/financeiro',
+    roles: ['superadmin', 'owner', 'admin'] // USER e PROFESSIONAL não têm acesso
+  },
+  {
+    icon: Package,
+    label: 'Estoque',
+    path: '/estoque',
+    roles: ['superadmin', 'owner', 'admin'] // USER não tem acesso
+  },
   { icon: Users2, label: 'Colaboração', path: '/colaboracao' },
-  { icon: BarChart3, label: 'BI & Analytics', path: '/bi' },
-  { icon: Megaphone, label: 'Marketing', path: '/marketing' },
-  { icon: Settings, label: 'Configurações', path: '/configuracoes' },
+  {
+    icon: BarChart3,
+    label: 'BI & Analytics',
+    path: '/bi',
+    roles: ['superadmin', 'owner', 'admin'] // USER e PROFESSIONAL não têm acesso
+  },
+  {
+    icon: Megaphone,
+    label: 'Marketing',
+    path: '/marketing',
+    roles: ['superadmin', 'owner', 'admin'] // USER e PROFESSIONAL não têm acesso
+  },
+  {
+    icon: Settings,
+    label: 'Configurações',
+    path: '/configuracoes',
+    roles: ['superadmin', 'owner'] // Apenas OWNER e SUPERADMIN
+  },
 ];
 
 export default function MainLayout({ children }: MainLayoutProps) {
@@ -48,6 +80,23 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { theme } = useTheme();
+
+  // Filtrar menu items baseado no role do usuário
+  const menuItems = useMemo(() => {
+    const userRole = user?.role?.toLowerCase() || 'user';
+    const userEmail = user?.email?.toLowerCase() || '';
+
+    return allMenuItems.filter(item => {
+      // Usuário teste sempre tem acesso total (master user)
+      if (userEmail === 'teste@nexusatemporal.com.br') return true;
+
+      // Se o item não especifica roles, todos podem acessar
+      if (!item.roles) return true;
+
+      // Verificar se o role do usuário está na lista permitida
+      return item.roles.includes(userRole);
+    });
+  }, [user?.role, user?.email]);
 
   const handleLogout = async () => {
     await logout();

@@ -220,13 +220,15 @@ class ChatService {
     unreadMessages: number;
     lastActivity: string;
   }>> {
-    const { data } = await api.get('/chat/n8n/sessions');
-    return data.data || data;
+    const { data } = await api.get('/chat/whatsapp/sessions');
+    const result = data.data || data;
+    return Array.isArray(result) ? result : [];
   }
 
   async getWhatsAppConversations(): Promise<Conversation[]> {
     const { data } = await api.get('/chat/n8n/conversations');
-    return data.data || data;
+    const result = data.data || data;
+    return Array.isArray(result) ? result : [];
   }
 
   async getWhatsAppMessages(sessionName: string, phoneNumber?: string): Promise<Message[]> {
@@ -236,7 +238,8 @@ class ChatService {
     console.log('🌐 Chamando API:', `/chat/n8n/messages/${sessionName}?${params.toString()}`);
     const { data } = await api.get(`/chat/n8n/messages/${sessionName}?${params.toString()}`);
     console.log('📦 Resposta da API:', data);
-    return data.data || data;
+    const result = data.data || data;
+    return Array.isArray(result) ? result : [];
   }
 
   async markWhatsAppAsRead(sessionName: string, phoneNumber: string): Promise<void> {
