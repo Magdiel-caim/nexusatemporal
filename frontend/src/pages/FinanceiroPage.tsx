@@ -18,6 +18,7 @@ import SupplierList from '../components/financeiro/SupplierList';
 import SupplierForm from '../components/financeiro/SupplierForm';
 import InvoiceList from '../components/financeiro/InvoiceList';
 import InvoiceForm from '../components/financeiro/InvoiceForm';
+import CashFlowView from '../components/financeiro/CashFlowView';
 
 interface FinancialStats {
   totalIncome: number;
@@ -567,14 +568,8 @@ export default function FinanceiroPage() {
         />
       )}
 
-      {activeTab === 'cash-flow' && (
-        <div className="card">
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            <p className="text-lg font-medium mb-2">Módulo de Fluxo de Caixa</p>
-            <p className="text-sm">Em desenvolvimento...</p>
-          </div>
-        </div>
-      )}
+      {/* Cash Flow Tab */}
+      {activeTab === 'cash-flow' && <CashFlowView />}
 
       {activeTab === 'reports' && (
         <div className="card">
