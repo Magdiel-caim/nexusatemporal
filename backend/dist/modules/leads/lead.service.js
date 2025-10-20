@@ -5,9 +5,18 @@ const data_source_1 = require("../../database/data-source");
 const lead_entity_1 = require("./lead.entity");
 const activity_entity_1 = require("./activity.entity");
 const typeorm_1 = require("typeorm");
+const EventEmitterService_1 = require("../../services/EventEmitterService");
+const database_1 = require("../../modules/automation/database");
 class LeadService {
     leadRepository = data_source_1.CrmDataSource.getRepository(lead_entity_1.Lead);
     activityRepository = data_source_1.CrmDataSource.getRepository(activity_entity_1.Activity);
+    _eventEmitter;
+    get eventEmitter() {
+        if (!this._eventEmitter) {
+            this._eventEmitter = (0, EventEmitterService_1.getEventEmitterService)((0, database_1.getAutomationDbPool)());
+        }
+        return this._eventEmitter;
+    }
     async createLead(data) {
         const lead = this.leadRepository.create(data);
         const savedLead = await this.leadRepository.save(lead);
@@ -19,6 +28,17 @@ class LeadService {
             description: `Lead ${data.name} was created`,
             userId: data.createdById,
         });
+        // Emit lead.created event for automation system
+        try {
+            await this.eventEmitter.emitLeadCreated(data.tenantId, savedLead.id, {
+                ...savedLead,
+                createdBy: data.createdById
+            });
+        }
+        catch (error) {
+            console.error('[LeadService] Failed to emit lead.created event:', error);
+            // Don't throw - event emission is secondary to main operation
+        }
         return this.getLeadById(savedLead.id, data.tenantId);
     }
     async getLeadsByTenant(tenantId, filters) {
@@ -62,6 +82,7 @@ class LeadService {
         }
         // Track stage changes
         if (data.stageId && data.stageId !== lead.stageId) {
+            const oldStageId = lead.stageId;
             await this.createActivity({
                 leadId: id,
                 type: activity_entity_1.ActivityType.STAGE_CHANGE,
@@ -69,9 +90,28 @@ class LeadService {
                 description: `Estágio alterado`,
                 userId,
             });
+            // Emit lead.stage_changed event
+            try {
+                await this.eventEmitter.emit({
+                    eventType: 'lead.stage_changed',
+                    tenantId,
+                    entityType: 'lead',
+                    entityId: id,
+                    data: {
+                        leadId: id,
+                        oldStage: oldStageId,
+                        newStage: data.stageId,
+                        updatedBy: userId
+                    }
+                });
+            }
+            catch (error) {
+                console.error('[LeadService] Failed to emit lead.stage_changed event:', error);
+            }
         }
         // Track status changes
         if (data.status && data.status !== lead.status) {
+            const oldStatus = lead.status;
             await this.createActivity({
                 leadId: id,
                 type: activity_entity_1.ActivityType.STATUS_CHANGE,
@@ -79,9 +119,17 @@ class LeadService {
                 description: `Status alterado de ${lead.status} para ${data.status}`,
                 userId,
             });
+            // Emit lead.status_changed event
+            try {
+                await this.eventEmitter.emitLeadStatusChanged(tenantId, id, oldStatus, data.status, { leadId: id, updatedBy: userId });
+            }
+            catch (error) {
+                console.error('[LeadService] Failed to emit lead.status_changed event:', error);
+            }
         }
         // Track assignment changes
         if (data.assignedToId && data.assignedToId !== lead.assignedToId) {
+            const oldAssignedToId = lead.assignedToId;
             await this.createActivity({
                 leadId: id,
                 type: activity_entity_1.ActivityType.LEAD_ASSIGNED,
@@ -91,6 +139,24 @@ class LeadService {
                     : `Responsável atribuído`,
                 userId,
             });
+            // Emit lead.assigned event
+            try {
+                await this.eventEmitter.emit({
+                    eventType: 'lead.assigned',
+                    tenantId,
+                    entityType: 'lead',
+                    entityId: id,
+                    data: {
+                        leadId: id,
+                        oldAssigned: oldAssignedToId,
+                        newAssigned: data.assignedToId,
+                        updatedBy: userId
+                    }
+                });
+            }
+            catch (error) {
+                console.error('[LeadService] Failed to emit lead.assigned event:', error);
+            }
         }
         // Track other field changes
         const fieldChanges = this.detectFieldChanges(lead, data);
@@ -105,6 +171,23 @@ class LeadService {
             });
         }
         await this.leadRepository.update({ id, tenantId }, data);
+        // Emit generic lead.updated event
+        try {
+            await this.eventEmitter.emit({
+                eventType: 'lead.updated',
+                tenantId,
+                entityType: 'lead',
+                entityId: id,
+                data: {
+                    leadId: id,
+                    updates: data,
+                    updatedBy: userId
+                }
+            });
+        }
+        catch (error) {
+            console.error('[LeadService] Failed to emit lead.updated event:', error);
+        }
         return this.getLeadById(id, tenantId);
     }
     detectFieldChanges(lead, data) {

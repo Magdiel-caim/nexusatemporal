@@ -15,8 +15,8 @@ const financeiro_routes_1 = __importDefault(require("../modules/financeiro/finan
 const payment_gateway_routes_1 = __importDefault(require("../modules/payment-gateway/payment-gateway.routes"));
 const users_routes_1 = __importDefault(require("../modules/users/users.routes"));
 const automation_routes_1 = __importDefault(require("../modules/automation/automation.routes"));
+const estoque_routes_1 = __importDefault(require("../modules/estoque/estoque.routes"));
 // Import other module routes as they are created
-// import estoqueRoutes from '@/modules/estoque/estoque.routes';
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import biRoutes from '@/modules/bi/bi.routes';
 // import marketingRoutes from '@/modules/marketing/marketing.routes';
@@ -42,8 +42,8 @@ router.use('/financial', financeiro_routes_1.default);
 router.use('/payment-gateway', payment_gateway_routes_1.default); // Payment gateway integration (Asaas, PagBank)
 router.use('/users', users_routes_1.default); // User management and permissions
 router.use('/automation', automation_routes_1.default); // Automation system (triggers, workflows, integrations)
+router.use('/stock', estoque_routes_1.default); // Stock/Inventory management
 // Uncomment as modules are implemented
-// router.use('/estoque', estoqueRoutes);
 // router.use('/colaboracao', colaboracaoRoutes);
 // router.use('/bi', biRoutes);
 // router.use('/marketing', marketingRoutes);

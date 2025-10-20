@@ -7,9 +7,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebhookController = void 0;
 const payment_gateway_service_1 = require("./payment-gateway.service");
+const EventEmitterService_1 = require("../../services/EventEmitterService");
 class WebhookController {
     pool;
     service;
+    _eventEmitter;
+    get eventEmitter() {
+        if (!this._eventEmitter) {
+            this._eventEmitter = (0, EventEmitterService_1.getEventEmitterService)(this.pool);
+        }
+        return this._eventEmitter;
+    }
     constructor(pool) {
         this.pool = pool;
         this.service = new payment_gateway_service_1.PaymentGatewayService(pool);
@@ -121,6 +129,54 @@ class WebhookController {
                 JSON.stringify(payment),
             ]);
             const charge = chargeResult.rows[0];
+            // Emit payment event based on status
+            try {
+                if (event === 'PAYMENT_CREATED' || payment.status === 'PENDING') {
+                    await this.eventEmitter.emit({
+                        eventType: 'payment.pending',
+                        tenantId,
+                        entityType: 'payment',
+                        entityId: charge.id,
+                        data: {
+                            chargeId: charge.id,
+                            gatewayChargeId: payment.id,
+                            gateway: 'asaas',
+                            value: payment.value,
+                            dueDate: payment.dueDate,
+                            status: payment.status
+                        }
+                    });
+                }
+                else if (event === 'PAYMENT_RECEIVED' || event === 'PAYMENT_CONFIRMED') {
+                    await this.eventEmitter.emit({
+                        eventType: 'payment.received',
+                        tenantId,
+                        entityType: 'payment',
+                        entityId: charge.id,
+                        data: {
+                            chargeId: charge.id,
+                            gatewayChargeId: payment.id,
+                            gateway: 'asaas',
+                            value: payment.value,
+                            paymentDate: payment.paymentDate,
+                            confirmedDate: payment.confirmedDate
+                        }
+                    });
+                }
+                else if (event === 'PAYMENT_OVERDUE') {
+                    await this.eventEmitter.emitPaymentOverdue(tenantId, charge.id, {
+                        chargeId: charge.id,
+                        gatewayChargeId: payment.id,
+                        gateway: 'asaas',
+                        value: payment.value,
+                        dueDate: payment.dueDate
+                    });
+                }
+            }
+            catch (error) {
+                console.error('[WebhookController] Failed to emit payment event:', error);
+                // Don't fail webhook processing if event emission fails
+            }
             // If payment was received, update linked financial transaction
             if (charge.transactionId && (event === 'PAYMENT_RECEIVED' || event === 'PAYMENT_CONFIRMED')) {
                 await this.pool.query(`
@@ -135,6 +191,26 @@ class WebhookController {
         }
         catch (error) {
             console.error('Error processing webhook:', error);
+            // Emit payment.failed event if it's a payment failure
+            try {
+                if (payload.payment && (payload.event === 'PAYMENT_FAILED' || error.message.includes('payment'))) {
+                    await this.eventEmitter.emit({
+                        eventType: 'payment.failed',
+                        tenantId,
+                        entityType: 'payment',
+                        entityId: payload.payment.id,
+                        data: {
+                            gatewayChargeId: payload.payment.id,
+                            gateway: 'asaas',
+                            reason: error.message,
+                            payload: payload.payment
+                        }
+                    });
+                }
+            }
+            catch (emitError) {
+                console.error('[WebhookController] Failed to emit payment.failed event:', emitError);
+            }
             // Mark webhook as failed
             await this.pool.query(`
         UPDATE payment_webhooks
