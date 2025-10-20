@@ -12,8 +12,8 @@ class EventService {
     async logEvent(tenantId, eventType, entityType, entityId, payload, metadata) {
         const query = `
       INSERT INTO automation_events (
-        tenant_id, event_type, entity_type, entity_id,
-        payload, metadata
+        tenant_id, event_name, entity_type, entity_id,
+        event_data, metadata
       ) VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
@@ -41,7 +41,7 @@ class EventService {
         // Filtro por tipo de evento
         if (dto.event_type) {
             params.push(dto.event_type);
-            query += ` AND event_type = $${++paramCount}`;
+            query += ` AND event_name = $${++paramCount}`;
         }
         // Filtro por tipo de entidade
         if (dto.entity_type) {
@@ -56,19 +56,19 @@ class EventService {
         // Filtro por data inicial
         if (dto.start_date) {
             params.push(dto.start_date);
-            query += ` AND created_at >= $${++paramCount}`;
+            query += ` AND triggered_at >= $${++paramCount}`;
         }
         // Filtro por data final
         if (dto.end_date) {
             params.push(dto.end_date);
-            query += ` AND created_at <= $${++paramCount}`;
+            query += ` AND triggered_at <= $${++paramCount}`;
         }
         // Total de registros
         const countQuery = query.replace('SELECT *', 'SELECT COUNT(*)');
         const countResult = await this.db.query(countQuery, params);
         const total = parseInt(countResult.rows[0].count);
         // Ordenação e paginação
-        query += ` ORDER BY created_at DESC`;
+        query += ` ORDER BY triggered_at DESC`;
         if (dto.limit) {
             params.push(dto.limit);
             query += ` LIMIT $${++paramCount}`;
@@ -186,13 +186,13 @@ class EventService {
      */
     async getEventTypes(tenantId) {
         const query = `
-      SELECT DISTINCT event_type
+      SELECT DISTINCT event_name
       FROM automation_events
       WHERE tenant_id = $1
-      ORDER BY event_type
+      ORDER BY event_name
     `;
         const result = await this.db.query(query, [tenantId]);
-        return result.rows.map(row => row.event_type);
+        return result.rows.map(row => row.event_name);
     }
     /**
      * Atualiza contadores de execução de um evento
@@ -215,7 +215,7 @@ class EventService {
         const query = `
       DELETE FROM automation_events
       WHERE tenant_id = $1
-        AND created_at < NOW() - INTERVAL '${daysToKeep} days'
+        AND triggered_at < NOW() - INTERVAL '${daysToKeep} days'
     `;
         const result = await this.db.query(query, [tenantId]);
         return result.rowCount || 0;

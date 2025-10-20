@@ -1,15 +1,14 @@
 export interface AutomationEvent {
   id: string;
   tenant_id: string;
-  event_type: string; // 'lead.created', 'appointment.created', etc.
+  event_name: string; // 'lead.created', 'appointment.created', etc.
   entity_type: 'lead' | 'appointment' | 'payment' | 'whatsapp' | 'user' | 'other';
   entity_id: string;
-  payload: Record<string, any>;
+  event_data: Record<string, any>;
   metadata?: Record<string, any>;
-  triggers_executed: number;
-  workflows_executed: number;
-  processed_at: Date;
-  created_at: Date;
+  processed: boolean;
+  processed_at?: Date;
+  triggered_at: Date;
 }
 
 export interface EventStats {
