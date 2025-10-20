@@ -14,6 +14,8 @@ import {
   NotificationChannel,
 } from './appointment-notification.entity';
 import { Lead, ClientStatus } from '../leads/lead.entity';
+import { getEventEmitterService } from '@/services/EventEmitterService';
+import { getAutomationDbPool } from '@/modules/automation/database';
 
 export interface CreateAppointmentDto {
   leadId: string;
@@ -65,6 +67,7 @@ export class AppointmentService {
   private returnRepo: Repository<AppointmentReturn>;
   private notificationRepo: Repository<AppointmentNotification>;
   private leadRepo: Repository<Lead>;
+  private eventEmitter = getEventEmitterService(getAutomationDbPool());
 
   constructor() {
     this.appointmentRepo = CrmDataSource.getRepository(Appointment);
@@ -112,6 +115,17 @@ export class AppointmentService {
       message: 'Agendamento criado com sucesso',
       tenantId: data.tenantId,
     });
+
+    // Emit appointment.scheduled event
+    try {
+      await this.eventEmitter.emitAppointmentScheduled(
+        data.tenantId,
+        saved.id,
+        saved
+      );
+    } catch (error) {
+      console.error('[AppointmentService] Failed to emit appointment.scheduled event:', error);
+    }
 
     return saved;
   }
@@ -208,6 +222,19 @@ export class AppointmentService {
         message: 'Paciente confirmou o agendamento',
         tenantId: appointment.tenantId,
       });
+
+      // Emit appointment.confirmed event
+      try {
+        await this.eventEmitter.emit({
+          eventType: 'appointment.confirmed',
+          tenantId: appointment.tenantId,
+          entityType: 'appointment',
+          entityId: id,
+          data: appointment
+        });
+      } catch (error) {
+        console.error('[AppointmentService] Failed to emit appointment.confirmed event:', error);
+      }
     } else if (dto.reschedule) {
       // Paciente quer reagendar
       appointment.status = AppointmentStatus.REAGENDADO;
@@ -302,6 +329,17 @@ export class AppointmentService {
       message: 'Atendimento finalizado',
       tenantId: appointment.tenantId,
     });
+
+    // Emit appointment.completed event
+    try {
+      await this.eventEmitter.emitAppointmentCompleted(
+        appointment.tenantId,
+        id,
+        saved
+      );
+    } catch (error) {
+      console.error('[AppointmentService] Failed to emit appointment.completed event:', error);
+    }
 
     return saved;
   }
@@ -504,6 +542,23 @@ export class AppointmentService {
       message: `Agendamento cancelado: ${reason}`,
       tenantId: appointment.tenantId,
     });
+
+    // Emit appointment.cancelled event
+    try {
+      await this.eventEmitter.emit({
+        eventType: 'appointment.cancelled',
+        tenantId: appointment.tenantId,
+        entityType: 'appointment',
+        entityId: id,
+        data: {
+          ...saved,
+          cancelReason: reason,
+          canceledBy: userId
+        }
+      });
+    } catch (error) {
+      console.error('[AppointmentService] Failed to emit appointment.cancelled event:', error);
+    }
 
     return saved;
   }

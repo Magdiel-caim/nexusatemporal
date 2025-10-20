@@ -2,10 +2,13 @@ import { CrmDataSource } from '@/database/data-source';
 import { Lead, LeadStatus, LeadPriority, LeadSource } from './lead.entity';
 import { Activity, ActivityType } from './activity.entity';
 import { Between, Like, In } from 'typeorm';
+import { getEventEmitterService } from '@/services/EventEmitterService';
+import { getAutomationDbPool } from '@/modules/automation/database';
 
 export class LeadService {
   private leadRepository = CrmDataSource.getRepository(Lead);
   private activityRepository = CrmDataSource.getRepository(Activity);
+  private eventEmitter = getEventEmitterService(getAutomationDbPool());
 
   async createLead(data: {
     name: string;
@@ -44,6 +47,21 @@ export class LeadService {
       description: `Lead ${data.name} was created`,
       userId: data.createdById,
     });
+
+    // Emit lead.created event for automation system
+    try {
+      await this.eventEmitter.emitLeadCreated(
+        data.tenantId,
+        savedLead.id,
+        {
+          ...savedLead,
+          createdBy: data.createdById
+        }
+      );
+    } catch (error) {
+      console.error('[LeadService] Failed to emit lead.created event:', error);
+      // Don't throw - event emission is secondary to main operation
+    }
 
     return this.getLeadById(savedLead.id, data.tenantId);
   }
@@ -110,6 +128,8 @@ export class LeadService {
 
     // Track stage changes
     if (data.stageId && data.stageId !== lead.stageId) {
+      const oldStageId = lead.stageId;
+
       await this.createActivity({
         leadId: id,
         type: ActivityType.STAGE_CHANGE,
@@ -117,10 +137,30 @@ export class LeadService {
         description: `Estágio alterado`,
         userId,
       });
+
+      // Emit lead.stage_changed event
+      try {
+        await this.eventEmitter.emit({
+          eventType: 'lead.stage_changed',
+          tenantId,
+          entityType: 'lead',
+          entityId: id,
+          data: {
+            leadId: id,
+            oldStage: oldStageId,
+            newStage: data.stageId,
+            updatedBy: userId
+          }
+        });
+      } catch (error) {
+        console.error('[LeadService] Failed to emit lead.stage_changed event:', error);
+      }
     }
 
     // Track status changes
     if (data.status && data.status !== lead.status) {
+      const oldStatus = lead.status;
+
       await this.createActivity({
         leadId: id,
         type: ActivityType.STATUS_CHANGE,
@@ -128,10 +168,25 @@ export class LeadService {
         description: `Status alterado de ${lead.status} para ${data.status}`,
         userId,
       });
+
+      // Emit lead.status_changed event
+      try {
+        await this.eventEmitter.emitLeadStatusChanged(
+          tenantId,
+          id,
+          oldStatus,
+          data.status,
+          { leadId: id, updatedBy: userId }
+        );
+      } catch (error) {
+        console.error('[LeadService] Failed to emit lead.status_changed event:', error);
+      }
     }
 
     // Track assignment changes
     if (data.assignedToId && data.assignedToId !== lead.assignedToId) {
+      const oldAssignedToId = lead.assignedToId;
+
       await this.createActivity({
         leadId: id,
         type: ActivityType.LEAD_ASSIGNED,
@@ -141,6 +196,24 @@ export class LeadService {
           : `Responsável atribuído`,
         userId,
       });
+
+      // Emit lead.assigned event
+      try {
+        await this.eventEmitter.emit({
+          eventType: 'lead.assigned',
+          tenantId,
+          entityType: 'lead',
+          entityId: id,
+          data: {
+            leadId: id,
+            oldAssigned: oldAssignedToId,
+            newAssigned: data.assignedToId,
+            updatedBy: userId
+          }
+        });
+      } catch (error) {
+        console.error('[LeadService] Failed to emit lead.assigned event:', error);
+      }
     }
 
     // Track other field changes
@@ -157,6 +230,24 @@ export class LeadService {
     }
 
     await this.leadRepository.update({ id, tenantId }, data);
+
+    // Emit generic lead.updated event
+    try {
+      await this.eventEmitter.emit({
+        eventType: 'lead.updated',
+        tenantId,
+        entityType: 'lead',
+        entityId: id,
+        data: {
+          leadId: id,
+          updates: data,
+          updatedBy: userId
+        }
+      });
+    } catch (error) {
+      console.error('[LeadService] Failed to emit lead.updated event:', error);
+    }
+
     return this.getLeadById(id, tenantId);
   }
 
