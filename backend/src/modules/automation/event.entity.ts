@@ -19,6 +19,8 @@ export interface EventStats {
   triggers_executed: number;
   workflows_executed: number;
   success_rate: number;
+  processed: number;
+  pending: number;
   period: {
     start: Date;
     end: Date;

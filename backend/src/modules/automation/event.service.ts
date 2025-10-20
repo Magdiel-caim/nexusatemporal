@@ -126,8 +126,8 @@ export class EventService {
     let query = `
       SELECT
         COUNT(*) as total_events,
-        SUM(triggers_executed) as triggers_executed,
-        SUM(workflows_executed) as workflows_executed
+        COUNT(CASE WHEN processed = true THEN 1 END) as processed_events,
+        COUNT(CASE WHEN processed = false THEN 1 END) as pending_events
       FROM automation_events
       WHERE tenant_id = $1
     `;
@@ -136,12 +136,12 @@ export class EventService {
 
     if (startDate) {
       params.push(startDate);
-      query += ` AND created_at >= $${++paramCount}`;
+      query += ` AND triggered_at >= $${++paramCount}`;
     }
 
     if (endDate) {
       params.push(endDate);
-      query += ` AND created_at <= $${++paramCount}`;
+      query += ` AND triggered_at <= $${++paramCount}`;
     }
 
     const result = await this.db.query(query, params);
@@ -149,7 +149,7 @@ export class EventService {
 
     // Eventos por tipo
     let typeQuery = `
-      SELECT event_type, COUNT(*) as count
+      SELECT event_name, COUNT(*) as count
       FROM automation_events
       WHERE tenant_id = $1
     `;
@@ -158,20 +158,20 @@ export class EventService {
 
     if (startDate) {
       typeParams.push(startDate);
-      typeQuery += ` AND created_at >= $${++typeParamCount}`;
+      typeQuery += ` AND triggered_at >= $${++typeParamCount}`;
     }
 
     if (endDate) {
       typeParams.push(endDate);
-      typeQuery += ` AND created_at <= $${++typeParamCount}`;
+      typeQuery += ` AND triggered_at <= $${++typeParamCount}`;
     }
 
-    typeQuery += ` GROUP BY event_type`;
+    typeQuery += ` GROUP BY event_name`;
     const typeResult = await this.db.query(typeQuery, typeParams);
 
     const eventsByType: Record<string, number> = {};
     typeResult.rows.forEach(row => {
-      eventsByType[row.event_type] = parseInt(row.count);
+      eventsByType[row.event_name] = parseInt(row.count);
     });
 
     // Eventos por entidade
@@ -185,12 +185,12 @@ export class EventService {
 
     if (startDate) {
       entityParams.push(startDate);
-      entityQuery += ` AND created_at >= $${++entityParamCount}`;
+      entityQuery += ` AND triggered_at >= $${++entityParamCount}`;
     }
 
     if (endDate) {
       entityParams.push(endDate);
-      entityQuery += ` AND created_at <= $${++entityParamCount}`;
+      entityQuery += ` AND triggered_at <= $${++entityParamCount}`;
     }
 
     entityQuery += ` GROUP BY entity_type`;
@@ -201,18 +201,20 @@ export class EventService {
       eventsByEntity[row.entity_type] = parseInt(row.count);
     });
 
-    // Taxa de sucesso (assumindo que workflows_executed > 0 = sucesso)
+    // Taxa de sucesso (baseado em eventos processados)
     const successRate = totals.total_events > 0
-      ? (parseInt(totals.workflows_executed) / parseInt(totals.total_events)) * 100
+      ? (parseInt(totals.processed_events) / parseInt(totals.total_events)) * 100
       : 0;
 
     return {
       total_events: parseInt(totals.total_events),
       events_by_type: eventsByType,
       events_by_entity: eventsByEntity,
-      triggers_executed: parseInt(totals.triggers_executed) || 0,
-      workflows_executed: parseInt(totals.workflows_executed) || 0,
+      triggers_executed: 0, // TODO: Implementar contagem real de triggers
+      workflows_executed: 0, // TODO: Implementar contagem real de workflows
       success_rate: Math.round(successRate * 100) / 100,
+      processed: parseInt(totals.processed_events) || 0,
+      pending: parseInt(totals.pending_events) || 0,
       period: {
         start: startDate || new Date(0),
         end: endDate || new Date()
