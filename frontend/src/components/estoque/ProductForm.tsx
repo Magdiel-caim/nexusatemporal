@@ -89,13 +89,13 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
             {product ? 'Editar Produto' : 'Novo Produto'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+          <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
             <X className="h-6 w-6" />
           </button>
         </div>
@@ -103,7 +103,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Nome do Produto *
               </label>
               <input
@@ -116,7 +116,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">SKU</label>
               <input
                 type="text"
                 value={formData.sku}
@@ -126,7 +126,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Código de Barras
               </label>
               <input
@@ -138,7 +138,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Categoria *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categoria *</label>
               <select
                 required
                 value={formData.category}
@@ -155,7 +155,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Unidade *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unidade *</label>
               <select
                 required
                 value={formData.unit}
@@ -175,7 +175,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Estoque Mínimo *
               </label>
               <input
@@ -190,7 +190,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Estoque Máximo
               </label>
               <input
@@ -204,7 +204,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Preço de Compra
               </label>
               <input
@@ -218,7 +218,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Preço de Venda
               </label>
               <input
@@ -232,7 +232,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Fornecedor Principal
               </label>
               <select
@@ -249,12 +249,12 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                 ))}
               </select>
               {loadingSuppliers && (
-                <p className="text-xs text-gray-500 mt-1">Carregando fornecedores...</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Carregando fornecedores...</p>
               )}
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Localização</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Localização</label>
               <input
                 type="text"
                 value={formData.location}
@@ -265,7 +265,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
             </div>
 
             <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descrição</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Descrição</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -282,7 +282,7 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                   onChange={(e) => setFormData({ ...formData, trackStock: e.target.checked })}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Controlar estoque</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Controlar estoque</span>
               </label>
               <label className="flex items-center space-x-2 cursor-pointer">
                 <input
@@ -291,16 +291,16 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
                   onChange={(e) => setFormData({ ...formData, requiresPrescription: e.target.checked })}
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
-                <span className="text-sm text-gray-700">Requer receita</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">Requer receita</span>
               </label>
             </div>
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
             >
               Cancelar
             </button>

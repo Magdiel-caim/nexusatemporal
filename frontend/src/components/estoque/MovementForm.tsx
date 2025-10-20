@@ -49,18 +49,18 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl max-w-lg w-full">
-        <div className="border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">Nova Movimentação</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+    <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full">
+        <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Nova Movimentação</h2>
+          <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300">
             <X className="h-6 w-6" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Produto *</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Produto *</label>
             <select
               required
               value={formData.productId}
@@ -78,7 +78,7 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo *</label>
               <select
                 required
                 value={formData.type}
@@ -94,7 +94,7 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Motivo *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo *</label>
               <select
                 required
                 value={formData.reason}
@@ -117,7 +117,7 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade *</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade *</label>
               <input
                 type="number"
                 required
@@ -130,7 +130,7 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Preço Unitário</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preço Unitário</label>
               <input
                 type="number"
                 min="0"
@@ -143,7 +143,7 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -152,11 +152,11 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
             />
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
             >
               Cancelar
             </button>

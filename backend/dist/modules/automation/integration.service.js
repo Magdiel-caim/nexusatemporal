@@ -10,6 +10,26 @@ class IntegrationService {
         this.db = db;
     }
     /**
+     * Transforma dados do banco (snake_case) para formato da interface (camelCase)
+     */
+    transformIntegration(row) {
+        return {
+            id: row.id,
+            tenant_id: row.tenant_id,
+            type: row.integration_type,
+            name: row.name,
+            description: row.description,
+            credentials: typeof row.credentials === 'string' ? JSON.parse(row.credentials) : row.credentials,
+            config: typeof row.config === 'string' ? JSON.parse(row.config) : row.config,
+            is_active: row.status === 'active',
+            last_tested_at: row.last_tested_at,
+            test_status: row.test_status,
+            test_message: row.test_message,
+            created_at: row.created_at,
+            updated_at: row.updated_at
+        };
+    }
+    /**
      * Lista todas as integrações
      */
     async findAll(tenantId, type) {
@@ -20,12 +40,12 @@ class IntegrationService {
         const params = [tenantId];
         if (type) {
             params.push(type);
-            query += ` AND type = $${params.length}`;
+            query += ` AND integration_type = $${params.length}`;
         }
         query += ` ORDER BY created_at DESC`;
         const result = await this.db.query(query, params);
-        // Remove dados sensíveis das credenciais
-        return result.rows.map(row => this.sanitizeCredentials(row));
+        // Transforma e remove dados sensíveis das credenciais
+        return result.rows.map(row => this.sanitizeCredentials(this.transformIntegration(row)));
     }
     /**
      * Busca integração por ID
@@ -39,7 +59,7 @@ class IntegrationService {
         if (!result.rows[0]) {
             return null;
         }
-        return this.sanitizeCredentials(result.rows[0]);
+        return this.sanitizeCredentials(this.transformIntegration(result.rows[0]));
     }
     /**
      * Cria nova integração
@@ -47,21 +67,20 @@ class IntegrationService {
     async create(dto, tenantId) {
         const query = `
       INSERT INTO integrations (
-        tenant_id, type, name, description, credentials, config, is_active
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        tenant_id, integration_type, name, status, credentials, config
+      ) VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `;
         const values = [
             tenantId,
             dto.type,
             dto.name,
-            dto.description || null,
+            dto.is_active !== undefined ? (dto.is_active ? 'active' : 'inactive') : 'active',
             JSON.stringify(dto.credentials),
-            dto.config ? JSON.stringify(dto.config) : null,
-            dto.is_active !== undefined ? dto.is_active : true
+            dto.config ? JSON.stringify(dto.config) : '{}'
         ];
         const result = await this.db.query(query, values);
-        return this.sanitizeCredentials(result.rows[0]);
+        return this.sanitizeCredentials(this.transformIntegration(result.rows[0]));
     }
     /**
      * Atualiza integração
@@ -87,8 +106,8 @@ class IntegrationService {
             values.push(JSON.stringify(dto.config));
         }
         if (dto.is_active !== undefined) {
-            fields.push(`is_active = $${paramCount++}`);
-            values.push(dto.is_active);
+            fields.push(`status = $${paramCount++}`);
+            values.push(dto.is_active ? 'active' : 'inactive');
         }
         if (fields.length === 0) {
             return this.findById(id, tenantId);
@@ -105,7 +124,7 @@ class IntegrationService {
         if (!result.rows[0]) {
             return null;
         }
-        return this.sanitizeCredentials(result.rows[0]);
+        return this.sanitizeCredentials(this.transformIntegration(result.rows[0]));
     }
     /**
      * Deleta integração
@@ -335,7 +354,9 @@ class IntegrationService {
       WHERE id = $1 AND tenant_id = $2
     `;
         const result = await this.db.query(query, [id, tenantId]);
-        return result.rows[0] || null;
+        if (!result.rows[0])
+            return null;
+        return this.transformIntegration(result.rows[0]);
     }
     /**
      * Remove dados sensíveis das credenciais

@@ -217,6 +217,36 @@ export interface AlertCount {
   byType: Record<AlertType, number>;
 }
 
+export interface ProcedureProduct {
+  id: string;
+  procedureId: string;
+  productId: string;
+  product?: Product;
+  quantityUsed: number;
+  isOptional: boolean;
+  notes?: string;
+  tenantId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface StockValidation {
+  valid: boolean;
+  insufficientStock: Array<{
+    productId: string;
+    productName: string;
+    required: number;
+    available: number;
+  }>;
+}
+
+export interface ConsumeStockResult {
+  success: boolean;
+  message: string;
+  movements: StockMovement[];
+  errors?: string[];
+}
+
 // ============================================
 // SERVICE CLASS
 // ============================================
@@ -321,11 +351,6 @@ class StockService {
     return response.data;
   }
 
-  async getMostUsedProducts(limit: number = 10) {
-    const response = await api.get(`/stock/movements/most-used?limit=${limit}`);
-    return response.data;
-  }
-
   // ALERTS
   async getAlerts(filters?: AlertFilters) {
     const params = new URLSearchParams();
@@ -357,6 +382,58 @@ class StockService {
   // HEALTH CHECK
   async healthCheck() {
     const response = await api.get('/stock/health');
+    return response.data;
+  }
+
+  // REPORTS
+  async getMovementsMonthly(months: number = 6) {
+    const response = await api.get(`/stock/reports/movements-monthly?months=${months}`);
+    return response.data;
+  }
+
+  async getMostUsedProducts(limit: number = 10) {
+    const response = await api.get(`/stock/reports/most-used-products?limit=${limit}`);
+    return response.data;
+  }
+
+  async getStockValueByCategory() {
+    const response = await api.get('/stock/reports/stock-value-by-category');
+    return response.data;
+  }
+
+  // PROCEDURE PRODUCTS
+  async addProductToProcedure(data: {
+    procedureId: string;
+    productId: string;
+    quantityUsed: number;
+    isOptional?: boolean;
+    notes?: string;
+  }): Promise<ProcedureProduct> {
+    const response = await api.post('/stock/procedure-products', data);
+    return response.data;
+  }
+
+  async getProcedureProducts(procedureId: string) {
+    const response = await api.get(`/stock/procedure-products/${procedureId}`);
+    return response.data;
+  }
+
+  async removeProcedureProduct(id: string): Promise<void> {
+    await api.delete(`/stock/procedure-products/${id}`);
+  }
+
+  async validateStockForProcedure(procedureId: string): Promise<StockValidation> {
+    const response = await api.get(`/stock/procedures/${procedureId}/validate-stock`);
+    return response.data;
+  }
+
+  async consumeStockForProcedure(procedureId: string, medicalRecordId?: string): Promise<ConsumeStockResult> {
+    const response = await api.post(`/stock/procedures/${procedureId}/consume-stock`, { medicalRecordId });
+    return response.data;
+  }
+
+  async updateProcedureProductQuantity(id: string, quantityUsed: number): Promise<ProcedureProduct> {
+    const response = await api.put(`/stock/procedure-products/${id}/quantity`, { quantityUsed });
     return response.data;
   }
 }

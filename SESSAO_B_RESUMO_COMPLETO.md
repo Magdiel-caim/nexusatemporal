@@ -3,7 +3,7 @@
 **Data:** 20/10/2025
 **Branch:** `feature/automation-backend`
 **Versão Backend:** `v86-stock-complete`
-**Versão Frontend:** `v89-dark-mode` ⭐ **NOVA VERSÃO - MODO ESCURO COMPLETO**
+**Versão Frontend:** `v90-dark-mode-complete` ⭐ **NOVA VERSÃO - DARK MODE 100% COMPLETO**
 
 ---
 
@@ -168,7 +168,7 @@ Service: nexus_backend
 
 **Frontend:**
 ```bash
-Image: nexus_frontend:v89-dark-mode ⭐ ATUALIZADO
+Image: nexus_frontend:v90-dark-mode-complete ⭐ ATUALIZADO
 Status: ✅ Running
 Service: nexus_frontend
 ```
@@ -545,6 +545,18 @@ git commit -m "feat(estoque): Descrição da mudança"
 
 ## 📝 HISTÓRICO DE VERSÕES
 
+**v90 - Dark Mode Complete (20/10/2025):** ⭐ FEATURE MAJOR COMPLETA
+- ✅ Dark mode em TODOS os componentes do módulo de estoque
+- ✅ ProductForm (modal) com dark mode completo
+- ✅ MovementForm (modal) com dark mode completo
+- ✅ ProductList com tabelas e cards em dark mode
+- ✅ MovementList com filtros e tabela em dark mode
+- ✅ AlertList com cards de alertas em dark mode
+- ✅ Todos os labels, inputs, selects, textareas adaptados
+- ✅ Modals com overlay escurecido e backgrounds dark
+- ✅ Build e deploy bem-sucedidos
+- 🚀 Frontend 100% dark mode em produção
+
 **v89 - Dark Mode (20/10/2025):** ⭐ FEATURE MAJOR
 - ✅ Implementado toggle light/dark mode no módulo de estoque
 - ✅ Botão ThemeToggle no header da página
@@ -578,7 +590,7 @@ git commit -m "feat(estoque): Descrição da mudança"
 
 ---
 
-**Versão deste documento:** 4.0 ⭐ ATUALIZADO COM v89
+**Versão deste documento:** 5.0 ⭐ ATUALIZADO COM v90
 **Última atualização:** 20/10/2025
 **Autor:** Sessão B (Claude Code)
-**Status:** ✅ FINALIZADO COM SUCESSO + MELHORIAS APLICADAS + BUGFIX CRÍTICO + DARK MODE
+**Status:** ✅ FINALIZADO COM SUCESSO + MELHORIAS + BUGFIX + DARK MODE 100% COMPLETO

@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { stockService, StockMovement, MovementType, MovementReason } from '@/services/stockService';
-import { ArrowUpCircle, ArrowDownCircle, Calendar, Filter } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, Calendar, Filter, FileSpreadsheet } from 'lucide-react';
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 interface MovementListProps {
   refreshKey: number;
@@ -54,6 +55,68 @@ export default function MovementList({ refreshKey }: MovementListProps) {
     setEndDate('');
   };
 
+  const handleExportExcel = () => {
+    try {
+      // Preparar dados para exportação
+      const exportData = movements.map((movement) => ({
+        'Data/Hora': new Date(movement.createdAt).toLocaleString('pt-BR'),
+        'Produto': movement.product?.name || 'Produto não encontrado',
+        'SKU': movement.product?.sku || '',
+        'Tipo': movement.type,
+        'Motivo': movement.reason,
+        'Quantidade': movement.quantity,
+        'Unidade': movement.product?.unit || '',
+        'Estoque Anterior': movement.previousStock,
+        'Estoque Novo': movement.newStock,
+        'Preço Unitário (R$)': movement.unitPrice ? movement.unitPrice.toFixed(2) : '',
+        'Valor Total (R$)': movement.totalPrice ? movement.totalPrice.toFixed(2) : '',
+        'Lote': movement.batchNumber || '',
+        'NF': movement.invoiceNumber || '',
+        'Observações': movement.notes || '',
+        'Usuário': movement.user?.name || '',
+      }));
+
+      // Criar workbook e worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      // Ajustar largura das colunas
+      const colWidths = [
+        { wch: 18 }, // Data/Hora
+        { wch: 30 }, // Produto
+        { wch: 15 }, // SKU
+        { wch: 12 }, // Tipo
+        { wch: 20 }, // Motivo
+        { wch: 12 }, // Quantidade
+        { wch: 10 }, // Unidade
+        { wch: 15 }, // Estoque Anterior
+        { wch: 15 }, // Estoque Novo
+        { wch: 18 }, // Preço Unitário
+        { wch: 18 }, // Valor Total
+        { wch: 15 }, // Lote
+        { wch: 15 }, // NF
+        { wch: 30 }, // Observações
+        { wch: 20 }, // Usuário
+      ];
+      ws['!cols'] = colWidths;
+
+      // Adicionar worksheet ao workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Movimentações');
+
+      // Gerar nome do arquivo com timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `movimentacoes_${timestamp}.xlsx`;
+
+      // Salvar arquivo
+      XLSX.writeFile(wb, filename);
+
+      toast.success(`Arquivo ${filename} exportado com sucesso!`);
+    } catch (error: any) {
+      console.error('Erro ao exportar Excel:', error);
+      toast.error('Erro ao exportar arquivo Excel');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -64,12 +127,25 @@ export default function MovementList({ refreshKey }: MovementListProps) {
 
   return (
     <div className="space-y-4">
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleExportExcel}
+          disabled={movements.length === 0}
+          className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Exportar lista de movimentações para Excel"
+        >
+          <FileSpreadsheet className="h-5 w-5 mr-2" />
+          Exportar Excel
+        </button>
+      </div>
+
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center space-x-2 text-gray-700 hover:text-gray-900"
+            className="flex items-center space-x-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
           >
             <Filter className="h-5 w-5" />
             <span className="font-medium">Filtros</span>
@@ -155,26 +231,26 @@ export default function MovementList({ refreshKey }: MovementListProps) {
       </div>
 
       {/* Movements Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
         <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Data</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Produto</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motivo</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Quantidade</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Estoque</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Data</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Produto</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Tipo</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Motivo</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Quantidade</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Estoque</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
             {movements.map((movement) => (
-              <tr key={movement.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              <tr key={movement.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                   {new Date(movement.createdAt).toLocaleString('pt-BR')}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   {movement.product?.name || 'Produto não encontrado'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -191,7 +267,7 @@ export default function MovementList({ refreshKey }: MovementListProps) {
                     {movement.type}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {movement.reason}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">

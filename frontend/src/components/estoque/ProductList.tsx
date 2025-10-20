@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { stockService, Product, ProductCategory } from '@/services/stockService';
-import { Package, Edit2, Trash2, Search, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Package, Edit2, Trash2, Search, AlertTriangle, CheckCircle, FileSpreadsheet } from 'lucide-react';
 import toast from 'react-hot-toast';
+import * as XLSX from 'xlsx';
 
 interface ProductListProps {
   onEdit: (product: Product) => void;
@@ -67,6 +68,68 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
     }
   };
 
+  const handleExportExcel = () => {
+    try {
+      // Preparar dados para exportação
+      const exportData = products.map((product) => ({
+        'Nome': product.name,
+        'SKU': product.sku || '',
+        'Código de Barras': product.barcode || '',
+        'Categoria': product.category,
+        'Unidade': product.unit,
+        'Estoque Atual': product.currentStock,
+        'Estoque Mínimo': product.minimumStock,
+        'Estoque Máximo': product.maximumStock || '',
+        'Preço de Compra (R$)': product.purchasePrice ? product.purchasePrice.toFixed(2) : '',
+        'Preço de Venda (R$)': product.salePrice ? product.salePrice.toFixed(2) : '',
+        'Localização': product.location || '',
+        'Lote': product.batchNumber || '',
+        'Validade': product.expirationDate ? new Date(product.expirationDate).toLocaleDateString('pt-BR') : '',
+        'Ativo': product.isActive ? 'Sim' : 'Não',
+        'Status': getStockStatus(product).text,
+      }));
+
+      // Criar workbook e worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(exportData);
+
+      // Ajustar largura das colunas
+      const colWidths = [
+        { wch: 30 }, // Nome
+        { wch: 15 }, // SKU
+        { wch: 18 }, // Código de Barras
+        { wch: 15 }, // Categoria
+        { wch: 10 }, // Unidade
+        { wch: 15 }, // Estoque Atual
+        { wch: 15 }, // Estoque Mínimo
+        { wch: 15 }, // Estoque Máximo
+        { wch: 18 }, // Preço de Compra
+        { wch: 18 }, // Preço de Venda
+        { wch: 20 }, // Localização
+        { wch: 15 }, // Lote
+        { wch: 12 }, // Validade
+        { wch: 8 },  // Ativo
+        { wch: 15 }, // Status
+      ];
+      ws['!cols'] = colWidths;
+
+      // Adicionar worksheet ao workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Produtos');
+
+      // Gerar nome do arquivo com timestamp
+      const timestamp = new Date().toISOString().split('T')[0];
+      const filename = `produtos_${timestamp}.xlsx`;
+
+      // Salvar arquivo
+      XLSX.writeFile(wb, filename);
+
+      toast.success(`Arquivo ${filename} exportado com sucesso!`);
+    } catch (error: any) {
+      console.error('Erro ao exportar Excel:', error);
+      toast.error('Erro ao exportar arquivo Excel');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -77,8 +140,21 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
 
   return (
     <div className="space-y-4">
+      {/* Export Button */}
+      <div className="flex justify-end">
+        <button
+          onClick={handleExportExcel}
+          disabled={products.length === 0}
+          className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Exportar lista de produtos para Excel"
+        >
+          <FileSpreadsheet className="h-5 w-5 mr-2" />
+          Exportar Excel
+        </button>
+      </div>
+
       {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-100 dark:border-gray-700">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="md:col-span-2">
             <div className="relative">
@@ -143,35 +219,35 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
           </p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Produto
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Categoria
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Estoque Atual
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Mín / Máx
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Preços
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Ações
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                 {products.map((product) => {
                   const status = getStockStatus(product);
                   const isLowStock = product.currentStock <= product.minimumStock;
@@ -179,7 +255,7 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
                   return (
                     <tr
                       key={product.id}
-                      className={`hover:bg-gray-50 transition-colors ${
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${
                         isOutOfStock ? 'bg-red-50' : isLowStock ? 'bg-yellow-50' : ''
                       }`}
                     >
@@ -189,8 +265,8 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
                             <Package className="h-5 w-5 text-blue-600" />
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{product.name}</div>
-                            <div className="text-sm text-gray-500">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{product.name}</div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
                               {product.sku && `SKU: ${product.sku}`}
                               {product.barcode && ` • Código: ${product.barcode}`}
                             </div>
@@ -198,19 +274,19 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
                           {product.category}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {product.currentStock} {product.unit}
                         </div>
                         {product.location && (
-                          <div className="text-sm text-gray-500">Local: {product.location}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">Local: {product.location}</div>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {product.minimumStock} / {product.maximumStock || '—'} {product.unit}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -225,7 +301,7 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
                           {status.text}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {product.purchasePrice && (
                           <div>Compra: R$ {product.purchasePrice.toFixed(2)}</div>
                         )}
@@ -260,7 +336,7 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
 
       {/* Summary */}
       {products.length > 0 && (
-        <div className="text-sm text-gray-600 text-center">
+        <div className="text-sm text-gray-600 dark:text-gray-400 text-center">
           Mostrando {products.length} produto(s)
         </div>
       )}
