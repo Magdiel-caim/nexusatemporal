@@ -405,7 +405,8 @@ export class IntegrationService {
       WHERE id = $1 AND tenant_id = $2
     `;
     const result = await this.db.query(query, [id, tenantId]);
-    return result.rows[0] || null;
+    if (!result.rows[0]) return null;
+    return this.transformIntegration(result.rows[0]);
   }
 
   /**
