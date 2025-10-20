@@ -8,7 +8,6 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import IntegrationsTab from '@/components/automation/IntegrationsTab';
 import TriggersTab from '@/components/automation/TriggersTab';
-import EventsTab from '@/components/automation/EventsTab';
 import DashboardTab from '@/components/automation/DashboardTab';
 import { Bot, Zap, Activity, Settings } from 'lucide-react';
 
@@ -25,14 +24,14 @@ const AutomationPage: React.FC = () => {
             Automações
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gerencie integrações, triggers e monitore eventos do sistema
+            Gerencie integrações e triggers do sistema
           </p>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <Activity className="h-4 w-4" />
             Dashboard
@@ -44,10 +43,6 @@ const AutomationPage: React.FC = () => {
           <TabsTrigger value="triggers" className="flex items-center gap-2">
             <Zap className="h-4 w-4" />
             Triggers
-          </TabsTrigger>
-          <TabsTrigger value="events" className="flex items-center gap-2">
-            <Activity className="h-4 w-4" />
-            Eventos
           </TabsTrigger>
         </TabsList>
 
@@ -64,11 +59,6 @@ const AutomationPage: React.FC = () => {
         {/* Triggers Tab */}
         <TabsContent value="triggers" className="space-y-4">
           <TriggersTab />
-        </TabsContent>
-
-        {/* Events Tab */}
-        <TabsContent value="events" className="space-y-4">
-          <EventsTab />
         </TabsContent>
       </Tabs>
     </div>
