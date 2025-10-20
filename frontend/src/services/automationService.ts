@@ -283,7 +283,10 @@ export const eventService = {
   async list(filters?: QueryEventsDto): Promise<AutomationEvent[]> {
     const response = await api.get('/automation/events/v2', { params: filters });
     const events = response.data.data || [];
-    return events.map(transformEvent);
+    console.log('[eventService] Raw events from API:', events);
+    const transformed = events.map(transformEvent);
+    console.log('[eventService] Transformed events:', transformed);
+    return transformed;
   },
 
   /**

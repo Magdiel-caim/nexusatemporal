@@ -113,18 +113,12 @@ const EventsTab: React.FC = () => {
       processed: '',
       search: '',
     });
+    // Reload events after clearing filters
+    setTimeout(() => loadEvents(), 100);
   };
 
-  useEffect(() => {
-    if (
-      filters.eventType === '' &&
-      filters.entityType === '' &&
-      filters.processed === '' &&
-      filters.search === ''
-    ) {
-      loadEvents();
-    }
-  }, [filters]);
+  // Removed problematic useEffect that was causing infinite loop
+  // Filters are now applied manually via handleApplyFilters button
 
   const filteredEvents = events.filter((event) => {
     if (filters.search) {
