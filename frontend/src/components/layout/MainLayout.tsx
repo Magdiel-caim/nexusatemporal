@@ -9,6 +9,7 @@ import {
   FileText,
   DollarSign,
   Package,
+  Bot,
   Users2,
   BarChart3,
   Megaphone,
@@ -52,6 +53,12 @@ const allMenuItems: MenuItem[] = [
     label: 'Estoque',
     path: '/estoque',
     roles: ['superadmin', 'owner', 'admin'] // USER não tem acesso
+  },
+  {
+    icon: Bot,
+    label: 'Automações',
+    path: '/automation',
+    roles: ['superadmin', 'owner', 'admin'] // Apenas administradores
   },
   { icon: Users2, label: 'Colaboração', path: '/colaboracao' },
   {
