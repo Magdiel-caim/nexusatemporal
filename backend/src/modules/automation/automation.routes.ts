@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { TriggerController } from './trigger.controller';
 import { WorkflowController } from './workflow.controller';
+import { EventController } from './event.controller';
+import { IntegrationController } from './integration.controller';
 import { getAutomationDbPool } from './database';
 import { authenticate } from '@/shared/middleware/auth.middleware';
 
@@ -12,12 +14,16 @@ router.use(authenticate);
 // Initialize database pool from CrmDataSource (lazy initialization)
 let triggerController: TriggerController;
 let workflowController: WorkflowController;
+let eventController: EventController;
+let integrationController: IntegrationController;
 
 const initControllers = () => {
   if (!triggerController) {
     const db = getAutomationDbPool();
     triggerController = new TriggerController(db);
     workflowController = new WorkflowController(db);
+    eventController = new EventController(db);
+    integrationController = new IntegrationController(db);
   }
 };
 
@@ -254,6 +260,80 @@ router.get('/events/stats', async (req, res) => {
       error: error.message
     });
   }
+});
+
+// ==========================================
+// NEW EVENT CONTROLLER ROUTES (v2)
+// ==========================================
+
+// GET /api/automation/events/v2 - List events with advanced filters (NEW)
+router.get('/events/v2', (req, res) => {
+  initControllers();
+  eventController.findAll(req, res);
+});
+
+// GET /api/automation/events/v2/:id - Get event by ID (NEW)
+router.get('/events/v2/:id', (req, res) => {
+  initControllers();
+  eventController.findById(req, res);
+});
+
+// GET /api/automation/events/v2/stats - Get event stats (NEW)
+router.get('/events/v2/stats', (req, res) => {
+  initControllers();
+  eventController.getStats(req, res);
+});
+
+// GET /api/automation/events/v2/types - Get event types (NEW)
+router.get('/events/v2/types', (req, res) => {
+  initControllers();
+  eventController.getEventTypes(req, res);
+});
+
+// DELETE /api/automation/events/v2/cleanup - Cleanup old events (NEW)
+router.delete('/events/v2/cleanup', (req, res) => {
+  initControllers();
+  eventController.cleanup(req, res);
+});
+
+// ==========================================
+// INTEGRATIONS ROUTES (NEW)
+// ==========================================
+
+// GET /api/automation/integrations - List integrations
+router.get('/integrations', (req, res) => {
+  initControllers();
+  integrationController.findAll(req, res);
+});
+
+// GET /api/automation/integrations/:id - Get integration by ID
+router.get('/integrations/:id', (req, res) => {
+  initControllers();
+  integrationController.findById(req, res);
+});
+
+// POST /api/automation/integrations - Create integration
+router.post('/integrations', (req, res) => {
+  initControllers();
+  integrationController.create(req, res);
+});
+
+// PUT /api/automation/integrations/:id - Update integration
+router.put('/integrations/:id', (req, res) => {
+  initControllers();
+  integrationController.update(req, res);
+});
+
+// DELETE /api/automation/integrations/:id - Delete integration
+router.delete('/integrations/:id', (req, res) => {
+  initControllers();
+  integrationController.delete(req, res);
+});
+
+// POST /api/automation/integrations/:id/test - Test integration
+router.post('/integrations/:id/test', (req, res) => {
+  initControllers();
+  integrationController.test(req, res);
 });
 
 export default router;
