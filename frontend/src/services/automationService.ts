@@ -249,6 +249,30 @@ export const triggerService = {
 };
 
 // ==========================================
+// HELPER FUNCTIONS FOR DATA TRANSFORMATION
+// ==========================================
+
+/**
+ * Transform backend event (snake_case) to frontend format (camelCase)
+ */
+function transformEvent(backendEvent: any): AutomationEvent {
+  return {
+    id: backendEvent.id,
+    tenantId: backendEvent.tenant_id,
+    eventType: backendEvent.event_name || backendEvent.event_type, // Support both fields
+    entityType: backendEvent.entity_type,
+    entityId: backendEvent.entity_id,
+    payload: backendEvent.event_data || backendEvent.payload, // Support both fields
+    metadata: backendEvent.metadata,
+    processed: backendEvent.processed,
+    triggeredAt: backendEvent.triggered_at,
+    processedAt: backendEvent.processed_at,
+    createdAt: backendEvent.triggered_at, // Use triggered_at as createdAt
+    updatedAt: backendEvent.processed_at || backendEvent.triggered_at, // Use processed_at or triggered_at
+  };
+}
+
+// ==========================================
 // EVENTS API
 // ==========================================
 
@@ -258,7 +282,8 @@ export const eventService = {
    */
   async list(filters?: QueryEventsDto): Promise<AutomationEvent[]> {
     const response = await api.get('/automation/events/v2', { params: filters });
-    return response.data.data;
+    const events = response.data.data || [];
+    return events.map(transformEvent);
   },
 
   /**
@@ -266,7 +291,7 @@ export const eventService = {
    */
   async getById(id: string): Promise<AutomationEvent> {
     const response = await api.get(`/automation/events/v2/${id}`);
-    return response.data.data;
+    return transformEvent(response.data.data);
   },
 
   /**
