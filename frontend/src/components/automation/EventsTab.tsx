@@ -69,12 +69,16 @@ const EventsTab: React.FC = () => {
       if (filters.entityType) queryFilters.entityType = filters.entityType;
       if (filters.processed) queryFilters.processed = filters.processed === 'true';
 
+      console.log('[EventsTab] Loading events with filters:', queryFilters);
       const data = await eventService.list(queryFilters);
-      setEvents(data);
+      console.log('[EventsTab] Received events:', data);
+      setEvents(data || []);
     } catch (error: any) {
+      console.error('[EventsTab] Error loading events:', error);
       toast.error('Erro ao carregar eventos', {
         description: error.response?.data?.message || error.message,
       });
+      setEvents([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -125,11 +129,16 @@ const EventsTab: React.FC = () => {
   const filteredEvents = events.filter((event) => {
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
-      return (
-        event.eventType.toLowerCase().includes(searchLower) ||
-        event.entityType.toLowerCase().includes(searchLower) ||
-        event.entityId.toLowerCase().includes(searchLower)
-      );
+      try {
+        return (
+          event.eventType?.toLowerCase().includes(searchLower) ||
+          event.entityType?.toLowerCase().includes(searchLower) ||
+          event.entityId?.toLowerCase().includes(searchLower)
+        );
+      } catch (err) {
+        console.error('[EventsTab] Error filtering event:', event, err);
+        return false;
+      }
     }
     return true;
   });
@@ -272,23 +281,24 @@ const EventsTab: React.FC = () => {
           </p>
 
           {filteredEvents.map((event) => {
-            const eventInfo = formatEventType(event.eventType);
+            try {
+              const eventInfo = formatEventType(event.eventType || 'unknown');
 
-            return (
-              <Card key={event.id} className="hover:border-primary transition-colors">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
-                    {/* Event Info */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xl">{eventInfo.icon}</span>
-                        <div>
-                          <p className="font-medium">{eventInfo.label}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {eventInfo.category} • {event.entityType} #{event.entityId.substring(0, 8)}
-                          </p>
+              return (
+                <Card key={event.id} className="hover:border-primary transition-colors">
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      {/* Event Info */}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xl">{eventInfo.icon}</span>
+                          <div>
+                            <p className="font-medium">{eventInfo.label}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {eventInfo.category} • {event.entityType} #{event.entityId?.substring(0, 8) || 'N/A'}
+                            </p>
+                          </div>
                         </div>
-                      </div>
 
                       {/* Metadata */}
                       <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
@@ -322,7 +332,11 @@ const EventsTab: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-            );
+              );
+            } catch (err) {
+              console.error('[EventsTab] Error rendering event:', event, err);
+              return null;
+            }
           })}
         </div>
       )}
