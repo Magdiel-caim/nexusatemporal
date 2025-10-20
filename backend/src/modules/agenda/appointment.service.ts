@@ -67,7 +67,14 @@ export class AppointmentService {
   private returnRepo: Repository<AppointmentReturn>;
   private notificationRepo: Repository<AppointmentNotification>;
   private leadRepo: Repository<Lead>;
-  private eventEmitter = getEventEmitterService(getAutomationDbPool());
+  private _eventEmitter?: any;
+
+  private get eventEmitter() {
+    if (!this._eventEmitter) {
+      this._eventEmitter = getEventEmitterService(getAutomationDbPool());
+    }
+    return this._eventEmitter;
+  }
 
   constructor() {
     this.appointmentRepo = CrmDataSource.getRepository(Appointment);

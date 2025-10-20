@@ -12,7 +12,14 @@ import { getEventEmitterService } from '@/services/EventEmitterService';
 
 export class WebhookController {
   private service: PaymentGatewayService;
-  private eventEmitter = getEventEmitterService(this.pool);
+  private _eventEmitter?: any;
+
+  private get eventEmitter() {
+    if (!this._eventEmitter) {
+      this._eventEmitter = getEventEmitterService(this.pool);
+    }
+    return this._eventEmitter;
+  }
 
   constructor(private pool: Pool) {
     this.service = new PaymentGatewayService(pool);

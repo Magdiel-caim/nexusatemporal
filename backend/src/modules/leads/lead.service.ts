@@ -8,7 +8,14 @@ import { getAutomationDbPool } from '@/modules/automation/database';
 export class LeadService {
   private leadRepository = CrmDataSource.getRepository(Lead);
   private activityRepository = CrmDataSource.getRepository(Activity);
-  private eventEmitter = getEventEmitterService(getAutomationDbPool());
+  private _eventEmitter?: any;
+
+  private get eventEmitter() {
+    if (!this._eventEmitter) {
+      this._eventEmitter = getEventEmitterService(getAutomationDbPool());
+    }
+    return this._eventEmitter;
+  }
 
   async createLead(data: {
     name: string;
