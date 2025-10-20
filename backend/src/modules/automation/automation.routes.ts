@@ -272,12 +272,6 @@ router.get('/events/v2', (req, res) => {
   eventController.findAll(req, res);
 });
 
-// GET /api/automation/events/v2/:id - Get event by ID (NEW)
-router.get('/events/v2/:id', (req, res) => {
-  initControllers();
-  eventController.findById(req, res);
-});
-
 // GET /api/automation/events/v2/stats - Get event stats (NEW)
 router.get('/events/v2/stats', (req, res) => {
   initControllers();
@@ -294,6 +288,13 @@ router.get('/events/v2/types', (req, res) => {
 router.delete('/events/v2/cleanup', (req, res) => {
   initControllers();
   eventController.cleanup(req, res);
+});
+
+// GET /api/automation/events/v2/:id - Get event by ID (NEW)
+// IMPORTANT: This must come AFTER all specific routes to avoid matching "stats", "types", etc. as IDs
+router.get('/events/v2/:id', (req, res) => {
+  initControllers();
+  eventController.findById(req, res);
 });
 
 // ==========================================
