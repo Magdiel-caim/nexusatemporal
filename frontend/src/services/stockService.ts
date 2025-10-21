@@ -247,6 +247,95 @@ export interface ConsumeStockResult {
   errors?: string[];
 }
 
+export enum InventoryCountStatus {
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum DiscrepancyType {
+  SURPLUS = 'SURPLUS',
+  SHORTAGE = 'SHORTAGE',
+  MATCH = 'MATCH',
+}
+
+export interface InventoryCount {
+  id: string;
+  description: string;
+  location?: string;
+  status: InventoryCountStatus;
+  countDate?: string;
+  completedAt?: string;
+  userId: string;
+  user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  tenantId: string;
+  items: InventoryCountItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InventoryCountItem {
+  id: string;
+  inventoryCountId: string;
+  productId: string;
+  product: Product;
+  systemStock: number;
+  countedStock: number;
+  difference: number;
+  discrepancyType: DiscrepancyType;
+  adjusted: boolean;
+  adjustedAt?: string;
+  notes?: string;
+  tenantId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DiscrepancyReport {
+  total: number;
+  matches: number;
+  surpluses: number;
+  shortages: number;
+  totalDifference: number;
+  items: InventoryCountItem[];
+}
+
+export interface InventoryCountFilters {
+  status?: InventoryCountStatus;
+  startDate?: string;
+  endDate?: string;
+  location?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface CreateInventoryCountDTO {
+  description: string;
+  location?: string;
+  countDate?: string;
+}
+
+export interface CreateInventoryCountItemDTO {
+  productId: string;
+  countedStock: number;
+  notes?: string;
+}
+
+export interface UpdateInventoryCountItemDTO {
+  countedStock: number;
+  notes?: string;
+}
+
+export interface BatchAdjustResult {
+  adjusted: number;
+  skipped: number;
+  errors: string[];
+}
+
 // ============================================
 // SERVICE CLASS
 // ============================================
@@ -435,6 +524,86 @@ class StockService {
   async updateProcedureProductQuantity(id: string, quantityUsed: number): Promise<ProcedureProduct> {
     const response = await api.put(`/stock/procedure-products/${id}/quantity`, { quantityUsed });
     return response.data;
+  }
+
+  // INVENTORY COUNTS
+  async getInventoryCounts(filters?: InventoryCountFilters) {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.startDate) params.append('startDate', filters.startDate);
+    if (filters?.endDate) params.append('endDate', filters.endDate);
+    if (filters?.location) params.append('location', filters.location);
+    if (filters?.limit) params.append('limit', String(filters.limit));
+    if (filters?.offset) params.append('offset', String(filters.offset));
+
+    const response = await api.get(`/stock/inventory-counts?${params.toString()}`);
+    return response.data;
+  }
+
+  async createInventoryCount(data: CreateInventoryCountDTO): Promise<InventoryCount> {
+    const response = await api.post('/stock/inventory-counts', data);
+    return response.data;
+  }
+
+  async getInventoryCount(id: string): Promise<InventoryCount> {
+    const response = await api.get(`/stock/inventory-counts/${id}`);
+    return response.data;
+  }
+
+  async addInventoryCountItem(countId: string, data: CreateInventoryCountItemDTO): Promise<InventoryCountItem> {
+    const response = await api.post(`/stock/inventory-counts/${countId}/items`, data);
+    return response.data;
+  }
+
+  async updateInventoryCountItem(itemId: string, data: UpdateInventoryCountItemDTO): Promise<InventoryCountItem> {
+    const response = await api.put(`/stock/inventory-count-items/${itemId}`, data);
+    return response.data;
+  }
+
+  async deleteInventoryCountItem(itemId: string): Promise<void> {
+    await api.delete(`/stock/inventory-count-items/${itemId}`);
+  }
+
+  async adjustInventoryItem(itemId: string): Promise<{ item: InventoryCountItem; message: string }> {
+    const response = await api.post(`/stock/inventory-count-items/${itemId}/adjust`);
+    return response.data;
+  }
+
+  async batchAdjustInventory(countId: string): Promise<BatchAdjustResult> {
+    const response = await api.post(`/stock/inventory-counts/${countId}/adjust-all`);
+    return response.data;
+  }
+
+  async completeInventoryCount(countId: string): Promise<InventoryCount> {
+    const response = await api.post(`/stock/inventory-counts/${countId}/complete`);
+    return response.data;
+  }
+
+  async cancelInventoryCount(countId: string): Promise<InventoryCount> {
+    const response = await api.post(`/stock/inventory-counts/${countId}/cancel`);
+    return response.data;
+  }
+
+  async getDiscrepancyReport(countId: string): Promise<DiscrepancyReport> {
+    const response = await api.get(`/stock/inventory-counts/${countId}/discrepancies`);
+    return response.data;
+  }
+
+  // PROCEDURES (simplified - assuming procedures exist in another module)
+  async getProcedures(search?: string) {
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    params.append('limit', '100');
+
+    // This would need to be implemented in the procedures module
+    // For now, returning empty array as placeholder
+    try {
+      const response = await api.get(`/procedures?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      // Fallback if procedures endpoint doesn't exist yet
+      return { data: [], total: 0 };
+    }
   }
 }
 

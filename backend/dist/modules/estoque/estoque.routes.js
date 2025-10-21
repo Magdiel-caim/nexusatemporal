@@ -7,6 +7,7 @@ const stock_movement_service_1 = require("./stock-movement.service");
 const stock_alert_service_1 = require("./stock-alert.service");
 const procedure_product_service_1 = require("./procedure-product.service");
 const inventory_count_service_1 = require("./inventory-count.service");
+const audit_log_service_1 = require("./audit-log.service");
 const router = (0, express_1.Router)();
 // Lazy initialization of services to avoid circular dependency issues
 let productService;
@@ -14,6 +15,7 @@ let movementService;
 let alertService;
 let procedureProductService;
 let inventoryCountService;
+let auditLogService;
 function getProductService() {
     if (!productService) {
         productService = new product_service_1.ProductService();
@@ -43,6 +45,12 @@ function getInventoryCountService() {
         inventoryCountService = new inventory_count_service_1.InventoryCountService();
     }
     return inventoryCountService;
+}
+function getAuditLogService() {
+    if (!auditLogService) {
+        auditLogService = new audit_log_service_1.AuditLogService();
+    }
+    return auditLogService;
 }
 // ============================================
 // PUBLIC ROUTES (sem autenticação)
@@ -721,6 +729,72 @@ router.get('/inventory-counts/:id/discrepancies', auth_middleware_1.authenticate
     }
     catch (error) {
         console.error('Error getting discrepancy report:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// ============================================
+// AUDIT LOG ROUTES
+// ============================================
+// Listar logs de auditoria
+router.get('/audit-logs', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { entityType, entityId, action, userId, startDate, endDate, limit, offset } = req.query;
+        const result = await getAuditLogService().findAll({
+            tenantId,
+            entityType: entityType,
+            entityId: entityId,
+            action: action,
+            userId: userId,
+            startDate: startDate ? new Date(startDate) : undefined,
+            endDate: endDate ? new Date(endDate) : undefined,
+            limit: limit ? parseInt(limit) : 50,
+            offset: offset ? parseInt(offset) : 0,
+        });
+        res.json(result);
+    }
+    catch (error) {
+        console.error('Error fetching audit logs:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Obter histórico de uma entidade
+router.get('/audit-logs/entity/:entityType/:entityId', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { entityType, entityId } = req.params;
+        const logs = await getAuditLogService().getEntityHistory(entityType, entityId, tenantId);
+        res.json(logs);
+    }
+    catch (error) {
+        console.error('Error fetching entity history:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Obter atividade de um usuário
+router.get('/audit-logs/user/:userId', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { userId } = req.params;
+        const { days } = req.query;
+        const logs = await getAuditLogService().getUserActivity(userId, tenantId, days ? parseInt(days) : 30);
+        res.json(logs);
+    }
+    catch (error) {
+        console.error('Error fetching user activity:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Obter resumo de auditoria
+router.get('/audit-logs/summary', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { days } = req.query;
+        const summary = await getAuditLogService().getAuditSummary(tenantId, days ? parseInt(days) : 30);
+        res.json(summary);
+    }
+    catch (error) {
+        console.error('Error fetching audit summary:', error);
         res.status(500).json({ error: error.message });
     }
 });

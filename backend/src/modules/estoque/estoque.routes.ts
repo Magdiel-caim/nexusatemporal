@@ -5,6 +5,7 @@ import { StockMovementService } from './stock-movement.service';
 import { StockAlertService } from './stock-alert.service';
 import { ProcedureProductService } from './procedure-product.service';
 import { InventoryCountService } from './inventory-count.service';
+import { AuditLogService } from './audit-log.service';
 import { Pool } from 'pg';
 
 const router = Router();
@@ -15,6 +16,7 @@ let movementService: StockMovementService;
 let alertService: StockAlertService;
 let procedureProductService: ProcedureProductService;
 let inventoryCountService: InventoryCountService;
+let auditLogService: AuditLogService;
 
 function getProductService(): ProductService {
   if (!productService) {
@@ -49,6 +51,13 @@ function getInventoryCountService(): InventoryCountService {
     inventoryCountService = new InventoryCountService();
   }
   return inventoryCountService;
+}
+
+function getAuditLogService(): AuditLogService {
+  if (!auditLogService) {
+    auditLogService = new AuditLogService();
+  }
+  return auditLogService;
 }
 
 // ============================================
@@ -817,6 +826,92 @@ router.get('/inventory-counts/:id/discrepancies', authenticate, async (req, res)
     res.json(report);
   } catch (error: any) {
     console.error('Error getting discrepancy report:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ============================================
+// AUDIT LOG ROUTES
+// ============================================
+
+// Listar logs de auditoria
+router.get('/audit-logs', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { entityType, entityId, action, userId, startDate, endDate, limit, offset } = req.query;
+
+    const result = await getAuditLogService().findAll({
+      tenantId,
+      entityType: entityType as any,
+      entityId: entityId as string,
+      action: action as any,
+      userId: userId as string,
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined,
+      limit: limit ? parseInt(limit as string) : 50,
+      offset: offset ? parseInt(offset as string) : 0,
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error fetching audit logs:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Obter histórico de uma entidade
+router.get('/audit-logs/entity/:entityType/:entityId', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { entityType, entityId } = req.params;
+
+    const logs = await getAuditLogService().getEntityHistory(
+      entityType as any,
+      entityId,
+      tenantId
+    );
+
+    res.json(logs);
+  } catch (error: any) {
+    console.error('Error fetching entity history:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Obter atividade de um usuário
+router.get('/audit-logs/user/:userId', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { userId } = req.params;
+    const { days } = req.query;
+
+    const logs = await getAuditLogService().getUserActivity(
+      userId,
+      tenantId,
+      days ? parseInt(days as string) : 30
+    );
+
+    res.json(logs);
+  } catch (error: any) {
+    console.error('Error fetching user activity:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Obter resumo de auditoria
+router.get('/audit-logs/summary', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { days } = req.query;
+
+    const summary = await getAuditLogService().getAuditSummary(
+      tenantId,
+      days ? parseInt(days as string) : 30
+    );
+
+    res.json(summary);
+  } catch (error: any) {
+    console.error('Error fetching audit summary:', error);
     res.status(500).json({ error: error.message });
   }
 });

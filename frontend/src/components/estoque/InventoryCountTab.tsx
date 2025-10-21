@@ -7,42 +7,13 @@ import {
   Save,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-// Types
-interface InventoryCount {
-  id: string;
-  description: string;
-  location?: string;
-  status: 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
-  countDate?: string;
-  completedAt?: string;
-  createdAt: string;
-  items: InventoryCountItem[];
-  user?: { name: string };
-}
-
-interface InventoryCountItem {
-  id: string;
-  productId: string;
-  product: {
-    name: string;
-    unit: string;
-  };
-  systemStock: number;
-  countedStock: number;
-  difference: number;
-  discrepancyType: 'SURPLUS' | 'SHORTAGE' | 'MATCH';
-  adjusted: boolean;
-  notes?: string;
-}
-
-interface Product {
-  id: string;
-  name: string;
-  sku?: string;
-  currentStock: number;
-  unit: string;
-}
+import {
+  stockService,
+  InventoryCount,
+  InventoryCountStatus,
+  DiscrepancyType,
+  Product,
+} from '@/services/stockService';
 
 export default function InventoryCountTab() {
   const [counts, setCounts] = useState<InventoryCount[]>([]);
@@ -69,20 +40,11 @@ export default function InventoryCountTab() {
   const loadCounts = async () => {
     try {
       setLoading(true);
-      // Mock data for now - replace with actual API call
-      const mockCounts: InventoryCount[] = [
-        {
-          id: '1',
-          description: 'Contagem Mensal - Janeiro 2025',
-          location: 'Depósito Principal',
-          status: 'IN_PROGRESS',
-          createdAt: new Date().toISOString(),
-          items: [],
-        },
-      ];
-      setCounts(mockCounts);
-    } catch (error) {
-      toast.error('Erro ao carregar contagens');
+      const response = await stockService.getInventoryCounts({ limit: 100 });
+      setCounts(response.data || []);
+    } catch (error: any) {
+      console.error('Erro ao carregar contagens:', error);
+      toast.error(error.response?.data?.error || 'Erro ao carregar contagens');
     } finally {
       setLoading(false);
     }
@@ -90,26 +52,11 @@ export default function InventoryCountTab() {
 
   const loadProducts = async () => {
     try {
-      // Mock data - replace with actual API call
-      const mockProducts: Product[] = [
-        {
-          id: '1',
-          name: 'Luva Descartável P',
-          sku: 'LUV-001-P',
-          currentStock: 150,
-          unit: 'un',
-        },
-        {
-          id: '2',
-          name: 'Máscara Cirúrgica',
-          sku: 'MASK-002',
-          currentStock: 200,
-          unit: 'un',
-        },
-      ];
-      setAvailableProducts(mockProducts);
-    } catch (error) {
+      const response = await stockService.getProducts({ isActive: true, limit: 1000 });
+      setAvailableProducts(response.data || []);
+    } catch (error: any) {
       console.error('Erro ao carregar produtos:', error);
+      toast.error(error.response?.data?.error || 'Erro ao carregar produtos');
     }
   };
 
@@ -120,23 +67,19 @@ export default function InventoryCountTab() {
     }
 
     try {
-      // Mock creation - replace with actual API call
-      const newCount: InventoryCount = {
-        id: Date.now().toString(),
+      const newCount = await stockService.createInventoryCount({
         description: newDescription,
-        location: newLocation,
-        status: 'IN_PROGRESS',
-        createdAt: new Date().toISOString(),
-        items: [],
-      };
+        location: newLocation || undefined,
+      });
 
       setCounts([newCount, ...counts]);
       setNewDescription('');
       setNewLocation('');
       setShowNewCountForm(false);
       toast.success('Contagem criada com sucesso!');
-    } catch (error) {
-      toast.error('Erro ao criar contagem');
+    } catch (error: any) {
+      console.error('Erro ao criar contagem:', error);
+      toast.error(error.response?.data?.error || 'Erro ao criar contagem');
     }
   };
 
@@ -152,34 +95,11 @@ export default function InventoryCountTab() {
     }
 
     try {
-      const product = availableProducts.find((p) => p.id === selectedProductId);
-      if (!product) return;
-
-      const difference = countedStock - product.currentStock;
-      let discrepancyType: 'SURPLUS' | 'SHORTAGE' | 'MATCH';
-
-      if (difference > 0) {
-        discrepancyType = 'SURPLUS';
-      } else if (difference < 0) {
-        discrepancyType = 'SHORTAGE';
-      } else {
-        discrepancyType = 'MATCH';
-      }
-
-      const newItem: InventoryCountItem = {
-        id: Date.now().toString(),
+      const newItem = await stockService.addInventoryCountItem(selectedCount.id, {
         productId: selectedProductId,
-        product: {
-          name: product.name,
-          unit: product.unit,
-        },
-        systemStock: product.currentStock,
         countedStock,
-        difference,
-        discrepancyType,
-        adjusted: false,
-        notes: itemNotes,
-      };
+        notes: itemNotes || undefined,
+      });
 
       const updatedCount = {
         ...selectedCount,
@@ -195,43 +115,50 @@ export default function InventoryCountTab() {
       setShowAddItem(false);
 
       toast.success('Item adicionado à contagem');
-    } catch (error) {
-      toast.error('Erro ao adicionar item');
+    } catch (error: any) {
+      console.error('Erro ao adicionar item:', error);
+      toast.error(error.response?.data?.error || 'Erro ao adicionar item');
     }
   };
 
-  const handleRemoveItem = (itemId: string) => {
+  const handleRemoveItem = async (itemId: string) => {
     if (!selectedCount) return;
 
-    const updatedCount = {
-      ...selectedCount,
-      items: selectedCount.items.filter((item) => item.id !== itemId),
-    };
+    try {
+      await stockService.deleteInventoryCountItem(itemId);
 
-    setSelectedCount(updatedCount);
-    setCounts(counts.map((c) => (c.id === selectedCount.id ? updatedCount : c)));
-    toast.success('Item removido');
+      const updatedCount = {
+        ...selectedCount,
+        items: selectedCount.items.filter((item) => item.id !== itemId),
+      };
+
+      setSelectedCount(updatedCount);
+      setCounts(counts.map((c) => (c.id === selectedCount.id ? updatedCount : c)));
+      toast.success('Item removido');
+    } catch (error: any) {
+      console.error('Erro ao remover item:', error);
+      toast.error(error.response?.data?.error || 'Erro ao remover item');
+    }
   };
 
   const handleAdjustItem = async (itemId: string) => {
     if (!selectedCount) return;
 
-    const item = selectedCount.items.find((i) => i.id === itemId);
-    if (!item) return;
-
     try {
-      const updatedItem = { ...item, adjusted: true };
+      const result = await stockService.adjustInventoryItem(itemId);
+
       const updatedCount = {
         ...selectedCount,
-        items: selectedCount.items.map((i) => (i.id === itemId ? updatedItem : i)),
+        items: selectedCount.items.map((i) => (i.id === itemId ? result.item : i)),
       };
 
       setSelectedCount(updatedCount);
       setCounts(counts.map((c) => (c.id === selectedCount.id ? updatedCount : c)));
 
-      toast.success('Item ajustado no estoque');
-    } catch (error) {
-      toast.error('Erro ao ajustar item');
+      toast.success(result.message || 'Item ajustado no estoque');
+    } catch (error: any) {
+      console.error('Erro ao ajustar item:', error);
+      toast.error(error.response?.data?.error || 'Erro ao ajustar item');
     }
   };
 
@@ -245,41 +172,38 @@ export default function InventoryCountTab() {
     }
 
     try {
-      const updatedCount = {
-        ...selectedCount,
-        status: 'COMPLETED' as const,
-        completedAt: new Date().toISOString(),
-      };
+      const updatedCount = await stockService.completeInventoryCount(selectedCount.id);
 
       setSelectedCount(updatedCount);
       setCounts(counts.map((c) => (c.id === selectedCount.id ? updatedCount : c)));
 
       toast.success('Contagem finalizada!');
-    } catch (error) {
-      toast.error('Erro ao finalizar contagem');
+    } catch (error: any) {
+      console.error('Erro ao finalizar contagem:', error);
+      toast.error(error.response?.data?.error || 'Erro ao finalizar contagem');
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: InventoryCountStatus) => {
     switch (status) {
-      case 'IN_PROGRESS':
+      case InventoryCountStatus.IN_PROGRESS:
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400';
-      case 'COMPLETED':
+      case InventoryCountStatus.COMPLETED:
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400';
-      case 'CANCELLED':
+      case InventoryCountStatus.CANCELLED:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-400';
       default:
         return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getDiscrepancyColor = (type: string) => {
+  const getDiscrepancyColor = (type: DiscrepancyType) => {
     switch (type) {
-      case 'SURPLUS':
+      case DiscrepancyType.SURPLUS:
         return 'bg-green-50 border-green-200 dark:bg-green-900/20 dark:border-green-700';
-      case 'SHORTAGE':
+      case DiscrepancyType.SHORTAGE:
         return 'bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-700';
-      case 'MATCH':
+      case DiscrepancyType.MATCH:
         return 'bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-700';
       default:
         return 'bg-gray-50 border-gray-200';
@@ -312,10 +236,10 @@ export default function InventoryCountTab() {
                 {selectedCount.description}
               </h2>
               <span className={`px-3 py-1 text-sm font-medium rounded-full ${getStatusColor(selectedCount.status)}`}>
-                {selectedCount.status === 'IN_PROGRESS' ? 'Em Andamento' : selectedCount.status === 'COMPLETED' ? 'Concluída' : 'Cancelada'}
+                {selectedCount.status === InventoryCountStatus.IN_PROGRESS ? 'Em Andamento' : selectedCount.status === InventoryCountStatus.COMPLETED ? 'Concluída' : 'Cancelada'}
               </span>
             </div>
-            {selectedCount.status === 'IN_PROGRESS' && (
+            {selectedCount.status === InventoryCountStatus.IN_PROGRESS && (
               <button
                 onClick={handleCompleteCount}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -343,7 +267,7 @@ export default function InventoryCountTab() {
         </div>
 
         {/* Add Item Button */}
-        {selectedCount.status === 'IN_PROGRESS' && (
+        {selectedCount.status === InventoryCountStatus.IN_PROGRESS && (
           <div>
             <button
               onClick={() => setShowAddItem(!showAddItem)}
@@ -356,7 +280,7 @@ export default function InventoryCountTab() {
         )}
 
         {/* Add Item Form */}
-        {showAddItem && selectedCount.status === 'IN_PROGRESS' && (
+        {showAddItem && selectedCount.status === InventoryCountStatus.IN_PROGRESS && (
           <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
             <h3 className="font-bold text-gray-900 dark:text-white mb-4">Adicionar Produto à Contagem</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -474,7 +398,7 @@ export default function InventoryCountTab() {
                         )}
                       </div>
                       <div className="flex space-x-2 ml-4">
-                        {!item.adjusted && selectedCount.status === 'IN_PROGRESS' && (
+                        {!item.adjusted && selectedCount.status === InventoryCountStatus.IN_PROGRESS && (
                           <>
                             <button
                               onClick={() => handleAdjustItem(item.id)}
@@ -609,7 +533,7 @@ export default function InventoryCountTab() {
                       {count.description}
                     </h3>
                     <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(count.status)}`}>
-                      {count.status === 'IN_PROGRESS' ? 'Em Andamento' : count.status === 'COMPLETED' ? 'Concluída' : 'Cancelada'}
+                      {count.status === InventoryCountStatus.IN_PROGRESS ? 'Em Andamento' : count.status === InventoryCountStatus.COMPLETED ? 'Concluída' : 'Cancelada'}
                     </span>
                   </div>
                   <div className="grid grid-cols-3 gap-4 text-sm text-gray-600 dark:text-gray-400">

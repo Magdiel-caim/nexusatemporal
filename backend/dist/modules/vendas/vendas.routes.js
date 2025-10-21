@@ -44,6 +44,33 @@ router.delete('/vendedores/:id', (req, res) => {
     vendasController.deleteVendedor(req, res);
 });
 // ============================================
+// ROTAS DE COMISSÕES
+// ============================================
+// IMPORTANTE: Rotas de comissões DEVEM vir ANTES das rotas de vendas
+// para evitar que /comissoes seja interpretado como /:id
+// Estatísticas e relatórios ANTES de rotas dinâmicas
+router.get('/comissoes/stats', (req, res) => {
+    initController();
+    vendasController.getComissoesStats(req, res);
+});
+router.get('/comissoes/relatorio', (req, res) => {
+    initController();
+    vendasController.relatorioComissoes(req, res);
+});
+// CRUD de Comissões
+router.get('/comissoes', (req, res) => {
+    initController();
+    vendasController.listComissoes(req, res);
+});
+router.post('/comissoes/:id/pagar', (req, res) => {
+    initController();
+    vendasController.pagarComissao(req, res);
+});
+router.get('/comissoes/:id', (req, res) => {
+    initController();
+    vendasController.getComissao(req, res);
+});
+// ============================================
 // ROTAS DE VENDAS
 // ============================================
 // Estatísticas ANTES de rotas dinâmicas
@@ -76,31 +103,6 @@ router.post('/:id/cancelar', (req, res) => {
 router.get('/:id', (req, res) => {
     initController();
     vendasController.getVenda(req, res);
-});
-// ============================================
-// ROTAS DE COMISSÕES
-// ============================================
-// Estatísticas e relatórios ANTES de rotas dinâmicas
-router.get('/comissoes/stats', (req, res) => {
-    initController();
-    vendasController.getComissoesStats(req, res);
-});
-router.get('/comissoes/relatorio', (req, res) => {
-    initController();
-    vendasController.relatorioComissoes(req, res);
-});
-// CRUD de Comissões
-router.get('/comissoes', (req, res) => {
-    initController();
-    vendasController.listComissoes(req, res);
-});
-router.post('/comissoes/:id/pagar', (req, res) => {
-    initController();
-    vendasController.pagarComissao(req, res);
-});
-router.get('/comissoes/:id', (req, res) => {
-    initController();
-    vendasController.getComissao(req, res);
 });
 exports.default = router;
 //# sourceMappingURL=vendas.routes.js.map

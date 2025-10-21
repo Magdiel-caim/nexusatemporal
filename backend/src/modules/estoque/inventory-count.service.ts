@@ -10,6 +10,10 @@ import { Product } from './product.entity';
 import { ProductService } from './product.service';
 import { StockMovementService, CreateMovementDto } from './stock-movement.service';
 import { MovementType, MovementReason } from './stock-movement.entity';
+import { emailService } from '../../shared/services/email.service';
+import { logger } from '../../shared/utils/logger';
+import { auditLogService } from './audit-log.service';
+import { AuditAction, AuditEntityType } from './audit-log.entity';
 
 export interface CreateInventoryCountDto {
   description?: string;
@@ -58,7 +62,24 @@ export class InventoryCountService {
       status: InventoryCountStatus.IN_PROGRESS,
     });
 
-    return await this.inventoryCountRepository.save(inventoryCount);
+    const saved = await this.inventoryCountRepository.save(inventoryCount);
+
+    // Audit log
+    auditLogService.createLog({
+      entityType: AuditEntityType.INVENTORY_COUNT,
+      entityId: saved.id,
+      action: AuditAction.CREATE,
+      userId: data.userId,
+      newValues: {
+        description: saved.description,
+        location: saved.location,
+        status: saved.status,
+      },
+      description: `Contagem de inventário criada: ${saved.description}`,
+      tenantId: data.tenantId,
+    }).catch(err => logger.error('Failed to create audit log:', err));
+
+    return saved;
   }
 
   async addCountItem(data: CreateInventoryCountItemDto): Promise<InventoryCountItem> {
@@ -201,9 +222,38 @@ export class InventoryCountService {
     await this.stockMovementService.createMovement(movementData);
 
     // Marcar item como ajustado
+    const oldValues = {
+      adjusted: item.adjusted,
+      adjustedAt: item.adjustedAt,
+    };
+
     item.adjusted = true;
     item.adjustedAt = new Date();
-    await this.inventoryCountItemRepository.save(item);
+    const savedItem = await this.inventoryCountItemRepository.save(item);
+
+    // Audit log
+    auditLogService.createLog({
+      entityType: AuditEntityType.INVENTORY_COUNT_ITEM,
+      entityId: item.id,
+      action: AuditAction.ADJUST,
+      userId,
+      oldValues,
+      newValues: {
+        adjusted: savedItem.adjusted,
+        adjustedAt: savedItem.adjustedAt,
+        systemStock: item.systemStock,
+        countedStock: item.countedStock,
+        difference: item.difference,
+      },
+      metadata: {
+        productId: item.productId,
+        productName: item.product.name,
+        discrepancyType: item.discrepancyType,
+        inventoryCountId: item.inventoryCountId,
+      },
+      description: `Estoque ajustado: ${item.product.name} - ${item.discrepancyType === DiscrepancyType.SURPLUS ? 'Sobra' : 'Falta'} de ${Math.abs(item.difference)} ${item.product.unit}`,
+      tenantId,
+    }).catch(err => logger.error('Failed to create audit log:', err));
 
     const typeText =
       item.discrepancyType === DiscrepancyType.SURPLUS
@@ -211,7 +261,7 @@ export class InventoryCountService {
         : 'falta';
 
     return {
-      item,
+      item: savedItem,
       message: `Ajuste realizado: ${typeText} de ${Math.abs(item.difference)} ${item.product.unit}`,
     };
   }
@@ -257,7 +307,7 @@ export class InventoryCountService {
   ): Promise<InventoryCount> {
     const inventoryCount = await this.inventoryCountRepository.findOne({
       where: { id, tenantId },
-      relations: ['items'],
+      relations: ['items', 'items.product', 'user'],
     });
 
     if (!inventoryCount) {
@@ -280,7 +330,51 @@ export class InventoryCountService {
     inventoryCount.status = InventoryCountStatus.COMPLETED;
     inventoryCount.completedAt = new Date();
 
-    return await this.inventoryCountRepository.save(inventoryCount);
+    const savedCount = await this.inventoryCountRepository.save(inventoryCount);
+
+    // Audit log
+    const report = await this.getDiscrepancyReport(id, tenantId);
+    auditLogService.createLog({
+      entityType: AuditEntityType.INVENTORY_COUNT,
+      entityId: id,
+      action: AuditAction.COMPLETE,
+      userId: inventoryCount.userId,
+      newValues: {
+        status: savedCount.status,
+        completedAt: savedCount.completedAt,
+      },
+      metadata: {
+        totalItems: report.total,
+        matches: report.matches,
+        surpluses: report.surpluses,
+        shortages: report.shortages,
+        totalDifference: report.totalDifference,
+      },
+      description: `Contagem finalizada: ${savedCount.description} - ${report.total} itens, ${report.shortages} faltas, ${report.surpluses} sobras`,
+      tenantId,
+    }).catch(err => logger.error('Failed to create audit log:', err));
+
+    // Enviar email de notificação (não bloquear a resposta se falhar)
+    if (inventoryCount.user?.email) {
+      emailService.sendInventoryCompletedEmail(
+        inventoryCount.user.email,
+        inventoryCount.user.name || 'Usuário',
+        {
+          description: inventoryCount.description,
+          location: inventoryCount.location,
+          totalItems: report.total,
+          matches: report.matches,
+          surpluses: report.surpluses,
+          shortages: report.shortages,
+          totalDifference: report.totalDifference,
+          completedAt: inventoryCount.completedAt,
+        }
+      ).catch(error => {
+        logger.error('Failed to send inventory completion email:', error);
+      });
+    }
+
+    return savedCount;
   }
 
   async cancelInventoryCount(

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Search, Package, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { stockService } from '@/services/stockService';
 import ProcedureStockManager from './ProcedureStockManager';
 
 interface Procedure {
@@ -37,29 +38,21 @@ export default function ProcedureStockTab() {
   const loadProcedures = async () => {
     try {
       setLoading(true);
-      // TODO: Implement API call to fetch procedures
-      // For now, using mock data
-      const mockProcedures: Procedure[] = [
-        {
-          id: '1',
-          name: 'Consulta Geral',
-          description: 'Consulta médica geral',
-          status: 'ACTIVE',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: '2',
-          name: 'Limpeza Dental',
-          description: 'Procedimento de limpeza e profilaxia',
-          status: 'ACTIVE',
-          createdAt: new Date().toISOString(),
-        },
-      ];
-      setProcedures(mockProcedures);
-      setFilteredProcedures(mockProcedures);
+      const response = await stockService.getProcedures();
+      const procedures = response.data || [];
+      setProcedures(procedures);
+      setFilteredProcedures(procedures);
+
+      // If no procedures found, show helpful message
+      if (procedures.length === 0) {
+        console.info('Nenhum procedimento cadastrado. Os procedimentos serão exibidos aqui quando forem criados no módulo de procedimentos.');
+      }
     } catch (error: any) {
       console.error('Erro ao carregar procedimentos:', error);
-      toast.error('Erro ao carregar procedimentos');
+      toast.error(error.response?.data?.error || 'Erro ao carregar procedimentos');
+      // Set empty array so UI shows "no procedures" message
+      setProcedures([]);
+      setFilteredProcedures([]);
     } finally {
       setLoading(false);
     }

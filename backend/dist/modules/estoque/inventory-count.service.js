@@ -7,6 +7,10 @@ const product_entity_1 = require("./product.entity");
 const product_service_1 = require("./product.service");
 const stock_movement_service_1 = require("./stock-movement.service");
 const stock_movement_entity_1 = require("./stock-movement.entity");
+const email_service_1 = require("../../shared/services/email.service");
+const logger_1 = require("../../shared/utils/logger");
+const audit_log_service_1 = require("./audit-log.service");
+const audit_log_entity_1 = require("./audit-log.entity");
 class InventoryCountService {
     inventoryCountRepository;
     inventoryCountItemRepository;
@@ -25,7 +29,22 @@ class InventoryCountService {
             ...data,
             status: inventory_count_entity_1.InventoryCountStatus.IN_PROGRESS,
         });
-        return await this.inventoryCountRepository.save(inventoryCount);
+        const saved = await this.inventoryCountRepository.save(inventoryCount);
+        // Audit log
+        audit_log_service_1.auditLogService.createLog({
+            entityType: audit_log_entity_1.AuditEntityType.INVENTORY_COUNT,
+            entityId: saved.id,
+            action: audit_log_entity_1.AuditAction.CREATE,
+            userId: data.userId,
+            newValues: {
+                description: saved.description,
+                location: saved.location,
+                status: saved.status,
+            },
+            description: `Contagem de inventário criada: ${saved.description}`,
+            tenantId: data.tenantId,
+        }).catch(err => logger_1.logger.error('Failed to create audit log:', err));
+        return saved;
     }
     async addCountItem(data) {
         // Buscar produto para obter estoque atual
@@ -138,14 +157,41 @@ class InventoryCountService {
         };
         await this.stockMovementService.createMovement(movementData);
         // Marcar item como ajustado
+        const oldValues = {
+            adjusted: item.adjusted,
+            adjustedAt: item.adjustedAt,
+        };
         item.adjusted = true;
         item.adjustedAt = new Date();
-        await this.inventoryCountItemRepository.save(item);
+        const savedItem = await this.inventoryCountItemRepository.save(item);
+        // Audit log
+        audit_log_service_1.auditLogService.createLog({
+            entityType: audit_log_entity_1.AuditEntityType.INVENTORY_COUNT_ITEM,
+            entityId: item.id,
+            action: audit_log_entity_1.AuditAction.ADJUST,
+            userId,
+            oldValues,
+            newValues: {
+                adjusted: savedItem.adjusted,
+                adjustedAt: savedItem.adjustedAt,
+                systemStock: item.systemStock,
+                countedStock: item.countedStock,
+                difference: item.difference,
+            },
+            metadata: {
+                productId: item.productId,
+                productName: item.product.name,
+                discrepancyType: item.discrepancyType,
+                inventoryCountId: item.inventoryCountId,
+            },
+            description: `Estoque ajustado: ${item.product.name} - ${item.discrepancyType === inventory_count_entity_1.DiscrepancyType.SURPLUS ? 'Sobra' : 'Falta'} de ${Math.abs(item.difference)} ${item.product.unit}`,
+            tenantId,
+        }).catch(err => logger_1.logger.error('Failed to create audit log:', err));
         const typeText = item.discrepancyType === inventory_count_entity_1.DiscrepancyType.SURPLUS
             ? 'sobra'
             : 'falta';
         return {
-            item,
+            item: savedItem,
             message: `Ajuste realizado: ${typeText} de ${Math.abs(item.difference)} ${item.product.unit}`,
         };
     }
@@ -176,7 +222,7 @@ class InventoryCountService {
     async completeInventoryCount(id, tenantId) {
         const inventoryCount = await this.inventoryCountRepository.findOne({
             where: { id, tenantId },
-            relations: ['items'],
+            relations: ['items', 'items.product', 'user'],
         });
         if (!inventoryCount) {
             throw new Error('Contagem de inventário não encontrada');
@@ -191,7 +237,44 @@ class InventoryCountService {
         }
         inventoryCount.status = inventory_count_entity_1.InventoryCountStatus.COMPLETED;
         inventoryCount.completedAt = new Date();
-        return await this.inventoryCountRepository.save(inventoryCount);
+        const savedCount = await this.inventoryCountRepository.save(inventoryCount);
+        // Audit log
+        const report = await this.getDiscrepancyReport(id, tenantId);
+        audit_log_service_1.auditLogService.createLog({
+            entityType: audit_log_entity_1.AuditEntityType.INVENTORY_COUNT,
+            entityId: id,
+            action: audit_log_entity_1.AuditAction.COMPLETE,
+            userId: inventoryCount.userId,
+            newValues: {
+                status: savedCount.status,
+                completedAt: savedCount.completedAt,
+            },
+            metadata: {
+                totalItems: report.total,
+                matches: report.matches,
+                surpluses: report.surpluses,
+                shortages: report.shortages,
+                totalDifference: report.totalDifference,
+            },
+            description: `Contagem finalizada: ${savedCount.description} - ${report.total} itens, ${report.shortages} faltas, ${report.surpluses} sobras`,
+            tenantId,
+        }).catch(err => logger_1.logger.error('Failed to create audit log:', err));
+        // Enviar email de notificação (não bloquear a resposta se falhar)
+        if (inventoryCount.user?.email) {
+            email_service_1.emailService.sendInventoryCompletedEmail(inventoryCount.user.email, inventoryCount.user.name || 'Usuário', {
+                description: inventoryCount.description,
+                location: inventoryCount.location,
+                totalItems: report.total,
+                matches: report.matches,
+                surpluses: report.surpluses,
+                shortages: report.shortages,
+                totalDifference: report.totalDifference,
+                completedAt: inventoryCount.completedAt,
+            }).catch(error => {
+                logger_1.logger.error('Failed to send inventory completion email:', error);
+            });
+        }
+        return savedCount;
     }
     async cancelInventoryCount(id, tenantId) {
         const inventoryCount = await this.inventoryCountRepository.findOne({
