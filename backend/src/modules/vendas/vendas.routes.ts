@@ -1,65 +1,129 @@
 import { Router } from 'express';
 import { VendasController } from './vendas.controller';
-import { authenticateToken } from '../auth/auth.middleware';
-import { Pool } from 'pg';
+import { getVendasDbPool } from './database';
+import { authenticate } from '@/shared/middleware/auth.middleware';
 
-export function createVendasRoutes(db: Pool): Router {
-  const router = Router();
-  const controller = new VendasController(db);
+const router = Router();
 
-  // Middleware de autenticação em todas as rotas
-  router.use(authenticateToken);
+// All vendas routes require authentication
+router.use(authenticate);
 
-  // ============================================
-  // ROTAS DE VENDEDORES
-  // ============================================
+// Initialize controller (lazy initialization)
+let vendasController: VendasController;
 
-  // CRUD de Vendedores
-  router.post('/vendedores', controller.createVendedor);
-  router.get('/vendedores', controller.listVendedores);
-  router.get('/vendedores/:id', controller.getVendedor);
-  router.put('/vendedores/:id', controller.updateVendedor);
-  router.delete('/vendedores/:id', controller.deleteVendedor);
+const initController = () => {
+  if (!vendasController) {
+    const db = getVendasDbPool();
+    vendasController = new VendasController(db);
+  }
+};
 
-  // Vendas de um vendedor específico
-  router.get('/vendedores/:id/vendas', controller.getVendasByVendedor);
+// ============================================
+// ROTAS DE VENDEDORES
+// ============================================
 
-  // ============================================
-  // ROTAS DE VENDAS
-  // ============================================
+// CRUD de Vendedores
+router.post('/vendedores', (req, res) => {
+  initController();
+  vendasController.createVendedor(req, res);
+});
 
-  // Estatísticas ANTES de rotas dinâmicas
-  router.get('/stats', controller.getVendasStats);
+router.get('/vendedores', (req, res) => {
+  initController();
+  vendasController.listVendedores(req, res);
+});
 
-  // CRUD de Vendas
-  router.post('/', controller.createVenda);
-  router.get('/', controller.listVendas);
-  router.get('/:id', controller.getVenda);
+router.get('/vendedores/:id/vendas', (req, res) => {
+  initController();
+  vendasController.getVendasByVendedor(req, res);
+});
 
-  // Ações em vendas
-  router.post('/:id/confirmar', controller.confirmarVenda);
-  router.post('/:id/cancelar', controller.cancelarVenda);
+router.get('/vendedores/:id', (req, res) => {
+  initController();
+  vendasController.getVendedor(req, res);
+});
 
-  // ============================================
-  // ROTAS DE COMISSÕES
-  // ============================================
+router.put('/vendedores/:id', (req, res) => {
+  initController();
+  vendasController.updateVendedor(req, res);
+});
 
-  // Estatísticas e relatórios ANTES de rotas dinâmicas
-  router.get('/comissoes/stats', controller.getComissoesStats);
-  router.get('/comissoes/relatorio', controller.relatorioComissoes);
+router.delete('/vendedores/:id', (req, res) => {
+  initController();
+  vendasController.deleteVendedor(req, res);
+});
 
-  // CRUD de Comissões
-  router.get('/comissoes', controller.listComissoes);
-  router.get('/comissoes/:id', controller.getComissao);
+// ============================================
+// ROTAS DE VENDAS
+// ============================================
 
-  // Ações em comissões
-  router.post('/comissoes/:id/pagar', controller.pagarComissao);
+// Estatísticas ANTES de rotas dinâmicas
+router.get('/stats', (req, res) => {
+  initController();
+  vendasController.getVendasStats(req, res);
+});
 
-  // ============================================
-  // ROTAS DE RANKING E ANALYTICS
-  // ============================================
+// Ranking ANTES de rotas dinâmicas
+router.get('/ranking', (req, res) => {
+  initController();
+  vendasController.getRankingVendedores(req, res);
+});
 
-  router.get('/ranking', controller.getRankingVendedores);
+// CRUD de Vendas
+router.post('/', (req, res) => {
+  initController();
+  vendasController.createVenda(req, res);
+});
 
-  return router;
-}
+router.get('/', (req, res) => {
+  initController();
+  vendasController.listVendas(req, res);
+});
+
+router.post('/:id/confirmar', (req, res) => {
+  initController();
+  vendasController.confirmarVenda(req, res);
+});
+
+router.post('/:id/cancelar', (req, res) => {
+  initController();
+  vendasController.cancelarVenda(req, res);
+});
+
+router.get('/:id', (req, res) => {
+  initController();
+  vendasController.getVenda(req, res);
+});
+
+// ============================================
+// ROTAS DE COMISSÕES
+// ============================================
+
+// Estatísticas e relatórios ANTES de rotas dinâmicas
+router.get('/comissoes/stats', (req, res) => {
+  initController();
+  vendasController.getComissoesStats(req, res);
+});
+
+router.get('/comissoes/relatorio', (req, res) => {
+  initController();
+  vendasController.relatorioComissoes(req, res);
+});
+
+// CRUD de Comissões
+router.get('/comissoes', (req, res) => {
+  initController();
+  vendasController.listComissoes(req, res);
+});
+
+router.post('/comissoes/:id/pagar', (req, res) => {
+  initController();
+  vendasController.pagarComissao(req, res);
+});
+
+router.get('/comissoes/:id', (req, res) => {
+  initController();
+  vendasController.getComissao(req, res);
+});
+
+export default router;

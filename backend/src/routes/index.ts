@@ -11,6 +11,7 @@ import paymentGatewayRoutes from '@/modules/payment-gateway/payment-gateway.rout
 import usersRoutes from '@/modules/users/users.routes';
 import automationRoutes from '@/modules/automation/automation.routes';
 import estoqueRoutes from '@/modules/estoque/estoque.routes';
+import vendasRoutes from '@/modules/vendas/vendas.routes';
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import biRoutes from '@/modules/bi/bi.routes';
@@ -41,6 +42,7 @@ router.use('/payment-gateway', paymentGatewayRoutes); // Payment gateway integra
 router.use('/users', usersRoutes); // User management and permissions
 router.use('/automation', automationRoutes); // Automation system (triggers, workflows, integrations)
 router.use('/stock', estoqueRoutes); // Stock/Inventory management
+router.use('/vendas', vendasRoutes); // Sales and commissions management
 
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);
