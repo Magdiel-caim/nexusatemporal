@@ -401,14 +401,14 @@ router.get('/reports/movements-monthly', authenticate, async (req, res) => {
 
     const query = `
       SELECT
-        TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') as month,
+        TO_CHAR(DATE_TRUNC('month', "createdAt"), 'YYYY-MM') as month,
         type,
         COUNT(*) as count,
         SUM(quantity) as total_quantity
       FROM stock_movements
-      WHERE tenant_id = $1
-        AND created_at >= NOW() - INTERVAL '${parseInt(months as string)} months'
-      GROUP BY DATE_TRUNC('month', created_at), type
+      WHERE "tenantId" = $1
+        AND "createdAt" >= NOW() - INTERVAL '${parseInt(months as string)} months'
+      GROUP BY DATE_TRUNC('month', "createdAt"), type
       ORDER BY month DESC, type
     `;
 
@@ -435,9 +435,9 @@ router.get('/reports/most-used-products', authenticate, async (req, res) => {
         COUNT(sm.id) as movement_count,
         SUM(CASE WHEN sm.type = 'SAIDA' THEN sm.quantity ELSE 0 END) as total_output
       FROM products p
-      INNER JOIN stock_movements sm ON p.id = sm.product_id
-      WHERE p.tenant_id = $1
-        AND sm.created_at >= NOW() - INTERVAL '3 months'
+      INNER JOIN stock_movements sm ON p.id = sm."productId"
+      WHERE p."tenantId" = $1
+        AND sm."createdAt" >= NOW() - INTERVAL '3 months'
       GROUP BY p.id, p.name, p.sku, p.unit
       ORDER BY total_output DESC
       LIMIT $2
@@ -460,11 +460,11 @@ router.get('/reports/stock-value-by-category', authenticate, async (req, res) =>
       SELECT
         category,
         COUNT(*) as product_count,
-        SUM(current_stock) as total_units,
-        SUM(current_stock * purchase_price) as total_value
+        SUM("currentStock") as total_units,
+        SUM("currentStock" * "purchasePrice") as total_value
       FROM products
-      WHERE tenant_id = $1
-        AND is_active = true
+      WHERE "tenantId" = $1
+        AND "isActive" = true
       GROUP BY category
       ORDER BY total_value DESC
     `;
