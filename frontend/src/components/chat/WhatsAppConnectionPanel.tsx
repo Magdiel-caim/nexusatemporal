@@ -126,7 +126,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
         // Buscar QR Code via proxy do backend (com autenticação)
         const token = localStorage.getItem('token');
-        const qrCodeProxyUrl = `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br'}/api/chat/whatsapp/qrcode-proxy?session=${n8nData.sessionName}`;
+        const qrCodeProxyUrl = `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br/api'}/chat/whatsapp/qrcode-proxy?session=${n8nData.sessionName}`;
 
         // Fetch com Authorization header e converter para blob URL
         const qrResponse = await fetch(qrCodeProxyUrl, {
@@ -243,7 +243,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
       // Buscar QR Code
       const token = localStorage.getItem('token');
-      const qrCodeProxyUrl = `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br'}/api/chat/whatsapp/qrcode-proxy?session=${session.name}`;
+      const qrCodeProxyUrl = `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br/api'}/chat/whatsapp/qrcode-proxy?session=${session.name}`;
 
       const qrResponse = await fetch(qrCodeProxyUrl, {
         headers: {
