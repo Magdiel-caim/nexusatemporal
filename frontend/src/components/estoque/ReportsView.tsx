@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { stockService } from '@/services/stockService';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { TrendingUp, Package, DollarSign } from 'lucide-react';
+import { TrendingUp, Package, DollarSign, FileSpreadsheet, FileText, Calendar } from 'lucide-react';
 import toast from 'react-hot-toast';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import ExcelJS from 'exceljs';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899'];
 
@@ -11,17 +14,19 @@ export default function ReportsView() {
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
   const [mostUsedProducts, setMostUsedProducts] = useState<any[]>([]);
   const [categoryData, setCategoryData] = useState<any[]>([]);
+  const [monthsFilter, setMonthsFilter] = useState(6);
+  const [topProductsLimit, setTopProductsLimit] = useState(10);
 
   useEffect(() => {
     loadReportsData();
-  }, []);
+  }, [monthsFilter, topProductsLimit]);
 
   const loadReportsData = async () => {
     try {
       setLoading(true);
       const [monthly, mostUsed, byCategory] = await Promise.all([
-        stockService.getMovementsMonthly(6),
-        stockService.getMostUsedProducts(10),
+        stockService.getMovementsMonthly(monthsFilter),
+        stockService.getMostUsedProducts(topProductsLimit),
         stockService.getStockValueByCategory(),
       ]);
 
@@ -59,6 +64,120 @@ export default function ReportsView() {
     }).format(value);
   };
 
+  const exportToExcel = async () => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+
+      // Aba 1: Movimentações Mensais
+      const ws1 = workbook.addWorksheet('Movimentações Mensais');
+      ws1.columns = [
+        { header: 'Mês', key: 'month', width: 15 },
+        { header: 'Entradas', key: 'entrada', width: 15 },
+        { header: 'Saídas', key: 'saida', width: 15 },
+      ];
+      ws1.getRow(1).font = { bold: true };
+      ws1.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3B82F6' } };
+      monthlyData.forEach(d => ws1.addRow({ month: d.month, entrada: d.ENTRADA, saida: d.SAIDA }));
+
+      // Aba 2: Produtos Mais Usados
+      const ws2 = workbook.addWorksheet('Produtos Mais Usados');
+      ws2.columns = [
+        { header: 'Produto', key: 'name', width: 30 },
+        { header: 'SKU', key: 'sku', width: 15 },
+        { header: 'Quantidade Usada', key: 'total', width: 18 },
+      ];
+      ws2.getRow(1).font = { bold: true };
+      ws2.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF8B5CF6' } };
+      mostUsedProducts.forEach(p => ws2.addRow({ name: p.name, sku: p.sku, total: p.total_output }));
+
+      // Aba 3: Valor por Categoria
+      const ws3 = workbook.addWorksheet('Valor por Categoria');
+      ws3.columns = [
+        { header: 'Categoria', key: 'category', width: 20 },
+        { header: 'Qtd Produtos', key: 'count', width: 15 },
+        { header: 'Total Unidades', key: 'units', width: 15 },
+        { header: 'Valor Total', key: 'value', width: 18 },
+      ];
+      ws3.getRow(1).font = { bold: true };
+      ws3.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF10B981' } };
+      categoryData.forEach(c => ws3.addRow({ category: c.category, count: c.product_count, units: c.total_units, value: c.total_value }));
+      ws3.getColumn('value').numFmt = 'R$ #,##0.00';
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `relatorio_estoque_${new Date().toISOString().split('T')[0]}.xlsx`;
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success('Relatório exportado para Excel!');
+    } catch (error) {
+      console.error('Erro ao exportar Excel:', error);
+      toast.error('Erro ao exportar Excel');
+    }
+  };
+
+  const exportToPDF = () => {
+    try {
+      const doc = new jsPDF();
+
+      // Título
+      doc.setFontSize(18);
+      doc.setTextColor(59, 130, 246);
+      doc.text('Relatório de Estoque', 14, 20);
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Gerado em: ${new Date().toLocaleString('pt-BR')}`, 14, 28);
+
+      let currentY = 40;
+
+      // Tabela 1: Movimentações
+      doc.setFontSize(14);
+      doc.setTextColor(0);
+      doc.text('Movimentações Mensais', 14, currentY);
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Mês', 'Entradas', 'Saídas']],
+        body: monthlyData.map(d => [d.month, d.ENTRADA, d.SAIDA]),
+        headStyles: { fillColor: [59, 130, 246] },
+        styles: { fontSize: 9 },
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 15;
+
+      // Tabela 2: Top Produtos
+      doc.setFontSize(14);
+      doc.text('Produtos Mais Usados', 14, currentY);
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Produto', 'Quantidade']],
+        body: mostUsedProducts.slice(0, 5).map(p => [p.name, p.total_output]),
+        headStyles: { fillColor: [139, 92, 246] },
+        styles: { fontSize: 9 },
+      });
+
+      currentY = (doc as any).lastAutoTable.finalY + 15;
+
+      // Tabela 3: Categorias
+      doc.setFontSize(14);
+      doc.text('Valor por Categoria', 14, currentY);
+      autoTable(doc, {
+        startY: currentY + 5,
+        head: [['Categoria', 'Produtos', 'Valor Total']],
+        body: categoryData.map(c => [c.category, c.product_count, `R$ ${parseFloat(c.total_value).toFixed(2)}`]),
+        headStyles: { fillColor: [16, 185, 129] },
+        styles: { fontSize: 9 },
+      });
+
+      doc.save(`relatorio_estoque_${new Date().toISOString().split('T')[0]}.pdf`);
+      toast.success('Relatório exportado para PDF!');
+    } catch (error) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar PDF');
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -67,19 +186,124 @@ export default function ReportsView() {
     );
   }
 
+  // Calcular KPIs
+  const totalEntradas = monthlyData.reduce((sum, d) => sum + (d.ENTRADA || 0), 0);
+  const totalSaidas = monthlyData.reduce((sum, d) => sum + (d.SAIDA || 0), 0);
+  const saldoMovimentacoes = totalEntradas - totalSaidas;
+  const valorTotalEstoque = categoryData.reduce((sum, c) => sum + parseFloat(c.total_value || 0), 0);
+  const totalProdutos = categoryData.reduce((sum, c) => sum + parseInt(c.product_count || 0), 0);
+  const produtoMaisUsado = mostUsedProducts[0];
+
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {/* Dashboard de KPIs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* KPI 1: Valor Total do Estoque */}
+        <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between mb-2">
+            <DollarSign className="h-8 w-8 opacity-80" />
+            <span className="text-sm font-medium opacity-90">Valor Total</span>
+          </div>
+          <div className="text-3xl font-bold mb-1">{formatCurrency(valorTotalEstoque)}</div>
+          <p className="text-sm opacity-80">{totalProdutos} produtos em estoque</p>
+        </div>
+
+        {/* KPI 2: Saldo de Movimentações */}
+        <div className={`bg-gradient-to-br ${saldoMovimentacoes >= 0 ? 'from-green-500 to-green-600' : 'from-red-500 to-red-600'} rounded-xl shadow-lg p-6 text-white`}>
+          <div className="flex items-center justify-between mb-2">
+            <TrendingUp className="h-8 w-8 opacity-80" />
+            <span className="text-sm font-medium opacity-90">Saldo ({monthsFilter}m)</span>
+          </div>
+          <div className="text-3xl font-bold mb-1">{saldoMovimentacoes > 0 ? '+' : ''}{saldoMovimentacoes}</div>
+          <p className="text-sm opacity-80">Entradas: {totalEntradas} | Saídas: {totalSaidas}</p>
+        </div>
+
+        {/* KPI 3: Produto Mais Usado */}
+        <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between mb-2">
+            <Package className="h-8 w-8 opacity-80" />
+            <span className="text-sm font-medium opacity-90">Mais Usado</span>
+          </div>
+          <div className="text-lg font-bold mb-1 truncate">{produtoMaisUsado?.name || 'N/A'}</div>
+          <p className="text-sm opacity-80">{produtoMaisUsado?.total_output || 0} unidades consumidas</p>
+        </div>
+
+        {/* KPI 4: Categorias Ativas */}
+        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between mb-2">
+            <Package className="h-8 w-8 opacity-80" />
+            <span className="text-sm font-medium opacity-90">Categorias</span>
+          </div>
+          <div className="text-3xl font-bold mb-1">{categoryData.length}</div>
+          <p className="text-sm opacity-80">Distribuídas em estoque</p>
+        </div>
+      </div>
+
+      {/* Header com Filtros e Exportação */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Relatórios e Análises</h2>
-        <p className="text-gray-600 dark:text-gray-300">Visualize dados agregados e tendências do estoque</p>
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Relatórios e Análises</h2>
+            <p className="text-gray-600 dark:text-gray-300">Visualize dados agregados e tendências do estoque</p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Filtro de Meses */}
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-gray-500" />
+              <select
+                value={monthsFilter}
+                onChange={(e) => setMonthsFilter(Number(e.target.value))}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+              >
+                <option value={3}>3 meses</option>
+                <option value={6}>6 meses</option>
+                <option value={12}>12 meses</option>
+              </select>
+            </div>
+
+            {/* Filtro Top Produtos */}
+            <div className="flex items-center gap-2">
+              <Package className="h-5 w-5 text-gray-500" />
+              <select
+                value={topProductsLimit}
+                onChange={(e) => setTopProductsLimit(Number(e.target.value))}
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+              >
+                <option value={5}>Top 5</option>
+                <option value={10}>Top 10</option>
+                <option value={20}>Top 20</option>
+              </select>
+            </div>
+
+            {/* Botões de Exportação */}
+            <button
+              onClick={exportToExcel}
+              className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+              title="Exportar para Excel"
+            >
+              <FileSpreadsheet className="h-5 w-5 mr-2" />
+              Excel
+            </button>
+            <button
+              onClick={exportToPDF}
+              className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm"
+              title="Exportar para PDF"
+            >
+              <FileText className="h-5 w-5 mr-2" />
+              PDF
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Movimentações Mensais */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
         <div className="flex items-center mb-4">
           <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400 mr-2" />
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Movimentações Mensais (Últimos 6 Meses)</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+            Movimentações Mensais (Últimos {monthsFilter} Meses)
+          </h3>
         </div>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={monthlyData}>
@@ -102,7 +326,9 @@ export default function ReportsView() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
           <div className="flex items-center mb-4">
             <Package className="h-6 w-6 text-purple-600 dark:text-purple-400 mr-2" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Top 10 Produtos Mais Usados</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+              Top {topProductsLimit} Produtos Mais Usados
+            </h3>
           </div>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={mostUsedProducts} layout="vertical">
