@@ -7,7 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Instagram, MessageCircle, CheckCircle2, XCircle, RefreshCw, Trash2 } from 'lucide-react';
+import { Loader2, Instagram, MessageCircle, CheckCircle2, XCircle, RefreshCw, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import notificaMeService, { type NotificaMeInstance } from '@/services/notificaMeService';
 import { integrationService } from '@/services/automationService';
@@ -207,10 +207,10 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) =
           <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-green-600" />
-              <p className="font-medium">Integração via Revendedor</p>
+              <p className="font-medium">Conecte suas Redes Sociais</p>
             </div>
             <p className="text-sm text-muted-foreground">
-              A chave de API já está configurada pelo sistema. Você só precisa ativar a integração e conectar suas contas sociais.
+              Conecte aqui suas contas Meta (Facebook e Instagram) e responda seus clientes em um único local.
             </p>
           </div>
 
@@ -250,10 +250,65 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) =
         </CardHeader>
         <CardContent className="space-y-4">
           {instances.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhuma conta conectada ainda.</p>
-              <p className="text-sm">Entre em contato com o suporte para conectar suas contas.</p>
+            <div className="space-y-4">
+              <div className="text-center py-6 border-2 border-dashed rounded-lg bg-muted/30">
+                <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="font-medium mb-2">Nenhuma conta conectada ainda</p>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Conecte suas contas Meta (Facebook e Instagram) para começar a receber mensagens
+                </p>
+                <Button
+                  onClick={() => window.open('https://app.notificame.com.br/dashboard', '_blank')}
+                  className="gap-2"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Conectar no Painel NotificaMe
+                </Button>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <Card className="border-pink-200 bg-pink-50/50 dark:bg-pink-950/20 dark:border-pink-900">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <Instagram className="h-6 w-6 text-pink-600" />
+                      <div>
+                        <p className="font-medium">Instagram Direct</p>
+                        <p className="text-xs text-muted-foreground">Mensagens diretas</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2"
+                      onClick={() => window.open('https://app.notificame.com.br/dashboard', '_blank')}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Conectar Instagram
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center gap-3 mb-3">
+                      <MessageCircle className="h-6 w-6 text-blue-600" />
+                      <div>
+                        <p className="font-medium">Facebook Messenger</p>
+                        <p className="text-xs text-muted-foreground">Mensagens Facebook</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2"
+                      onClick={() => window.open('https://app.notificame.com.br/dashboard', '_blank')}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Conectar Messenger
+                    </Button>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           )}
 
