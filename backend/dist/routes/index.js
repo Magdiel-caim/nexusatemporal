@@ -16,6 +16,7 @@ const payment_gateway_routes_1 = __importDefault(require("../modules/payment-gat
 const users_routes_1 = __importDefault(require("../modules/users/users.routes"));
 const automation_routes_1 = __importDefault(require("../modules/automation/automation.routes"));
 const estoque_routes_1 = __importDefault(require("../modules/estoque/estoque.routes"));
+const vendas_routes_1 = __importDefault(require("../modules/vendas/vendas.routes"));
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import biRoutes from '@/modules/bi/bi.routes';
@@ -43,6 +44,7 @@ router.use('/payment-gateway', payment_gateway_routes_1.default); // Payment gat
 router.use('/users', users_routes_1.default); // User management and permissions
 router.use('/automation', automation_routes_1.default); // Automation system (triggers, workflows, integrations)
 router.use('/stock', estoque_routes_1.default); // Stock/Inventory management
+router.use('/vendas', vendas_routes_1.default); // Sales and commissions management
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);
 // router.use('/bi', biRoutes);

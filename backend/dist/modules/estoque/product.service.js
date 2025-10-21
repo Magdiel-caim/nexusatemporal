@@ -184,6 +184,10 @@ class ProductService {
             totalItems: parseFloat(result.totalItems) || 0,
         };
     }
+    // Método para query raw (relatórios)
+    async executeRawQuery(query, parameters) {
+        return await this.productRepository.query(query, parameters);
+    }
 }
 exports.ProductService = ProductService;
 //# sourceMappingURL=product.service.js.map

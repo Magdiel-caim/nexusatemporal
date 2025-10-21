@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   listVendas,
-  listVendedores,
   confirmarVenda,
   cancelarVenda,
   type Venda,

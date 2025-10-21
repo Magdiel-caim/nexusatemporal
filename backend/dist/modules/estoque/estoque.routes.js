@@ -5,11 +5,13 @@ const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const product_service_1 = require("./product.service");
 const stock_movement_service_1 = require("./stock-movement.service");
 const stock_alert_service_1 = require("./stock-alert.service");
+const procedure_product_service_1 = require("./procedure-product.service");
 const router = (0, express_1.Router)();
 // Lazy initialization of services to avoid circular dependency issues
 let productService;
 let movementService;
 let alertService;
+let procedureProductService;
 function getProductService() {
     if (!productService) {
         productService = new product_service_1.ProductService();
@@ -27,6 +29,12 @@ function getAlertService() {
         alertService = new stock_alert_service_1.StockAlertService();
     }
     return alertService;
+}
+function getProcedureProductService() {
+    if (!procedureProductService) {
+        procedureProductService = new procedure_product_service_1.ProcedureProductService();
+    }
+    return procedureProductService;
 }
 // ============================================
 // PUBLIC ROUTES (sem autenticação)
@@ -337,6 +345,198 @@ router.get('/alerts/count', auth_middleware_1.authenticate, async (req, res) => 
     catch (error) {
         console.error('Error getting alerts count:', error);
         res.status(500).json({ error: error.message });
+    }
+});
+// ============================================
+// REPORTS ROUTES
+// ============================================
+// Relatório: Movimentações mensais (últimos 6 meses)
+router.get('/reports/movements-monthly', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { months = '6' } = req.query;
+        const query = `
+      SELECT
+        TO_CHAR(DATE_TRUNC('month', "createdAt"), 'YYYY-MM') as month,
+        type,
+        COUNT(*) as count,
+        SUM(quantity) as total_quantity
+      FROM stock_movements
+      WHERE "tenantId" = $1
+        AND "createdAt" >= NOW() - INTERVAL '${parseInt(months)} months'
+      GROUP BY DATE_TRUNC('month', "createdAt"), type
+      ORDER BY month DESC, type
+    `;
+        const result = await getMovementService().executeRawQuery(query, [tenantId]);
+        res.json({ data: result });
+    }
+    catch (error) {
+        console.error('Error getting monthly movements report:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Relatório: Produtos mais usados (top 10)
+router.get('/reports/most-used-products', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { limit = '10' } = req.query;
+        const query = `
+      SELECT
+        p.id,
+        p.name,
+        p.sku,
+        p.unit,
+        COUNT(sm.id) as movement_count,
+        SUM(CASE WHEN sm.type = 'SAIDA' THEN sm.quantity ELSE 0 END) as total_output
+      FROM products p
+      INNER JOIN stock_movements sm ON p.id = sm."productId"
+      WHERE p."tenantId" = $1
+        AND sm."createdAt" >= NOW() - INTERVAL '3 months'
+      GROUP BY p.id, p.name, p.sku, p.unit
+      ORDER BY total_output DESC
+      LIMIT $2
+    `;
+        const result = await getMovementService().executeRawQuery(query, [tenantId, parseInt(limit)]);
+        res.json({ data: result });
+    }
+    catch (error) {
+        console.error('Error getting most used products report:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Relatório: Valor do estoque por categoria
+router.get('/reports/stock-value-by-category', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const query = `
+      SELECT
+        category,
+        COUNT(*) as product_count,
+        SUM("currentStock") as total_units,
+        SUM("currentStock" * "purchasePrice") as total_value
+      FROM products
+      WHERE "tenantId" = $1
+        AND "isActive" = true
+      GROUP BY category
+      ORDER BY total_value DESC
+    `;
+        const result = await getProductService().executeRawQuery(query, [tenantId]);
+        res.json({ data: result });
+    }
+    catch (error) {
+        console.error('Error getting stock value by category report:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// ============================================
+// PROCEDURE PRODUCTS ROUTES
+// ============================================
+// Adicionar produto a procedimento
+router.post('/procedure-products', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { procedureId, productId, quantityUsed, isOptional, notes } = req.body;
+        if (!procedureId || !productId || !quantityUsed) {
+            return res.status(400).json({ error: 'procedureId, productId e quantityUsed são obrigatórios' });
+        }
+        const procedureProduct = await getProcedureProductService().addProductToProcedure({
+            procedureId,
+            productId,
+            quantityUsed: Number(quantityUsed),
+            isOptional: isOptional ?? true,
+            notes,
+            tenantId,
+        });
+        res.status(201).json(procedureProduct);
+    }
+    catch (error) {
+        console.error('Error adding product to procedure:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+// Listar produtos de um procedimento
+router.get('/procedure-products/:procedureId', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { procedureId } = req.params;
+        const products = await getProcedureProductService().getProductsByProcedure(procedureId, tenantId);
+        res.json({ data: products });
+    }
+    catch (error) {
+        console.error('Error getting procedure products:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Remover produto de procedimento
+router.delete('/procedure-products/:id', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { id } = req.params;
+        await getProcedureProductService().removeProductFromProcedure(id, tenantId);
+        res.status(204).send();
+    }
+    catch (error) {
+        console.error('Error removing product from procedure:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+// Validar estoque para procedimento
+router.get('/procedures/:procedureId/validate-stock', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { procedureId } = req.params;
+        const validation = await getProcedureProductService().validateStockForProcedure(procedureId, tenantId);
+        res.json(validation);
+    }
+    catch (error) {
+        console.error('Error validating stock for procedure:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Consumir estoque ao finalizar procedimento (BAIXA AUTOMÁTICA)
+router.post('/procedures/:procedureId/consume-stock', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const userId = req.user?.userId;
+        const { procedureId } = req.params;
+        const { medicalRecordId } = req.body;
+        const result = await getProcedureProductService().consumeStockForProcedure(procedureId, tenantId, userId, medicalRecordId);
+        if (result.success) {
+            res.json({
+                success: true,
+                message: 'Estoque consumido com sucesso',
+                movements: result.movements,
+            });
+        }
+        else {
+            res.status(207).json({
+                success: false,
+                message: 'Estoque consumido com erros',
+                movements: result.movements,
+                errors: result.errors,
+            });
+        }
+    }
+    catch (error) {
+        console.error('Error consuming stock for procedure:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+// Atualizar quantidade de produto em procedimento
+router.put('/procedure-products/:id/quantity', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { id } = req.params;
+        const { quantityUsed } = req.body;
+        if (!quantityUsed) {
+            return res.status(400).json({ error: 'quantityUsed é obrigatório' });
+        }
+        const updated = await getProcedureProductService().updateProductQuantity(id, tenantId, Number(quantityUsed));
+        res.json(updated);
+    }
+    catch (error) {
+        console.error('Error updating product quantity:', error);
+        res.status(400).json({ error: error.message });
     }
 });
 exports.default = router;

@@ -216,6 +216,10 @@ class StockMovementService {
         }));
         return productsData;
     }
+    // Método para query raw (relatórios)
+    async executeRawQuery(query, parameters) {
+        return await this.movementRepository.query(query, parameters);
+    }
 }
 exports.StockMovementService = StockMovementService;
 //# sourceMappingURL=stock-movement.service.js.map
