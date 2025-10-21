@@ -9,7 +9,7 @@
 
 ### Website está ONLINE e funcionando!
 
-- **URL**: https://nexustemporal.com.br
+- **URL**: https://nexusatemporal.com
 - **Servidor**: 72.60.5.29
 - **Service**: nexus-website_website
 - **Status**: Running (1/1 replicas)
@@ -18,7 +18,7 @@
 - **CSS**: Tailwind CSS v4
 - **Traefik**: ✅ Configurado e roteando corretamente
 - **HTTPS**: ✅ Let's Encrypt ativo
-- **WWW Redirect**: ✅ www.nexustemporal.com.br → nexustemporal.com.br
+- **WWW Redirect**: ✅ www.nexusatemporal.com → nexusatemporal.com
 
 ---
 
@@ -40,14 +40,14 @@ Next.js 15.5.6
 
 ### ✅ HTTP → HTTPS Redirect
 ```bash
-curl -I http://72.60.5.29 -H "Host: nexustemporal.com.br"
+curl -I http://72.60.5.29 -H "Host: nexusatemporal.com"
 # HTTP/1.1 308 Permanent Redirect
-# Location: https://nexustemporal.com.br/
+# Location: https://nexusatemporal.com/
 ```
 
 ### ✅ HTTPS Response
 ```bash
-curl -k -I https://72.60.5.29 -H "Host: nexustemporal.com.br"
+curl -k -I https://72.60.5.29 -H "Host: nexusatemporal.com"
 # HTTP/2 200
 # content-type: text/html; charset=utf-8
 # x-powered-by: Next.js
@@ -97,7 +97,7 @@ Todas as labels de roteamento, SSL e middleware configuradas corretamente.
 ## 🔄 Próximos Passos
 
 ### 1. Verificar DNS Público ⚠️
-- [ ] Confirmar que `nexustemporal.com.br` resolve para `72.60.5.29`
+- [ ] Confirmar que `nexusatemporal.com` resolve para `72.60.5.29`
 - [ ] Testar acesso de fora do servidor
 - [ ] Verificar certificado SSL gerado pelo Let's Encrypt
 

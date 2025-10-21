@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatController = void 0;
 const chat_service_1 = require("./chat.service");
@@ -311,6 +344,77 @@ class ChatController {
         }
         catch (error) {
             console.error('[QR Proxy] Error:', error);
+            res.status(500).json({ error: error.message });
+        }
+    };
+    // ===== CHANNELS ENDPOINT =====
+    /**
+     * Lista todos os canais (sessões WhatsApp) com contadores
+     * GET /api/chat/channels
+     */
+    getChannels = async (req, res) => {
+        try {
+            console.log('[Channels] Buscando canais disponíveis...');
+            // 1. Buscar sessões ativas do WAHA
+            const wahaUrl = process.env.WAHA_URL || 'https://apiwts.nexusatemporal.com.br';
+            const wahaApiKey = process.env.WAHA_API_KEY || 'bd0c416348b2f04d198ff8971b608a87';
+            const response = await fetch(`${wahaUrl}/api/sessions`, {
+                headers: { 'X-Api-Key': wahaApiKey },
+            });
+            if (!response.ok) {
+                throw new Error(`WAHA API error: ${response.status}`);
+            }
+            const sessions = await response.json();
+            console.log(`[Channels] ${sessions.length} sessões encontradas no WAHA`);
+            // Importar AppDataSource para queries
+            const { AppDataSource } = await Promise.resolve().then(() => __importStar(require('../../database/data-source')));
+            // 2. Para cada sessão, contar conversas
+            const channels = await Promise.all(sessions.map(async (session) => {
+                try {
+                    // Contar conversas únicas (chat_id) desta sessão em whatsapp_messages
+                    const countResult = await AppDataSource.query(`SELECT COUNT(DISTINCT chat_id) as count
+               FROM whatsapp_messages
+               WHERE session_id = (
+                 SELECT id FROM whatsapp_sessions
+                 WHERE session_name = $1
+                 LIMIT 1
+               )`, [session.name]);
+                    const conversationCount = parseInt(countResult[0]?.count || '0');
+                    // Contar não lidas
+                    const unreadResult = await AppDataSource.query(`SELECT COUNT(DISTINCT chat_id) as count
+               FROM whatsapp_messages wm
+               WHERE wm.session_id = (
+                 SELECT id FROM whatsapp_sessions
+                 WHERE session_name = $1
+                 LIMIT 1
+               )
+               AND wm.direction = 'incoming'
+               AND wm.read_at IS NULL`, [session.name]);
+                    const unreadCount = parseInt(unreadResult[0]?.count || '0');
+                    return {
+                        sessionName: session.name,
+                        phoneNumber: session.config?.phoneNumber || session.me?.id || 'N/A',
+                        status: session.status, // WORKING, FAILED, STARTING, STOPPED, etc.
+                        conversationCount,
+                        unreadCount,
+                    };
+                }
+                catch (error) {
+                    console.error(`[Channels] Erro ao processar sessão ${session.name}:`, error.message);
+                    return {
+                        sessionName: session.name,
+                        phoneNumber: session.config?.phoneNumber || 'N/A',
+                        status: session.status,
+                        conversationCount: 0,
+                        unreadCount: 0,
+                    };
+                }
+            }));
+            console.log(`[Channels] ${channels.length} canais processados`);
+            res.json(channels);
+        }
+        catch (error) {
+            console.error('[Channels] Erro ao buscar canais:', error);
             res.status(500).json({ error: error.message });
         }
     };

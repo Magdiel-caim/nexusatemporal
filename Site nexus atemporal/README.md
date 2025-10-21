@@ -39,10 +39,10 @@ docker service logs nexus-website_website --tail 50
 
 ```bash
 # Via IP com Host header
-curl -k -H "Host: nexustemporal.com.br" https://72.60.5.29 -I
+curl -k -H "Host: nexusatemporal.com" https://72.60.5.29 -I
 
 # Via domínio (se DNS configurado)
-curl -I https://nexustemporal.com.br
+curl -I https://nexusatemporal.com
 ```
 
 ### Atualizar
@@ -57,24 +57,26 @@ docker service update --image nexus-website:latest nexus-website_website
 
 ## 🌐 URLs
 
-- Website: https://nexustemporal.com.br
-- App: https://app.nexustemporal.com.br
+- Website: https://nexusatemporal.com
+- App: https://app.nexusatemporal.com
 
 ## ⚙️ Configuração
 
 ### Variáveis de Ambiente
 
 - `NODE_ENV`: production
-- `NEXT_PUBLIC_APP_URL`: https://app.nexustemporal.com.br
-- `NEXT_PUBLIC_API_URL`: https://api.nexustemporal.com.br
+- `NEXT_PUBLIC_APP_URL`: https://app.nexusatemporal.com
+- `NEXT_PUBLIC_API_URL`: https://api.nexusatemporal.com
 
 ### DNS
 
 Certifique-se de que o DNS aponta para: `72.60.5.29`
 
 ```
-nexustemporal.com.br     A    72.60.5.29
-www.nexustemporal.com.br A    72.60.5.29
+nexusatemporal.com       A    72.60.5.29
+www.nexusatemporal.com   A    72.60.5.29
+app.nexusatemporal.com   A    72.60.5.29
+api.nexusatemporal.com   A    72.60.5.29
 ```
 
 ## 📝 Desenvolvimento Local

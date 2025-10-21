@@ -342,4 +342,95 @@ export class ChatController {
       res.status(500).json({ error: error.message });
     }
   };
+
+  // ===== CHANNELS ENDPOINT =====
+
+  /**
+   * Lista todos os canais (sessões WhatsApp) com contadores
+   * GET /api/chat/channels
+   */
+  getChannels = async (req: Request, res: Response) => {
+    try {
+      console.log('[Channels] Buscando canais disponíveis...');
+
+      // 1. Buscar sessões ativas do WAHA
+      const wahaUrl = process.env.WAHA_URL || 'https://apiwts.nexusatemporal.com.br';
+      const wahaApiKey = process.env.WAHA_API_KEY || 'bd0c416348b2f04d198ff8971b608a87';
+
+      const response = await fetch(`${wahaUrl}/api/sessions`, {
+        headers: { 'X-Api-Key': wahaApiKey },
+      });
+
+      if (!response.ok) {
+        throw new Error(`WAHA API error: ${response.status}`);
+      }
+
+      const sessions = await response.json() as any[];
+      console.log(`[Channels] ${sessions.length} sessões encontradas no WAHA`);
+
+      // Importar AppDataSource para queries
+      const { AppDataSource } = await import('@/database/data-source');
+
+      // 2. Para cada sessão, contar conversas
+      const channels = await Promise.all(
+        sessions.map(async (session: any) => {
+          try {
+            // Contar conversas únicas (chat_id) desta sessão em whatsapp_messages
+            const countResult = await AppDataSource.query(
+              `SELECT COUNT(DISTINCT chat_id) as count
+               FROM whatsapp_messages
+               WHERE session_id = (
+                 SELECT id FROM whatsapp_sessions
+                 WHERE session_name = $1
+                 LIMIT 1
+               )`,
+              [session.name]
+            );
+
+            const conversationCount = parseInt(countResult[0]?.count || '0');
+
+            // Contar não lidas
+            const unreadResult = await AppDataSource.query(
+              `SELECT COUNT(DISTINCT chat_id) as count
+               FROM whatsapp_messages wm
+               WHERE wm.session_id = (
+                 SELECT id FROM whatsapp_sessions
+                 WHERE session_name = $1
+                 LIMIT 1
+               )
+               AND wm.direction = 'incoming'
+               AND wm.read_at IS NULL`,
+              [session.name]
+            );
+
+            const unreadCount = parseInt(unreadResult[0]?.count || '0');
+
+            return {
+              sessionName: session.name,
+              phoneNumber: session.config?.phoneNumber || session.me?.id || 'N/A',
+              status: session.status, // WORKING, FAILED, STARTING, STOPPED, etc.
+              conversationCount,
+              unreadCount,
+            };
+          } catch (error: any) {
+            console.error(`[Channels] Erro ao processar sessão ${session.name}:`, error.message);
+            return {
+              sessionName: session.name,
+              phoneNumber: session.config?.phoneNumber || 'N/A',
+              status: session.status,
+              conversationCount: 0,
+              unreadCount: 0,
+            };
+          }
+        })
+      );
+
+      console.log(`[Channels] ${channels.length} canais processados`);
+
+      res.json(channels);
+    } catch (error: any) {
+      console.error('[Channels] Erro ao buscar canais:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
 }

@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { Mail, Phone, MapPin, Instagram, Linkedin, Youtube } from 'lucide-react';
 
 export function Footer() {
@@ -39,11 +38,9 @@ export function Footer() {
           {/* Logo e Descrição */}
           <div className="lg:col-span-2">
             <Link href="/" className="inline-block mb-4">
-              <Image
+              <img
                 src="/logos/Logo - Nexus Atemporal 3.png"
                 alt="Nexus Atemporal"
-                width={180}
-                height={50}
                 className="h-10 w-auto"
               />
             </Link>

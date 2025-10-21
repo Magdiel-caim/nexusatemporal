@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -37,13 +36,10 @@ export function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <Image
+            <img
               src="/logos/Logo - Nexus Atemporal 3.png"
               alt="Nexus Atemporal"
-              width={180}
-              height={50}
               className="h-10 w-auto"
-              priority
             />
           </Link>
 

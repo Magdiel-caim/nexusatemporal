@@ -84,6 +84,25 @@ router.post(
   (req, res) => notificaMeController.markAsRead(req, res)
 );
 
+// Estatísticas
+router.get(
+  '/stats',
+  authenticate,
+  (req, res) => notificaMeController.getStats(req, res)
+);
+
+router.get(
+  '/stats/dashboard',
+  authenticate,
+  (req, res) => notificaMeController.getDashboardStats(req, res)
+);
+
+router.get(
+  '/stats/history',
+  authenticate,
+  (req, res) => notificaMeController.getMessageHistoryStats(req, res)
+);
+
 /**
  * Rota Pública (webhook - sem autenticação)
  * Notifica.me enviará eventos para esta rota

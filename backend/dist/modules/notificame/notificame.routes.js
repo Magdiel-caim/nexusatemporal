@@ -26,6 +26,10 @@ router.post('/instances/:instanceId/disconnect', auth_middleware_1.authenticate,
 // Histórico de mensagens
 router.get('/messages/history', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getMessageHistory(req, res));
 router.post('/messages/:messageId/mark-read', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.markAsRead(req, res));
+// Estatísticas
+router.get('/stats', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getStats(req, res));
+router.get('/stats/dashboard', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getDashboardStats(req, res));
+router.get('/stats/history', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getMessageHistoryStats(req, res));
 /**
  * Rota Pública (webhook - sem autenticação)
  * Notifica.me enviará eventos para esta rota

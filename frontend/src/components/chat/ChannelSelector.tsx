@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Hash } from 'lucide-react';
+import { ChevronDown, ChevronRight, Hash, CheckCircle, XCircle, Clock } from 'lucide-react';
 import chatService from '../../services/chatService';
 
-interface WhatsAppSession {
+interface WhatsAppChannel {
   sessionName: string;
-  totalContacts: number;
-  totalMessages: number;
-  unreadMessages: number;
-  lastActivity: string;
+  phoneNumber: string;
+  status: string;
+  conversationCount: number;
+  unreadCount: number;
 }
 
 interface ChannelSelectorProps {
@@ -16,21 +16,21 @@ interface ChannelSelectorProps {
 }
 
 const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onChannelSelect }) => {
-  const [sessions, setSessions] = useState<WhatsAppSession[]>([]);
+  const [channels, setChannels] = useState<WhatsAppChannel[]>([]);
   const [isExpanded, setIsExpanded] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    loadSessions();
+    loadChannels();
   }, []);
 
-  const loadSessions = async () => {
+  const loadChannels = async () => {
     try {
       setIsLoading(true);
-      const data = await chatService.getWhatsAppSessions();
-      setSessions(data);
+      const data = await chatService.getChannels();
+      setChannels(data);
     } catch (error) {
-      console.error('Erro ao carregar sessões:', error);
+      console.error('Erro ao carregar canais:', error);
     } finally {
       setIsLoading(false);
     }
@@ -44,6 +44,20 @@ const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onCh
       .split(' ')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status?.toUpperCase()) {
+      case 'WORKING':
+        return <CheckCircle className="h-3 w-3 text-green-500" title="Conectado" />;
+      case 'STARTING':
+        return <Clock className="h-3 w-3 text-yellow-500" title="Iniciando" />;
+      case 'FAILED':
+      case 'STOPPED':
+        return <XCircle className="h-3 w-3 text-red-500" title="Desconectado" />;
+      default:
+        return <Clock className="h-3 w-3 text-gray-400" title="Desconhecido" />;
+    }
   };
 
   return (
@@ -62,8 +76,8 @@ const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onCh
           <Hash className="h-4 w-4 text-gray-500 dark:text-gray-400" />
           <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">Canais</span>
         </div>
-        {sessions.length > 0 && (
-          <span className="text-xs text-gray-500 dark:text-gray-400">{sessions.length}</span>
+        {channels.length > 0 && (
+          <span className="text-xs text-gray-500 dark:text-gray-400">{channels.length}</span>
         )}
       </button>
 
@@ -85,37 +99,40 @@ const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onCh
             </div>
           </button>
 
-          {/* Lista de Sessões */}
+          {/* Lista de Canais */}
           {isLoading ? (
             <div className="px-8 py-4 text-xs text-gray-500 dark:text-gray-400">Carregando...</div>
-          ) : sessions.length === 0 ? (
+          ) : channels.length === 0 ? (
             <div className="px-8 py-4 text-xs text-gray-500 dark:text-gray-400">Nenhum canal disponível</div>
           ) : (
-            sessions.map((session) => (
+            channels.map((channel) => (
               <button
-                key={session.sessionName}
-                onClick={() => onChannelSelect(session.sessionName)}
+                key={channel.sessionName}
+                onClick={() => onChannelSelect(channel.sessionName)}
                 className={`w-full px-8 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors ${
-                  selectedChannel === session.sessionName
+                  selectedChannel === channel.sessionName
                     ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium'
                     : 'text-gray-700 dark:text-gray-300'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="truncate">{formatSessionName(session.sessionName)}</span>
-                    {session.unreadMessages > 0 && (
+                    {getStatusIcon(channel.status)}
+                    <span className="truncate">{formatSessionName(channel.sessionName)}</span>
+                    {channel.unreadCount > 0 && (
                       <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                        {session.unreadMessages}
+                        {channel.unreadCount}
                       </span>
                     )}
                   </div>
-                  {selectedChannel === session.sessionName && (
+                  {selectedChannel === channel.sessionName && (
                     <div className="w-2 h-2 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
                   )}
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  {session.totalContacts} contatos
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2">
+                  <span>{channel.conversationCount} conversas</span>
+                  <span className="text-gray-400">•</span>
+                  <span className="truncate">{channel.phoneNumber}</span>
                 </div>
               </button>
             ))

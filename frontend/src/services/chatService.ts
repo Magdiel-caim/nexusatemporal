@@ -213,6 +213,21 @@ class ChatService {
 
   // ===== WHATSAPP =====
 
+  /**
+   * Busca canais (sessões WhatsApp) com contadores de conversas
+   */
+  async getChannels(): Promise<Array<{
+    sessionName: string;
+    phoneNumber: string;
+    status: string;
+    conversationCount: number;
+    unreadCount: number;
+  }>> {
+    const { data } = await api.get('/chat/channels');
+    const result = data.data || data;
+    return Array.isArray(result) ? result : [];
+  }
+
   async getWhatsAppSessions(): Promise<Array<{
     sessionName: string;
     totalContacts: number;

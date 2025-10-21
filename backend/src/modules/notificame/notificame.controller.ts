@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { NotificaMeService } from '../../services/NotificaMeService';
 import { getAutomationDbPool } from '../automation/database';
+import NotificaMeStatsService from './notificame-stats.service';
 
 /**
  * Controller para Notifica.me (WhatsApp e Instagram)
@@ -388,24 +389,332 @@ export class NotificaMeController {
 
       console.log('[NotificaMe] Webhook recebido:', JSON.stringify(webhookData, null, 2));
 
-      // Processar webhook usando o service
-      // Nota: Como é webhook público, não temos tenantId aqui
-      // Você pode identificar o tenant pelo instanceId ou outro campo do webhook
-
-      // TODO: Implementar lógica de processamento do webhook
-      // - Salvar mensagem no banco
-      // - Atualizar status de envio
-      // - Disparar eventos para automação
-      // - Integrar com n8n se configurado
+      // Processar webhook
+      await this.processWebhookData(webhookData);
 
       res.status(200).json({ success: true, message: 'Webhook processado' });
     } catch (error: any) {
-      console.error('Error processing webhook:', error);
+      console.error('[NotificaMe] Error processing webhook:', error);
       res.status(500).json({
         success: false,
         error: error.message
       });
     }
+  }
+
+  /**
+   * Processa dados do webhook recebido
+   */
+  private async processWebhookData(webhookData: any): Promise<void> {
+    const { event, data } = webhookData;
+
+    console.log(`[NotificaMe] Processing webhook event: ${event}`);
+
+    switch (event) {
+      case 'message.received':
+        await this.handleMessageReceived(data);
+        break;
+
+      case 'message.sent':
+        await this.handleMessageSent(data);
+        break;
+
+      case 'message.delivered':
+        await this.handleMessageDelivered(data);
+        break;
+
+      case 'message.read':
+        await this.handleMessageRead(data);
+        break;
+
+      case 'message.failed':
+        await this.handleMessageFailed(data);
+        break;
+
+      case 'instance.connected':
+        await this.handleInstanceConnected(data);
+        break;
+
+      case 'instance.disconnected':
+        await this.handleInstanceDisconnected(data);
+        break;
+
+      default:
+        console.log(`[NotificaMe] Evento desconhecido: ${event}`);
+    }
+  }
+
+  /**
+   * Processa mensagem recebida
+   */
+  private async handleMessageReceived(data: any): Promise<void> {
+    const {
+      instanceId,
+      messageId,
+      from,
+      to,
+      message,
+      mediaUrl,
+      mediaType,
+      timestamp
+    } = data;
+
+    console.log(`[NotificaMe] Nova mensagem recebida de ${from}`);
+
+    // 1. Identificar o tenant e channel pelo instanceId
+    const db = getAutomationDbPool();
+
+    const channelQuery = `
+      SELECT nc.*, nc.tenant_id
+      FROM notificame_channels nc
+      WHERE nc.channel_id = $1 AND nc.is_active = true
+      LIMIT 1
+    `;
+
+    const channelResult = await db.query(channelQuery, [instanceId]);
+
+    if (!channelResult.rows[0]) {
+      console.error(`[NotificaMe] Channel não encontrado para instanceId: ${instanceId}`);
+      return;
+    }
+
+    const channel = channelResult.rows[0];
+    const tenantId = channel.tenant_id;
+
+    // 2. Buscar ou criar lead pelo telefone
+    const leadQuery = `
+      SELECT id, name, phone, "tenantId", "stageId"
+      FROM leads
+      WHERE phone = $1 AND "tenantId" = $2
+      LIMIT 1
+    `;
+
+    let lead = await db.query(leadQuery, [from, tenantId]);
+
+    if (!lead.rows[0]) {
+      // Criar novo lead
+      console.log(`[NotificaMe] Criando novo lead para ${from}`);
+
+      // Buscar primeiro estágio do tenant
+      const stageQuery = `
+        SELECT id FROM stages
+        WHERE "tenantId" = $1 AND "order" = 0
+        LIMIT 1
+      `;
+
+      const stageResult = await db.query(stageQuery, [tenantId]);
+      const stageId = stageResult.rows[0]?.id;
+
+      if (!stageId) {
+        console.error(`[NotificaMe] Nenhum estágio encontrado para tenant ${tenantId}`);
+        return;
+      }
+
+      const insertLeadQuery = `
+        INSERT INTO leads (
+          name,
+          phone,
+          "tenantId",
+          "stageId",
+          source,
+          status,
+          "createdAt",
+          "updatedAt"
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, NOW(), NOW()
+        )
+        RETURNING id, name, phone, "tenantId", "stageId"
+      `;
+
+      lead = await db.query(insertLeadQuery, [
+        `Lead ${from}`,
+        from,
+        tenantId,
+        stageId,
+        'instagram', // ou 'messenger' dependendo do tipo
+        'new'
+      ]);
+
+      console.log(`[NotificaMe] Lead criado: ${lead.rows[0].id}`);
+    }
+
+    const leadId = lead.rows[0].id;
+
+    // 3. Salvar mensagem no banco
+    const insertMessageQuery = `
+      INSERT INTO notificame_messages (
+        tenant_id,
+        channel_id,
+        message_id,
+        direction,
+        from_user,
+        to_user,
+        content,
+        media_url,
+        status,
+        sent_at,
+        created_at
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW()
+      )
+      RETURNING id
+    `;
+
+    const messageResult = await db.query(insertMessageQuery, [
+      tenantId,
+      channel.id,
+      messageId,
+      'inbound',
+      from,
+      to,
+      message,
+      mediaUrl,
+      'received',
+      timestamp ? new Date(timestamp) : new Date()
+    ]);
+
+    console.log(`[NotificaMe] Mensagem salva: ${messageResult.rows[0].id}`);
+
+    // 4. Disparar evento para automação (se configurado)
+    try {
+      const automationQuery = `
+        SELECT * FROM triggers
+        WHERE tenant_id = $1
+        AND event = 'chat_message.received'
+        AND is_active = true
+      `;
+
+      const triggers = await db.query(automationQuery, [tenantId]);
+
+      if (triggers.rows.length > 0) {
+        console.log(`[NotificaMe] ${triggers.rows.length} trigger(s) encontrado(s) para chat_message.received`);
+
+        // Aqui você pode integrar com seu sistema de automação
+        // Por exemplo, chamar n8n webhook ou processar triggers internamente
+      }
+    } catch (automationError) {
+      console.error('[NotificaMe] Erro ao processar automação:', automationError);
+      // Não falhar se automação der erro
+    }
+
+    // 5. Notificar atendentes via WebSocket (se disponível)
+    try {
+      // Assumindo que você tem io configurado no app
+      // const io = (req as any).app.get('io');
+      // if (io) {
+      //   io.to(`tenant:${tenantId}`).emit('new_instagram_message', {
+      //     leadId,
+      //     message,
+      //     from,
+      //     timestamp
+      //   });
+      // }
+      console.log(`[NotificaMe] WebSocket notification would be sent to tenant:${tenantId}`);
+    } catch (wsError) {
+      console.error('[NotificaMe] Erro ao enviar notificação WebSocket:', wsError);
+    }
+  }
+
+  /**
+   * Processa confirmação de mensagem enviada
+   */
+  private async handleMessageSent(data: any): Promise<void> {
+    const { messageId } = data;
+
+    console.log(`[NotificaMe] Mensagem enviada: ${messageId}`);
+
+    const db = getAutomationDbPool();
+
+    await db.query(`
+      UPDATE notificame_messages
+      SET status = 'sent', sent_at = NOW()
+      WHERE message_id = $1
+    `, [messageId]);
+  }
+
+  /**
+   * Processa confirmação de entrega
+   */
+  private async handleMessageDelivered(data: any): Promise<void> {
+    const { messageId } = data;
+
+    console.log(`[NotificaMe] Mensagem entregue: ${messageId}`);
+
+    const db = getAutomationDbPool();
+
+    await db.query(`
+      UPDATE notificame_messages
+      SET status = 'delivered', delivered_at = NOW()
+      WHERE message_id = $1
+    `, [messageId]);
+  }
+
+  /**
+   * Processa confirmação de leitura
+   */
+  private async handleMessageRead(data: any): Promise<void> {
+    const { messageId } = data;
+
+    console.log(`[NotificaMe] Mensagem lida: ${messageId}`);
+
+    const db = getAutomationDbPool();
+
+    await db.query(`
+      UPDATE notificame_messages
+      SET status = 'read', read_at = NOW()
+      WHERE message_id = $1
+    `, [messageId]);
+  }
+
+  /**
+   * Processa falha no envio
+   */
+  private async handleMessageFailed(data: any): Promise<void> {
+    const { messageId, error } = data;
+
+    console.log(`[NotificaMe] Mensagem falhou: ${messageId}`, error);
+
+    const db = getAutomationDbPool();
+
+    await db.query(`
+      UPDATE notificame_messages
+      SET status = 'failed'
+      WHERE message_id = $1
+    `, [messageId]);
+  }
+
+  /**
+   * Processa conexão de instância
+   */
+  private async handleInstanceConnected(data: any): Promise<void> {
+    const { instanceId } = data;
+
+    console.log(`[NotificaMe] Instância conectada: ${instanceId}`);
+
+    const db = getAutomationDbPool();
+
+    await db.query(`
+      UPDATE notificame_channels
+      SET is_active = true, connected_at = NOW(), updated_at = NOW()
+      WHERE channel_id = $1
+    `, [instanceId]);
+  }
+
+  /**
+   * Processa desconexão de instância
+   */
+  private async handleInstanceDisconnected(data: any): Promise<void> {
+    const { instanceId } = data;
+
+    console.log(`[NotificaMe] Instância desconectada: ${instanceId}`);
+
+    const db = getAutomationDbPool();
+
+    await db.query(`
+      UPDATE notificame_channels
+      SET is_active = false, updated_at = NOW()
+      WHERE channel_id = $1
+    `, [instanceId]);
   }
 
   /**
@@ -469,6 +778,82 @@ export class NotificaMeController {
       res.json({ success: true, message: 'Mensagem marcada como lida' });
     } catch (error: any) {
       console.error('Error marking message as read:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * GET /api/notificame/stats
+   * Obtém estatísticas completas do Notifica.me
+   */
+  async getStats(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const stats = await NotificaMeStatsService.getStats(tenantId);
+
+      res.json({ success: true, data: stats });
+    } catch (error: any) {
+      console.error('Error getting stats:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * GET /api/notificame/stats/dashboard
+   * Obtém estatísticas simplificadas para o dashboard
+   */
+  async getDashboardStats(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const stats = await NotificaMeStatsService.getDashboardStats(tenantId);
+
+      res.json({ success: true, data: stats });
+    } catch (error: any) {
+      console.error('Error getting dashboard stats:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * GET /api/notificame/stats/history
+   * Obtém histórico de mensagens para gráficos
+   */
+  async getMessageHistoryStats(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const { days } = req.query;
+      const history = await NotificaMeStatsService.getMessageHistory(
+        tenantId,
+        days ? parseInt(days as string) : 30
+      );
+
+      res.json({ success: true, data: history });
+    } catch (error: any) {
+      console.error('Error getting message history stats:', error);
       res.status(500).json({
         success: false,
         error: error.message

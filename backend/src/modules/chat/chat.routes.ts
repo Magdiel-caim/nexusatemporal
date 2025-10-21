@@ -62,6 +62,9 @@ router.delete('/quick-replies/:id', chatController.deleteQuickReply);
 // Statistics
 router.get('/stats', chatController.getStats);
 
+// Channels endpoint (list WhatsApp sessions with conversation counts)
+router.get('/channels', chatController.getChannels);
+
 // QR Code Proxy (authenticated)
 router.get('/whatsapp/qrcode-proxy', chatController.getQRCodeProxy);
 

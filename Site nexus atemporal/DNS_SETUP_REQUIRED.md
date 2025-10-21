@@ -2,13 +2,13 @@
 
 ## Problema Identificado
 
-O domínio **nexustemporal.com.br** não está resolvendo no DNS público.
+O domínio **nexusatemporal.com** não está resolvendo no DNS público.
 
 ### Diagnóstico Realizado
 
 ```bash
-$ nslookup nexustemporal.com.br 8.8.8.8
-Server can't find nexustemporal.com.br: NXDOMAIN
+$ nslookup nexusatemporal.com 8.8.8.8
+Server can't find nexusatemporal.com: NXDOMAIN
 ```
 
 **Status**: O domínio não aponta para nenhum IP no momento.
@@ -17,7 +17,7 @@ Server can't find nexustemporal.com.br: NXDOMAIN
 
 ## ✅ Solução: Configurar DNS
 
-Você precisa configurar os registros DNS do domínio `nexustemporal.com.br` no seu provedor de domínios (Registro.br, GoDaddy, Hostgator, etc.).
+Você precisa configurar os registros DNS do domínio `nexusatemporal.com` no seu provedor de domínios (GoDaddy, Namecheap, Cloudflare, etc.).
 
 ### 1️⃣ Registros DNS Necessários
 
@@ -26,30 +26,36 @@ Adicione os seguintes registros **A** no painel de controle do seu domínio:
 ```
 Tipo    Nome                          Valor         TTL
 ----    ----                          -----         ---
-A       nexustemporal.com.br          72.60.5.29    3600
-A       www.nexustemporal.com.br      72.60.5.29    3600
-A       app.nexustemporal.com.br      72.60.5.29    3600
-A       api.nexustemporal.com.br      72.60.5.29    3600
+A       nexusatemporal.com            72.60.5.29    3600
+A       www.nexusatemporal.com        72.60.5.29    3600
+A       app.nexusatemporal.com        72.60.5.29    3600
+A       api.nexusatemporal.com        72.60.5.29    3600
 ```
 
 ### 2️⃣ Como Configurar (Dependendo do Provedor)
 
-#### Se estiver usando Registro.br:
-1. Acesse: https://registro.br
-2. Faça login com sua conta
-3. Clique em "Meus Domínios"
-4. Selecione `nexustemporal.com.br`
-5. Vá em "DNS" → "Editar Zona"
-6. Adicione os registros A acima
-7. Salve as alterações
+#### Se estiver usando GoDaddy:
+1. Acesse: https://dcc.godaddy.com/manage/dns
+2. Selecione o domínio `nexusatemporal.com`
+3. Clique em "Add" para adicionar novo registro
+4. Tipo: A, Nome: @ (para raiz) ou www/app/api, Valor: 72.60.5.29
+5. Repita para cada registro
+6. Salve as alterações
 
 #### Se estiver usando Cloudflare:
 1. Acesse: https://dash.cloudflare.com
-2. Selecione o domínio `nexustemporal.com.br`
+2. Selecione o domínio `nexusatemporal.com`
 3. Vá em "DNS" → "Records"
 4. Clique em "Add record"
 5. Adicione cada registro A conforme a tabela acima
 6. **IMPORTANTE**: Desative o proxy (ícone de nuvem cinza) para cada registro
+
+#### Se estiver usando Namecheap:
+1. Acesse: https://ap.www.namecheap.com
+2. Clique em "Domain List" e selecione `nexusatemporal.com`
+3. Vá em "Advanced DNS"
+4. Adicione os registros A conforme a tabela
+5. Salve
 
 #### Outros Provedores:
 - GoDaddy, Hostgator, UOL Host, etc. têm painel similar
@@ -69,14 +75,14 @@ Após adicionar os registros DNS:
 
 ```bash
 # Teste 1: Via Google DNS
-nslookup nexustemporal.com.br 8.8.8.8
+nslookup nexusatemporal.com 8.8.8.8
 
 # Teste 2: Via Cloudflare DNS
-nslookup nexustemporal.com.br 1.1.1.1
+nslookup nexusatemporal.com 1.1.1.1
 
 # Teste 3: Online
 # Acesse: https://dnschecker.org
-# Digite: nexustemporal.com.br
+# Digite: nexusatemporal.com
 ```
 
 **Quando estiver OK**, você verá:
@@ -84,7 +90,7 @@ nslookup nexustemporal.com.br 1.1.1.1
 Server:		8.8.8.8
 Address:	8.8.8.8#53
 
-Name:	nexustemporal.com.br
+Name:	nexusatemporal.com
 Address: 72.60.5.29
 ```
 
@@ -110,7 +116,7 @@ Você pode testar o site **agora mesmo** usando o IP diretamente:
 
 ### Opção 1: Via curl com Host header
 ```bash
-curl -k -H "Host: nexustemporal.com.br" https://72.60.5.29
+curl -k -H "Host: nexusatemporal.com" https://72.60.5.29
 ```
 
 ### Opção 2: Editar arquivo /etc/hosts (Linux/Mac)
@@ -119,19 +125,19 @@ curl -k -H "Host: nexustemporal.com.br" https://72.60.5.29
 sudo nano /etc/hosts
 
 # Adicione esta linha:
-72.60.5.29    nexustemporal.com.br www.nexustemporal.com.br
+72.60.5.29    nexusatemporal.com www.nexusatemporal.com
 
 # Salve e teste no navegador:
-# https://nexustemporal.com.br
+# https://nexusatemporal.com
 ```
 
 ### Opção 3: Editar arquivo hosts (Windows)
 ```
 1. Abra o Bloco de Notas como Administrador
 2. Abra: C:\Windows\System32\drivers\etc\hosts
-3. Adicione: 72.60.5.29    nexustemporal.com.br
+3. Adicione: 72.60.5.29    nexusatemporal.com
 4. Salve
-5. Acesse: https://nexustemporal.com.br
+5. Acesse: https://nexusatemporal.com
 ```
 
 ⚠️ **Atenção**: Esta é apenas uma solução temporária para testes locais!
@@ -142,9 +148,9 @@ sudo nano /etc/hosts
 
 Após o DNS propagar, verifique:
 
-- [ ] `nexustemporal.com.br` resolve para 72.60.5.29
-- [ ] `www.nexustemporal.com.br` resolve para 72.60.5.29
-- [ ] Site acessível via HTTPS (https://nexustemporal.com.br)
+- [ ] `nexusatemporal.com` resolve para 72.60.5.29
+- [ ] `www.nexusatemporal.com` resolve para 72.60.5.29
+- [ ] Site acessível via HTTPS (https://nexusatemporal.com)
 - [ ] Certificado SSL válido (Let's Encrypt gerado automaticamente)
 - [ ] Redirect de www funcionando (www → domínio principal)
 - [ ] Site exibindo corretamente (landing page, planos, checkout)
@@ -193,10 +199,10 @@ docker service ps nexus-website_website
 docker service logs nexus-website_website -f
 
 # Ver logs do Traefik (para debug de SSL)
-docker service logs traefik_traefik -f | grep nexustemporal
+docker service logs traefik_traefik -f | grep nexusatemporal
 
 # Testar acesso local
-curl -k -I https://72.60.5.29 -H "Host: nexustemporal.com.br"
+curl -k -I https://72.60.5.29 -H "Host: nexusatemporal.com"
 ```
 
 ---
