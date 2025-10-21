@@ -4,6 +4,7 @@ exports.IntegrationService = void 0;
 const WahaService_1 = require("../../services/WahaService");
 const OpenAIService_1 = require("../../services/OpenAIService");
 const N8nService_1 = require("../../services/N8nService");
+const NotificaMeService_1 = require("../../services/NotificaMeService");
 class IntegrationService {
     db;
     constructor(db) {
@@ -161,6 +162,9 @@ class IntegrationService {
                 case 'openai':
                     result = await this.testOpenAI(integration);
                     break;
+                case 'notificame':
+                    result = await this.testNotificaMe(integration);
+                    break;
                 case 'webhook':
                     result = await this.testWebhook(integration);
                     break;
@@ -302,6 +306,48 @@ class IntegrationService {
             return {
                 success: false,
                 message: `OpenAI test failed: ${error.message}`,
+                tested_at: new Date()
+            };
+        }
+    }
+    /**
+     * Testa integração Notifica.me
+     */
+    async testNotificaMe(integration) {
+        const creds = integration.credentials;
+        if (!creds.notificame_api_key) {
+            return {
+                success: false,
+                message: 'Missing Notifica.me API key',
+                tested_at: new Date()
+            };
+        }
+        const notificaMeService = new NotificaMeService_1.NotificaMeService({
+            apiKey: creds.notificame_api_key,
+            baseURL: creds.notificame_api_url
+        });
+        try {
+            const testResult = await notificaMeService.testConnection();
+            if (testResult.success) {
+                return {
+                    success: true,
+                    message: testResult.message,
+                    details: testResult.data,
+                    tested_at: new Date()
+                };
+            }
+            else {
+                return {
+                    success: false,
+                    message: testResult.message,
+                    tested_at: new Date()
+                };
+            }
+        }
+        catch (error) {
+            return {
+                success: false,
+                message: `Notifica.me test failed: ${error.message}`,
                 tested_at: new Date()
             };
         }

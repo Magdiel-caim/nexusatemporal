@@ -13,6 +13,7 @@ import automationRoutes from '@/modules/automation/automation.routes';
 import estoqueRoutes from '@/modules/estoque/estoque.routes';
 import vendasRoutes from '@/modules/vendas/vendas.routes';
 import biRoutes from '@/modules/bi/bi.routes'; // BI Module - Business Intelligence
+import notificaMeRoutes from '@/modules/notificame/notificame.routes'; // Notifica.me integration (WhatsApp/Instagram)
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import marketingRoutes from '@/modules/marketing/marketing.routes';
@@ -44,6 +45,7 @@ router.use('/automation', automationRoutes); // Automation system (triggers, wor
 router.use('/stock', estoqueRoutes); // Stock/Inventory management
 router.use('/vendas', vendasRoutes); // Sales and commissions management
 router.use('/bi', biRoutes); // Business Intelligence - Dashboards, KPIs, Analytics, Reports
+router.use('/notificame', notificaMeRoutes); // Notifica.me integration (WhatsApp/Instagram messaging)
 
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);

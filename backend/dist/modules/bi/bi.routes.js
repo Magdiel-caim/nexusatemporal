@@ -23,6 +23,16 @@ router.get('/dashboards/executive', async (req, res) => {
         if (!tenantId) {
             return res.status(401).json({ error: 'Tenant não identificado' });
         }
+        // Validação de datas
+        if (startDate && isNaN(Date.parse(startDate))) {
+            return res.status(400).json({ error: 'Formato de startDate inválido' });
+        }
+        if (endDate && isNaN(Date.parse(endDate))) {
+            return res.status(400).json({ error: 'Formato de endDate inválido' });
+        }
+        if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+            return res.status(400).json({ error: 'startDate deve ser anterior a endDate' });
+        }
         const data = await dashboardService.getExecutiveDashboard(tenantId, startDate, endDate);
         res.json(data);
     }
@@ -41,6 +51,16 @@ router.get('/dashboards/sales', async (req, res) => {
         const tenantId = req.user?.tenantId;
         if (!tenantId) {
             return res.status(401).json({ error: 'Tenant não identificado' });
+        }
+        // Validação de datas
+        if (startDate && isNaN(Date.parse(startDate))) {
+            return res.status(400).json({ error: 'Formato de startDate inválido' });
+        }
+        if (endDate && isNaN(Date.parse(endDate))) {
+            return res.status(400).json({ error: 'Formato de endDate inválido' });
+        }
+        if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+            return res.status(400).json({ error: 'startDate deve ser anterior a endDate' });
         }
         const data = await dashboardService.getSalesDashboard(tenantId, startDate, endDate);
         res.json(data);

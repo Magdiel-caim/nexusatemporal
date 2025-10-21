@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Planos e Precificação - Nexus Atemporal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            border-bottom: 3px solid #10b981;
+            padding-bottom: 20px;
+        }
+        
+        .header h1 {
+            color: #10b981;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .edit-notice {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        
+        .edit-notice strong {
+            color: #92400e;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+        
+        .section h2 {
+            color: #10b981;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .section h3 {
+            color: #059669;
+            font-size: 1.4em;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+        
+        .section h4 {
+            color: #374151;
+            font-size: 1.2em;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .plan-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 30px;
+            background: linear-gradient(to bottom, #ffffff, #f9fafb);
+            transition: all 0.3s;
+            page-break-inside: avoid;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .plan-card.popular {
+            border-color: #10b981;
+            background: linear-gradient(to bottom, #ecfdf5, #d1fae5);
+            position: relative;
+        }
+        
+        .plan-card.popular::before {
+            content: "⭐ MAIS POPULAR";
+            position: absolute;
+            top: -15px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .plan-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .plan-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+        
+        .plan-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .plan-subtitle {
+            color: #6b7280;
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        
+        .plan-price {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #10b981;
+            margin-bottom: 5px;
+        }
+        
+        .plan-price-small {
+            font-size: 0.4em;
+            color: #6b7280;
+        }
+        
+        .plan-billing {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .plan-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .plan-features li::before {
+            position: absolute;
+            left: 0;
+            font-size: 1.2em;
+        }
+        
+        .plan-features li.included::before {
+            content: "✅";
+        }
+        
+        .plan-features li.limited::before {
+            content: "⚠️";
+            color: #f59e0b;
+        }
+        
+        .plan-features li.excluded::before {
+            content: "❌";
+        }
+        
+        .feature-value {
+            font-weight: bold;
+            color: #10b981;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 30px 0;
+            font-size: 0.9em;
+            page-break-inside: avoid;
+        }
+        
+        .comparison-table th {
+            background: #10b981;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+        
+        .comparison-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #f9fafb;
+        }
+        
+        .comparison-table tr:hover {
+            background: #f3f4f6;
+        }
+        
+        .comparison-table .category-header {
+            background: #d1fae5;
+            font-weight: bold;
+            color: #065f46;
+        }
+        
+        .highlight-box {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .success-box {
+            background: #d1fae5;
+            border-left: 4px solid #10b981;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .addons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .addon-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+        }
+        
+        .addon-card h4 {
+            color: #10b981;
+            margin-bottom: 10px;
+        }
+        
+        .addon-price {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #059669;
+            margin: 10px 0;
+        }
+        
+        .strategy-card {
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            background: #f0fdf4;
+        }
+        
+        .roi-box {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .roi-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .button {
+            background: #10b981;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            margin: 0 10px;
+        }
+        
+        .button:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        
+        .editable {
+            border: 1px dashed #10b981;
+            padding: 10px;
+            margin: 10px 0;
+            background: #f0fdf4;
+            cursor: text;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+        
+        .editable:hover {
+            background: #d1fae5;
+            border-style: solid;
+        }
+        
+        .editable:focus {
+            outline: 2px solid #10b981;
+            background: white;
+        }
+        
+        [contenteditable="true"]:empty:before {
+            content: attr(data-placeholder);
+            color: #9ca3af;
+        }
+        
+        .edit-instructions {
+            background: #dbeafe;
+            border: 2px solid #3b82f6;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+            
+            .button-container, .edit-instructions, .edit-notice {
+                display: none;
+            }
+            
+            .section {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Planos e Precificação</h1>
+            <p>Nexus Atemporal - CRM para Clínicas de Estética</p>
+            <p style="color: #999; font-size: 0.9em; margin-top: 10px;">Documento Editável - Versão 1.0</p>
+        </div>
+
+        <div class="edit-notice">
+            <strong>📝 Documento Editável:</strong> Clique em qualquer texto com borda verde pontilhada para editar. As alterações são salvas automaticamente no navegador.<br><br>
+            <strong>💾 Para salvar permanentemente:</strong> Use o botão "💾 Baixar HTML Editável" ou "📋 Copiar HTML"<br>
+            <strong>📄 Para PDF:</strong> Use o botão "📄 Gerar PDF" e escolha "Salvar como PDF" na impressora
+        </div>
+
+        <div class="edit-instructions">
+            <h3 style="color: #1e40af; margin-bottom: 10px;">📋 Instruções de Edição</h3>
+            <ul style="line-height: 2;">
+                <li><strong>Editar Preços:</strong> Clique nos valores em R$ para alterar</li>
+                <li><strong>Editar Limites:</strong> Clique nos números de usuários, clientes, etc</li>
+                <li><strong>Adicionar/Remover Features:</strong> Clique nas listas de recursos</li>
+                <li><strong>Salvar Alterações:</strong> Use "Copiar HTML" e salve em um arquivo</li>
+                <li><strong>Imprimir/PDF:</strong> Use Ctrl+P ou botão "Baixar PDF"</li>
+            </ul>
+        </div>
+
+        <div class="button-container">
+            <button class="button" onclick="downloadPDF()">📄 Gerar PDF (Imprimir)</button>
+            <button class="button" onclick="downloadHTML()">💾 Baixar HTML Editável</button>
+            <button class="button" onclick="copyHTML()">📋 Copiar HTML</button>
+            <button class="button" onclick="location.reload()">🔄 Resetar</button>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Estratégia de Precificação</h2>
+            
+            <div class="success-box">
+                <h4>Objetivo: Maximizar LTV e Reduzir Churn</h4>
+                <p><strong>Value-Based Pricing:</strong> Preço baseado no valor entregue, não no custo operacional. Clínicas pagam pelo crescimento de receita e redução de custos que o sistema proporciona.</p>
+                <div class="editable" contenteditable="true" data-placeholder="Adicione observações sobre estratégia...">
+                    • Foco em ROI mensurável para o cliente<br>
+                    • Upgrades naturais baseados em necessidades reais<br>
+                    • Retenção através de funcionalidades indispensáveis
+                </div>
+            </div>
+
+            <div class="roi-box">
+                <h3>ROI Médio do Cliente</h3>
+                <div class="roi-number editable" contenteditable="true">350%</div>
+                <p>Para cada R$ 1 investido, o cliente obtém R$ 3,50 de retorno em 12 meses</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Visão Geral dos Planos</h2>
+            
+            <div class="plans-grid">
+                <!-- PLANO ESSENCIAL -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <div class="plan-icon">🌱</div>
+                        <div class="plan-name editable" contenteditable="true">ESSENCIAL</div>
+                        <div class="plan-subtitle editable" contenteditable="true">Para clínicas iniciantes</div>
+                        <div class="plan-price">
+                            R$ <span class="editable" contenteditable="true">297</span>
+                            <span class="plan-price-small">/mês</span>
+                        </div>
+                        <div class="plan-billing editable" contenteditable="true">
+                            ou R$ 2.970/ano (2 meses grátis)
+                        </div>
+                    </div>
+                    
+                    <ul class="plan-features">
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">1</span> usuário</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">100</span> clientes ativos</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">200</span> agendamentos/mês</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">1</span> profissional/prestador</li>
+                        <li class="included">Dashboard básico</li>
+                        <li class="included">Gestão de Leads (Lista/Kanban)</li>
+                        <li class="included">Agenda básica</li>
+                        <li class="included">Cadastro de clientes</li>
+                        <li class="included">Financeiro básico</li>
+                        <li class="included">Controle de caixa simples</li>
+                        <li class="included"><span class="feature-value editable" contenteditable="true">1</span> gateway de pagamento</li>
+                        <li class="excluded">Prontuários eletrônicos</li>
+                        <li class="excluded">Chat/WhatsApp</li>
+                        <li class="excluded">Automações</li>
+                        <li class="excluded">IA</li>
+                        <li class="excluded">Marketing</li>
+                    </ul>
+                </div>
+
+                <!-- PLANO PROFISSIONAL -->
+                <div class="plan-card popular">
+                    <div class="plan-header">
+                        <div class="plan-icon">⚡</div>
+                        <div class="plan-name editable" contenteditable="true">PROFISSIONAL</div>
+                        <div class="plan-subtitle editable" contenteditable="true">Para clínicas em crescimento</div>
+                        <div class="plan-price">
+                            R$ <span class="editable" contenteditable="true">697</span>
+                            <span class="plan-price-small">/mês</span>
+                        </div>
+                        <div class="plan-billing editable" contenteditable="true">
+                            ou R$ 6.970/ano (2 meses grátis)
+                        </div>
+                    </div>
+                    
+                    <ul class="plan-features">
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">5</span> usuários</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">500</span> clientes ativos</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">1.000</span> agendamentos/mês</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">5</span> profissionais</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">10 GB</span> armazenamento</li>
+                        <li class="included">Dashboard com KPIs avançados</li>
+                        <li class="included">Gestão de Leads completa</li>
+                        <li class="included">Agenda + Google Calendar</li>
+                        <li class="included">Prontuários eletrônicos</li>
+                        <li class="included">Chat WhatsApp (<span class="editable" contenteditable="true">1</span> número)</li>
+                        <li class="included">Financeiro completo</li>
+                        <li class="included">Controle de estoque</li>
+                        <li class="included">Colaboração (Feed + Drive)</li>
+                        <li class="included"><span class="editable" contenteditable="true">5</span> automações n8n</li>
+                        <li class="included">Chatbot Typebot (<span class="editable" contenteditable="true">1</span> fluxo)</li>
+                        <li class="included">IA básica</li>
+                        <li class="included"><span class="editable" contenteditable="true">2</span> gateways de pagamento</li>
+                        <li class="excluded">IA Clínica avançada</li>
+                        <li class="excluded">Marketing (Mautic)</li>
+                        <li class="excluded">BI com OpenAI</li>
+                    </ul>
+                </div>
+
+                <!-- PLANO EMPRESARIAL -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <div class="plan-icon">🚀</div>
+                        <div class="plan-name editable" contenteditable="true">EMPRESARIAL</div>
+                        <div class="plan-subtitle editable" contenteditable="true">Para clínicas estabelecidas</div>
+                        <div class="plan-price">
+                            R$ <span class="editable" contenteditable="true">1.497</span>
+                            <span class="plan-price-small">/mês</span>
+                        </div>
+                        <div class="plan-billing editable" contenteditable="true">
+                            ou R$ 14.970/ano (2 meses grátis)
+                        </div>
+                    </div>
+                    
+                    <ul class="plan-features">
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">15</span> usuários</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">2.000</span> clientes ativos</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">5.000</span> agendamentos/mês</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">15</span> profissionais</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">50 GB</span> armazenamento</li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">3</span> números WhatsApp</li>
+                        <li class="included">Tudo do Profissional +</li>
+                        <li class="included">Automações n8n ilimitadas</li>
+                        <li class="included">Chatbot Typebot ilimitado</li>
+                        <li class="included">IA Clínica completa</li>
+                        <li class="included">BI Avançado com OpenAI</li>
+                        <li class="included">Marketing completo (Mautic)</li>
+                        <li class="included">Multi-unidades (<span class="editable" contenteditable="true">3</span> filiais)</li>
+                        <li class="included">API aberta</li>
+                        <li class="included">White Label parcial</li>
+                        <li class="included"><span class="editable" contenteditable="true">4</span> gateways + Split</li>
+                        <li class="included">Instagram/Facebook (Notifica.me)</li>
+                    </ul>
+                </div>
+
+                <!-- PLANO ENTERPRISE -->
+                <div class="plan-card">
+                    <div class="plan-header">
+                        <div class="plan-icon">👑</div>
+                        <div class="plan-name editable" contenteditable="true">ENTERPRISE</div>
+                        <div class="plan-subtitle editable" contenteditable="true">Para redes de clínicas</div>
+                        <div class="plan-price">
+                            R$ <span class="editable" contenteditable="true">2.997</span>
+                            <span class="plan-price-small">/mês</span>
+                        </div>
+                        <div class="plan-billing editable" contenteditable="true">
+                            ou sob consulta para contrato anual
+                        </div>
+                    </div>
+                    
+                    <ul class="plan-features">
+                        <li class="included">Usuários <span class="feature-value">ilimitados</span></li>
+                        <li class="included">Clientes <span class="feature-value">ilimitados</span></li>
+                        <li class="included">Agendamentos <span class="feature-value">ilimitados</span></li>
+                        <li class="included">Profissionais <span class="feature-value">ilimitados</span></li>
+                        <li class="limited"><span class="feature-value editable" contenteditable="true">500 GB</span> armazenamento</li>
+                        <li class="included">WhatsApp ilimitado</li>
+                        <li class="included">Tudo do Empresarial +</li>
+                        <li class="included">Multi-tenant avançado</li>
+                        <li class="included">Gestão de franquias/redes</li>
+                        <li class="included">Dashboard consolidado</li>
+                        <li class="included">SLA de suporte prioritário</li>
+                        <li class="included">Gerente de sucesso dedicado</li>
+                        <li class="included">Treinamento mensal</li>
+                        <li class="included">Customizações sob demanda</li>
+                        <li class="included">White Label completo</li>
+                        <li class="included">Infraestrutura dedicada</li>
+                        <li class="included">Backup diário (90 dias)</li>
+                        <li class="included">Relatórios executivos mensais</li>
+                        <li class="included">Gateway próprio personalizado</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Tabela Comparativa Completa</h2>
+            
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Funcionalidade</th>
+                        <th>Essencial</th>
+                        <th>Profissional</th>
+                        <th>Empresarial</th>
+                        <th>Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="category-header">
+                        <td colspan="5">LIMITES E CAPACIDADE</td>
+                    </tr>
+                    <tr>
+                        <td>Usuários</td>
+                        <td class="editable" contenteditable="true">1</td>
+                        <td class="editable" contenteditable="true">5</td>
+                        <td class="editable" contenteditable="true">15</td>
+                        <td>∞</td>
+                    </tr>
+                    <tr>
+                        <td>Clientes Ativos</td>
+                        <td class="editable" contenteditable="true">100</td>
+                        <td class="editable" contenteditable="true">500</td>
+                        <td class="editable" contenteditable="true">2.000</td>
+                        <td>∞</td>
+                    </tr>
+                    <tr>
+                        <td>Agendamentos/Mês</td>
+                        <td class="editable" contenteditable="true">200</td>
+                        <td class="editable" contenteditable="true">1.000</td>
+                        <td class="editable" contenteditable="true">5.000</td>
+                        <td>∞</td>
+                    </tr>
+                    <tr>
+                        <td>Profissionais</td>
+                        <td class="editable" contenteditable="true">1</td>
+                        <td class="editable" contenteditable="true">5</td>
+                        <td class="editable" contenteditable="true">15</td>
+                        <td>∞</td>
+                    </tr>
+                    <tr>
+                        <td>Armazenamento</td>
+                        <td>-</td>
+                        <td class="editable" contenteditable="true">10 GB</td>
+                        <td class="editable" contenteditable="true">50 GB</td>
+                        <td class="editable" contenteditable="true">500 GB</td>
+                    </tr>
+                    
+                    <tr class="category-header">
+                        <td colspan="5">MÓDULOS PRINCIPAIS</td>
+                    </tr>
+                    <tr>
+                        <td>Dashboard</td>
+                        <td>Básico</td>
+                        <td>Avançado</td>
+                        <td>Completo + IA</td>
+                        <td>Completo + IA</td>
+                    </tr>
+                    <tr>
+                        <td>Gestão de Leads</td>
+                        <td>Lista/Kanban</td>
+                        <td>Completa</td>
+                        <td>Completa</td>
+                        <td>Completa</td>
+                    </tr>
+                    <tr>
+                        <td>Agenda</td>
+                        <td>Básica</td>
+                        <td>+ Google Cal</td>
+                        <td>+ Google Cal</td>
+                        <td>+ Google Cal</td>
+                    </tr>
+                    <tr>
+                        <td>Prontuários Eletrônicos</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td>Financeiro</td>
+                        <td>Básico</td>
+                        <td>Completo</td>
+                        <td>Completo</td>
+                        <td>Completo</td>
+                    </tr>
+                    <tr>
+                        <td>Estoque</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    
+                    <tr class="category-header">
+                        <td colspan="5">COMUNICAÇÃO</td>
+                    </tr>
+                    <tr>
+                        <td>WhatsApp (Waha)</td>
+                        <td>❌</td>
+                        <td class="editable" contenteditable="true">1 número</td>
+                        <td class="editable" contenteditable="true">3 números</td>
+                        <td>Ilimitado</td>
+                    </tr>
+                    <tr>
+                        <td>Instagram Direct</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td>Facebook Messenger</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td>WebChat</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td>Email Integration</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    
+                    <tr class="category-header">
+                        <td colspan="5">AUTOMAÇÕES E IA</td>
+                    </tr>
+                    <tr>
+                        <td>n8n Workflows</td>
+                        <td>❌</td>
+                        <td class="editable" contenteditable="true">5 ativos</td>
+                        <td>Ilimitados</td>
+                        <td>Ilimitados</td>
+                    </tr>
+                    <tr>
+                        <td>Typebot Chatbot</td>
+                        <td>❌</td>
+                        <td class="editable" contenteditable="true">1 fluxo</td>
+                        <td>Ilimitado</td>
+                        <td>Ilimitado</td>
+                    </tr>
+                    <tr>
+                        <td>OpenAI (IA)</td>
+                        <td>❌</td>
+                        <td>Básica</td>
+                        <td>Avançada</td>
+                        <td>Ilimitada</td>
+                    </tr>
+                    <tr>
+                        <td>IA Clínica</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td>Triggers/Eventos</td>
+                        <td>❌</td>
+                        <td class="editable" contenteditable="true">10</td>
+                        <td class="editable" contenteditable="true">50</td>
+                        <td>Ilimitado</td>
+                    </tr>
+                    
+                    <tr class="category-header">
+                        <td colspan="5">PAGAMENTOS</td>
+                    </tr>
+                    <tr>
+                        <td>Gateways</td>
+                        <td class="editable" contenteditable="true">1</td>
+                        <td class="editable" contenteditable="true">2</td>
+                        <td class="editable" contenteditable="true">4 + Split</td>
+                        <td>4 + Custom</td>
+                    </tr>
+                    <tr>
+                        <td>Split de Pagamento</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    
+                    <tr class="category-header">
+                        <td colspan="5">MARKETING E BI</td>
+                    </tr>
+                    <tr>
+                        <td>Mautic (Marketing)</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td>BI com OpenAI</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td>Relatórios Customizados</td>
+                        <td>❌</td>
+                        <td>Básicos</td>
+                        <td>Avançados</td>
+                        <td>Executivos</td>
+                    </tr>
+                    
+                    <tr class="category-header">
+                        <td colspan="5">AVANÇADO</td>
+                    </tr>
+                    <tr>
+                        <td>Multi-unidades</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td class="editable" contenteditable="true">3 filiais</td>
+                        <td>Ilimitado</td>
+                    </tr>
+                    <tr>
+                        <td>API Aberta</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>✅</td>
+                        <td>✅</td>
+                    </tr>
+                    <tr>
+                        <td>White Label</td>
+                        <td>❌</td>
+                        <td>❌</td>
+                        <td>Parcial</td>
+                        <td>Completo</td>
+                    </tr>
+                    <tr>
+                        <td>Infraestrutura</td>
+                        <td>Compartilhada</td>
+                        <td>Compartilhada</td>
+                        <td>Compartilhada</td>
+                        <td>Dedicada</td>
+                    </tr>
+                    <tr>
+                        <td>Suporte</td>
+                        <td>Email</td>
+                        <td>Chat</td>
+                        <td>Prioritário</td>
+                        <td>Dedicado</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>➕ Add-ons (Extras)</h2>
+            
+            <p class="editable" contenteditable="true" style="margin-bottom: 20px;">
+                Expanda as capacidades do seu plano com recursos adicionais conforme sua necessidade:
+            </p>
+            
+            <div class="addons-grid">
+                <div class="addon-card">
+                    <h4>👤 Usuário Adicional</h4>
+                    <div class="addon-price">R$ <span class="editable" contenteditable="true">49</span>/mês</div>
+                    <p class="editable" contenteditable="true">Adicione mais um usuário ao seu plano atual</p>
+                </div>
+                
+                <div class="addon-card">
+                    <h4>📱 Número WhatsApp Extra</h4>
+                    <div class="addon-price">R$ <span class="editable" contenteditable="true">97</span>/mês</div>
+                    <p class="editable" contenteditable="true">Conecte números adicionais de WhatsApp</p>
+                </div>
+                
+                <div class="addon-card">
+                    <h4>💾 50 GB Armazenamento</h4>
+                    <div class="addon-price">R$ <span class="editable" contenteditable="true">47</span>/mês</div>
+                    <p class="editable" contenteditable="true">Amplie seu espaço de armazenamento</p>
+                </div>
+                
+                <div class="addon-card">
+                    <h4>🏢 Unidade/Filial Adicional</h4>
+                    <div class="addon-price">R$ <span class="editable" contenteditable="true">297</span>/mês</div>
+                    <p class="editable" contenteditable="true">Adicione mais uma unidade ao sistema</p>
+                </div>
+                
+                <div class="addon-card">
+                    <h4>🎓 Treinamento Personalizado</h4>
+                    <div class="addon-price">R$ <span class="editable" contenteditable="true">497</span> <span style="font-size: 0.7em;">único</span></div>
+                    <p class="editable" contenteditable="true">Sessão de treinamento de 4h para equipe</p>
+                </div>
+                
+                <div class="addon-card">
+                    <h4>🔧 Integração Customizada</h4>
+                    <div class="addon-price editable" contenteditable="true">Sob consulta</div>
+                    <p class="editable" contenteditable="true">Desenvolvemos integração específica</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎁 Estratégias de Conversão</h2>
+            
+            <div class="strategy-card">
+                <h3>1. Trial Estratégico</h3>
+                <div class="editable" contenteditable="true">
+                    <strong>14 dias grátis do plano Profissional</strong> (não Essencial!)<br><br>
+                    Por quê? Força o cliente a sentir TODAS as funcionalidades poderosas. Após o trial, pode fazer downgrade para Essencial se quiser, mas a maioria não quer perder as features que já está usando.<br><br>
+                    <strong>Conversão esperada:</strong> 40-50% (vs 25-30% testando plano básico)
+                </div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>2. Desconto de Lançamento</h3>
+                <div class="editable" contenteditable="true">
+                    <strong>Primeiros 100 clientes:</strong> 30% OFF vitalício<br><br>
+                    Cria urgência, escassez e gera embaixadores early adopters que ajudam a validar o produto e atrair novos clientes.<br><br>
+                    <strong>Investimento:</strong> ~R$ 20k/mês em desconto<br>
+                    <strong>Retorno:</strong> 100 clientes pagantes desde o início + feedback valioso
+                </div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>3. Programa de Indicação</h3>
+                <div class="editable" contenteditable="true">
+                    <strong>Indique 3 clínicas = 1 mês grátis</strong><br>
+                    <strong>Cliente indicado ganha:</strong> 20% OFF no primeiro mês<br><br>
+                    Cria um loop viral de crescimento orgânico com CAC reduzido.
+                </div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>4. Upgrade Incentivado</h3>
+                <div class="editable" contenteditable="true">
+                    <strong>Upgrade Essencial → Profissional no 1º mês: 50% OFF</strong><br><br>
+                    Cria momentum inicial e reduz fricção para experimentar planos superiores.
+                </div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>5. Garantia Anti-Risco</h3>
+                <div class="editable" contenteditable="true">
+                    <strong>30 dias de garantia incondicional</strong><br><br>
+                    Se não gostar, devolvemos 100% do investimento. Aumenta confiança e reduz objeções na venda.
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Projeção de Receita</h2>
+            
+            <div class="highlight-box">
+                <h3>Cenário Conservador - 12 Meses</h3>
+                <div class="editable" contenteditable="true">
+                    <strong>Essencial:</strong> 50 clientes × R$ 297 = R$ 14.850/mês<br>
+                    <strong>Profissional:</strong> 30 clientes × R$ 697 = R$ 20.910/mês<br>
+                    <strong>Empresarial:</strong> 10 clientes × R$ 1.497 = R$ 14.970/mês<br>
+                    <strong>Enterprise:</strong> 2 clientes × R$ 2.997 = R$ 5.994/mês<br>
+                    <strong>Add-ons (média):</strong> R$ 5.000/mês<br><br>
+                    <strong>TOTAL MRR:</strong> R$ 61.724/mês<br>
+                    <strong>TOTAL ARR:</strong> R$ 740.688/ano 🎯
+                </div>
+            </div>
+
+            <div class="success-box">
+                <h3>Cenário Otimista - 24 Meses</h3>
+                <div class="editable" contenteditable="true">
+                    <strong>Essencial:</strong> 120 clientes × R$ 297 = R$ 35.640/mês<br>
+                    <strong>Profissional:</strong> 80 clientes × R$ 697 = R$ 55.760/mês<br>
+                    <strong>Empresarial:</strong> 30 clientes × R$ 1.497 = R$ 44.910/mês<br>
+                    <strong>Enterprise:</strong> 8 clientes × R$ 2.997 = R$ 23.976/mês<br>
+                    <strong>Add-ons (média):</strong> R$ 15.000/mês<br><br>
+                    <strong>TOTAL MRR:</strong> R$ 175.286/mês<br>
+                    <strong>TOTAL ARR:</strong> R$ 2.103.432/ano 🚀
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💡 Gatilhos de Upgrade Automáticos</h2>
+            
+            <div class="warning-box">
+                <h3>Sistema de "Dor de Crescimento"</h3>
+                <p>Notificações in-app que incentivam upgrades naturalmente:</p>
+                
+                <div class="editable" contenteditable="true" style="margin-top: 15px;">
+                    <strong>Quando atingir 80% do limite:</strong><br>
+                    "⚠️ Você já tem 80 clientes dos 100 permitidos. Upgrade para Profissional e tenha até 500!"<br><br>
+                    
+                    <strong>Quando tentar usar funcionalidade bloqueada:</strong><br>
+                    "🔒 Prontuários Eletrônicos é exclusivo do plano Profissional. Faça upgrade e economize 4h/dia no atendimento!"<br><br>
+                    
+                    <strong>Quando usar todas automações:</strong><br>
+                    "🤖 Você usou suas 5 automações. Upgrade para ter automações ilimitadas e 3x sua produtividade!"<br><br>
+                    
+                    <strong>Análise preditiva (IA):</strong><br>
+                    "📊 Com IA, você poderia ter evitado 12 no-shows este mês. Isso representa R$ 3.600 em receita perdida!"<br><br>
+                    
+                    <strong>Comparação social:</strong><br>
+                    "🏆 Clínicas similares usando o plano Empresarial aumentaram receita em 45% nos últimos 6 meses"
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Perguntas Frequentes - Precificação</h2>
+            
+            <div class="highlight-box editable" contenteditable="true">
+                <h4>Por que o trial é do plano Profissional e não do Essencial?</h4>
+                <p>Queremos que você experimente o verdadeiro poder do Nexus Atemporal. Com automações, IA e prontuários eletrônicos, você verá resultados reais em 14 dias. Após o trial, pode escolher o plano que melhor se adequa.</p>
+            </div>
+
+            <div class="highlight-box editable" contenteditable="true">
+                <h4>Posso cancelar a qualquer momento?</h4>
+                <p>Sim! Não temos contratos de fidelidade. Você pode cancelar quando quiser e continuará tendo acesso até o fim do período pago.</p>
+            </div>
+
+            <div class="highlight-box editable" contenteditable="true">
+                <h4>O que acontece se eu ultrapassar os limites do meu plano?</h4>
+                <p>Você receberá notificações quando atingir 80% e 90% dos limites. Ao atingir 100%, sugerimos um upgrade. Seus dados nunca são perdidos ou bloqueados.</p>
+            </div>
+
+            <div class="highlight-box editable" contenteditable="true">
+                <h4>Vocês fazem desconto para pagamento anual?</h4>
+                <p>Sim! Pagando anualmente, você ganha 2 meses grátis (equivalente a ~17% de desconto).</p>
+            </div>
+
+            <div class="highlight-box editable" contenteditable="true">
+                <h4>Posso fazer upgrade ou downgrade depois?</h4>
+                <p>Sim! Você pode mudar de plano a qualquer momento. No upgrade, o valor é proporcional. No downgrade, o crédito é mantido para os próximos meses.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <p style="text-align: center; color: #666; margin-top: 40px; padding-top: 40px; border-top: 2px solid #e5e7eb;">
+                <strong style="font-size: 1.2em; color: #10b981;">Nexus Atemporal</strong><br>
+                Planos e Precificação - Documento Editável<br>
+                Versão 1.0 - Outubro 2025<br><br>
+                <a href="mailto:contato@nexusatemporal.com.br" style="color: #10b981;">contato@nexusatemporal.com.br</a><br>
+                <a href="https://nexusatemporal.com.br" style="color: #10b981;">https://nexusatemporal.com.br</a>
+            </p>
+        </div>
+
+        <div class="button-container">
+            <button class="button" onclick="window.print()">📄 Baixar como PDF</button>
+            <button class="button" onclick="copyHTML()">📋 Copiar HTML Editado</button>
+            <button class="button" onclick="location.reload()">🔄 Resetar Documento</button>
+        </div>
+    </div>
+
+    <script>
+        // Função para baixar como PDF (via impressão)
+        function downloadPDF() {
+            // Ocultar botões antes de imprimir
+            document.querySelectorAll('.button-container, .edit-instructions, .edit-notice').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Abrir diálogo de impressão
+            window.print();
+            
+            // Restaurar botões após impressão
+            setTimeout(() => {
+                document.querySelectorAll('.button-container, .edit-instructions, .edit-notice').forEach(el => {
+                    el.style.display = '';
+                });
+            }, 100);
+        }
+
+        // Função para baixar HTML editável
+        function downloadHTML() {
+            const html = document.documentElement.outerHTML;
+            const blob = new Blob([html], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'planos-nexus-atemporal-editavel.html';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            alert('✅ Arquivo HTML baixado! Abra-o no navegador para continuar editando.');
+        }
+
+        // Função para copiar HTML editado
+        function copyHTML() {
+            const html = document.documentElement.outerHTML;
+            navigator.clipboard.writeText(html).then(() => {
+                alert('✅ HTML copiado para área de transferência!\n\nPara salvar:\n1. Crie um arquivo .html\n2. Cole o conteúdo (Ctrl+V)\n3. Salve o arquivo');
+            }).catch(err => {
+                console.error('Erro ao copiar:', err);
+                
+                // Fallback: criar textarea temporário
+                const textarea = document.createElement('textarea');
+                textarea.value = html;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.select();
+                
+                try {
+                    document.execCommand('copy');
+                    alert('✅ HTML copiado! Cole em um arquivo .html para salvar.');
+                } catch (err) {
+                    alert('❌ Não foi possível copiar automaticamente.\n\nUse o botão "💾 Baixar HTML Editável" ao invés.');
+                }
+                
+                document.body.removeChild(textarea);
+            });
+        }
+
+        // Salvar alterações no localStorage ao editar
+        document.addEventListener('DOMContentLoaded', () => {
+            const editables = document.querySelectorAll('.editable');
+            
+            // Carregar valores salvos
+            editables.forEach((el, index) => {
+                const saved = localStorage.getItem(`nexus_editable_${index}`);
+                if (saved) {
+                    el.innerHTML = saved;
+                }
+                
+                // Salvar ao editar
+                el.addEventListener('input', () => {
+                    localStorage.setItem(`nexus_editable_${index}`, el.innerHTML);
+                });
+            });
+            
+            // Mostrar indicador de salvamento automático
+            let saveTimeout;
+            editables.forEach(el => {
+                el.addEventListener('input', () => {
+                    clearTimeout(saveTimeout);
+                    
+                    // Adicionar indicador visual
+                    const indicator = document.createElement('span');
+                    indicator.textContent = ' ✓ Salvo';
+                    indicator.style.color = '#10b981';
+                    indicator.style.fontSize = '0.8em';
+                    indicator.style.marginLeft = '5px';
+                    indicator.className = 'save-indicator';
+                    
+                    // Remover indicadores anteriores
+                    document.querySelectorAll('.save-indicator').forEach(ind => ind.remove());
+                    
+                    // Adicionar novo indicador
+                    el.parentNode.insertBefore(indicator, el.nextSibling);
+                    
+                    // Remover após 2 segundos
+                    saveTimeout = setTimeout(() => {
+                        indicator.remove();
+                    }, 2000);
+                });
+            });
+        });
+
+        // Adicionar indicador visual ao editar
+        document.querySelectorAll('.editable').forEach(el => {
+            el.addEventListener('focus', function() {
+                this.style.background = '#fff';
+                this.style.outline = '2px solid #10b981';
+            });
+            
+            el.addEventListener('blur', function() {
+                this.style.background = '';
+                this.style.outline = '';
+            });
+        });
+
+        // Avisar antes de sair se houver edições não salvas
+        window.addEventListener('beforeunload', (e) => {
+            const hasEdits = Array.from(document.querySelectorAll('.editable')).some((el, index) => {
+                return localStorage.getItem(`nexus_editable_${index}`) !== null;
+            });
+            
+            if (hasEdits) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>

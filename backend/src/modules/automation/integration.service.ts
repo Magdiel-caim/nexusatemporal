@@ -8,6 +8,7 @@ import {
 import { WahaService } from '../../services/WahaService';
 import { OpenAIService } from '../../services/OpenAIService';
 import { N8nService } from '../../services/N8nService';
+import { NotificaMeService } from '../../services/NotificaMeService';
 
 export class IntegrationService {
   constructor(private db: Pool) {}
@@ -196,6 +197,9 @@ export class IntegrationService {
         case 'openai':
           result = await this.testOpenAI(integration);
           break;
+        case 'notificame':
+          result = await this.testNotificaMe(integration);
+          break;
         case 'webhook':
           result = await this.testWebhook(integration);
           break;
@@ -347,6 +351,51 @@ export class IntegrationService {
       return {
         success: false,
         message: `OpenAI test failed: ${error.message}`,
+        tested_at: new Date()
+      };
+    }
+  }
+
+  /**
+   * Testa integração Notifica.me
+   */
+  private async testNotificaMe(integration: Integration): Promise<TestIntegrationResult> {
+    const creds = integration.credentials;
+
+    if (!creds.notificame_api_key) {
+      return {
+        success: false,
+        message: 'Missing Notifica.me API key',
+        tested_at: new Date()
+      };
+    }
+
+    const notificaMeService = new NotificaMeService({
+      apiKey: creds.notificame_api_key,
+      baseURL: creds.notificame_api_url
+    });
+
+    try {
+      const testResult = await notificaMeService.testConnection();
+
+      if (testResult.success) {
+        return {
+          success: true,
+          message: testResult.message,
+          details: testResult.data,
+          tested_at: new Date()
+        };
+      } else {
+        return {
+          success: false,
+          message: testResult.message,
+          tested_at: new Date()
+        };
+      }
+    } catch (error: any) {
+      return {
+        success: false,
+        message: `Notifica.me test failed: ${error.message}`,
         tested_at: new Date()
       };
     }
