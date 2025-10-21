@@ -121,20 +121,23 @@ export class DashboardService {
           END
       `, [tenantId, start, end]);
 
-      // Receitas vs Despesas
+      // Receitas vs Despesas (da tabela transactions - usar enum correto em português)
       const [financialResult] = await queryRunner.query(`
         SELECT
-          SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END) as revenue,
-          SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END) as expenses
+          SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as revenue,
+          SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as expenses
         FROM transactions
-        WHERE tenant_id = $1
-        AND date >= $2 AND date <= $3
+        WHERE "tenantId" = $1
+        AND "referenceDate" >= $2 AND "referenceDate" <= $3
       `, [tenantId, start, end]);
 
       const revenueFromTransactions = parseFloat(financialResult?.revenue || 0);
       const expenses = parseFloat(financialResult?.expenses || 0);
-      const profitMargin = revenueFromTransactions > 0
-        ? ((revenueFromTransactions - expenses) / revenueFromTransactions) * 100
+
+      // Usar receita de vendas como principal (mais confiável)
+      const mainRevenue = revenue; // Receita de vendas confirmadas
+      const profitMargin = mainRevenue > 0
+        ? ((mainRevenue - expenses) / mainRevenue) * 100
         : 0;
 
       return {
@@ -205,7 +208,7 @@ export class DashboardService {
             count: parseInt(item.count),
           })),
           revenueVsExpenses: {
-            revenue: revenueFromTransactions,
+            revenue: mainRevenue, // Usa receita de vendas (mais confiável)
             expenses: expenses,
           },
         },
