@@ -17,7 +17,7 @@ const users_routes_1 = __importDefault(require("../modules/users/users.routes"))
 const automation_routes_1 = __importDefault(require("../modules/automation/automation.routes"));
 const estoque_routes_1 = __importDefault(require("../modules/estoque/estoque.routes"));
 const vendas_routes_1 = __importDefault(require("../modules/vendas/vendas.routes"));
-// import biRoutes from '../modules/bi/bi.routes'; // TODO: Corrigir dependências NestJS
+const bi_routes_1 = __importDefault(require("../modules/bi/bi.routes")); // BI Module - Business Intelligence
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import marketingRoutes from '@/modules/marketing/marketing.routes';
@@ -45,7 +45,7 @@ router.use('/users', users_routes_1.default); // User management and permissions
 router.use('/automation', automation_routes_1.default); // Automation system (triggers, workflows, integrations)
 router.use('/stock', estoque_routes_1.default); // Stock/Inventory management
 router.use('/vendas', vendas_routes_1.default); // Sales and commissions management
-// router.use('/bi', biRoutes); // Business Intelligence - Dashboards, KPIs, Analytics, Reports (TODO: Corrigir backend)
+router.use('/bi', bi_routes_1.default); // Business Intelligence - Dashboards, KPIs, Analytics, Reports
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);
 // router.use('/marketing', marketingRoutes);
