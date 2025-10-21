@@ -10,6 +10,7 @@ import ChatPage from './pages/ChatPage';
 import AgendaPage from './pages/AgendaPage';
 import ProntuariosPage from './pages/ProntuariosPage';
 import FinanceiroPage from './pages/FinanceiroPage';
+import VendasPage from './pages/Vendas/VendasPage';
 import EstoquePage from './pages/EstoquePage';
 import AutomationPage from './pages/AutomationPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
@@ -103,6 +104,16 @@ function App() {
               <ProtectedRoute>
                 <MainLayout>
                   <FinanceiroPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendas"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <VendasPage />
                 </MainLayout>
               </ProtectedRoute>
             }

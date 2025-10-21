@@ -17,6 +17,7 @@ import {
   LogOut,
   Menu,
   X,
+  TrendingUp,
 } from 'lucide-react';
 import logoFull from '@/assets/images/logo-full.png';
 import logoIcon from '@/assets/images/logo-icon.png';
@@ -47,6 +48,12 @@ const allMenuItems: MenuItem[] = [
     label: 'Financeiro',
     path: '/financeiro',
     roles: ['superadmin', 'owner', 'admin'] // USER e PROFESSIONAL não têm acesso
+  },
+  {
+    icon: TrendingUp,
+    label: 'Vendas',
+    path: '/vendas',
+    roles: ['superadmin', 'owner', 'admin'] // Apenas administradores
   },
   {
     icon: Package,
