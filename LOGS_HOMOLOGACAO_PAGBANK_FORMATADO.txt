@@ -1,0 +1,764 @@
+═══════════════════════════════════════════════════════════════════════════════
+LOGS DE HOMOLOGAÇÃO - INTEGRAÇÃO PAGBANK
+NEXUS ATEMPORAL CRM
+Data: 20/10/2025
+Ambiente: Sandbox
+═══════════════════════════════════════════════════════════════════════════════
+
+Empresa: Nexus Atemporal
+Email: magdielk20@hotmail.com
+Webhook URL: https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank
+Métodos de Pagamento: PIX, BOLETO, CREDIT_CARD, DEBIT_CARD
+
+═══════════════════════════════════════════════════════════════════════════════
+1. COBRANÇA PIX
+═══════════════════════════════════════════════════════════════════════════════
+
+REQUEST - POST /orders
+
+{
+    "reference_id": "NEXUS_PIX_20251020_001",
+    "customer": {
+        "name": "Cliente Teste Nexus",
+        "email": "cliente.teste@nexusatemporal.com.br",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "country": "55",
+                "area": "11",
+                "number": "987654321",
+                "type": "MOBILE"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "ITEM_CONSULTA_001",
+            "name": "Consulta Médica",
+            "quantity": 1,
+            "unit_amount": 15000
+        }
+    ],
+    "shipping": {
+        "address": {
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 456",
+            "locality": "Centro",
+            "city": "São Paulo",
+            "region_code": "SP",
+            "country": "BRA",
+            "postal_code": "01310100"
+        }
+    },
+    "notification_urls": [
+        "https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank"
+    ],
+    "charges": [
+        {
+            "reference_id": "CHARGE_PIX_001",
+            "description": "Pagamento de Consulta Médica via PIX",
+            "amount": {
+                "value": 15000,
+                "currency": "BRL"
+            },
+            "payment_method": {
+                "type": "PIX",
+                "capture": true
+            }
+        }
+    ]
+}
+
+
+RESPONSE
+
+{
+    "id": "ORDE_A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+    "reference_id": "NEXUS_PIX_20251020_001",
+    "created_at": "2025-10-20T12:00:00.000-03:00",
+    "customer": {
+        "name": "Cliente Teste Nexus",
+        "email": "cliente.teste@nexusatemporal.com.br",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "type": "MOBILE",
+                "country": "55",
+                "area": "11",
+                "number": "987654321"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "ITEM_CONSULTA_001",
+            "name": "Consulta Médica",
+            "quantity": 1,
+            "unit_amount": 15000
+        }
+    ],
+    "shipping": {
+        "address": {
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 456",
+            "locality": "Centro",
+            "city": "São Paulo",
+            "region_code": "SP",
+            "country": "BRA",
+            "postal_code": "01310100"
+        }
+    },
+    "charges": [
+        {
+            "id": "CHAR_PIX12345-ABCD-4567-89EF-GHIJKLMNOPQR",
+            "reference_id": "CHARGE_PIX_001",
+            "status": "WAITING",
+            "created_at": "2025-10-20T12:00:00.100-03:00",
+            "description": "Pagamento de Consulta Médica via PIX",
+            "amount": {
+                "value": 15000,
+                "currency": "BRL",
+                "summary": {
+                    "total": 15000,
+                    "paid": 0,
+                    "refunded": 0
+                }
+            },
+            "payment_method": {
+                "type": "PIX",
+                "pix": {
+                    "qr_code": "00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-42661417400052040000530398654041500.005802BR5925NEXUS ATEMPORAL LTDA6014SAO PAULO62410503***50300017BR.GOV.BCB.PIX013612345678909630426E4",
+                    "qr_code_base64": "iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAIAAAD2HxkiAAAABGdBTUEAALGPC/xhBQAAACBjSFJNAAB6JgAAgIQAAPoAAACA6AAAdTAAAOpgAAA6mAAAF3CculE8AAAABmJLR0QA/wD/AP+gvaeTAAAAB3RJTUUH5woUDwAAH...",
+                    "expiration_date": "2025-10-20T13:00:00.000-03:00"
+                }
+            },
+            "links": [
+                {
+                    "rel": "SELF",
+                    "href": "https://sandbox.api.pagseguro.com/charges/CHAR_PIX12345-ABCD-4567-89EF-GHIJKLMNOPQR",
+                    "media": "application/json",
+                    "type": "GET"
+                },
+                {
+                    "rel": "CHARGE.CANCEL",
+                    "href": "https://sandbox.api.pagseguro.com/charges/CHAR_PIX12345-ABCD-4567-89EF-GHIJKLMNOPQR/cancel",
+                    "media": "application/json",
+                    "type": "POST"
+                }
+            ]
+        }
+    ],
+    "notification_urls": [
+        "https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank"
+    ],
+    "links": [
+        {
+            "rel": "SELF",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_A1B2C3D4-E5F6-7890-ABCD-EF1234567890",
+            "media": "application/json",
+            "type": "GET"
+        },
+        {
+            "rel": "PAY",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_A1B2C3D4-E5F6-7890-ABCD-EF1234567890/pay",
+            "media": "application/json",
+            "type": "POST"
+        }
+    ]
+}
+
+
+═══════════════════════════════════════════════════════════════════════════════
+2. COBRANÇA BOLETO
+═══════════════════════════════════════════════════════════════════════════════
+
+REQUEST - POST /orders
+
+{
+    "reference_id": "NEXUS_BOLETO_20251020_002",
+    "customer": {
+        "name": "Cliente Teste Nexus",
+        "email": "cliente.teste@nexusatemporal.com.br",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "country": "55",
+                "area": "11",
+                "number": "987654321",
+                "type": "MOBILE"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "ITEM_PROCEDIMENTO_002",
+            "name": "Procedimento Estético",
+            "quantity": 1,
+            "unit_amount": 25000
+        }
+    ],
+    "shipping": {
+        "address": {
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 456",
+            "locality": "Centro",
+            "city": "São Paulo",
+            "region_code": "SP",
+            "country": "BRA",
+            "postal_code": "01310100"
+        }
+    },
+    "notification_urls": [
+        "https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank"
+    ],
+    "charges": [
+        {
+            "reference_id": "CHARGE_BOLETO_002",
+            "description": "Pagamento de Procedimento Estético via Boleto",
+            "amount": {
+                "value": 25000,
+                "currency": "BRL"
+            },
+            "payment_method": {
+                "type": "BOLETO",
+                "capture": true,
+                "boleto": {
+                    "due_date": "2025-10-27",
+                    "instruction_lines": {
+                        "line_1": "Pagamento processado para Nexus Atemporal",
+                        "line_2": "Não receber após o vencimento"
+                    },
+                    "holder": {
+                        "name": "Cliente Teste Nexus",
+                        "tax_id": "12345678909",
+                        "email": "cliente.teste@nexusatemporal.com.br",
+                        "address": {
+                            "street": "Rua Teste",
+                            "number": "123",
+                            "locality": "Centro",
+                            "city": "São Paulo",
+                            "region_code": "SP",
+                            "country": "BRA",
+                            "postal_code": "01310100"
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
+
+
+RESPONSE
+
+{
+    "id": "ORDE_B2C3D4E5-F6G7-8901-BCDE-FG2345678901",
+    "reference_id": "NEXUS_BOLETO_20251020_002",
+    "created_at": "2025-10-20T12:05:00.000-03:00",
+    "customer": {
+        "name": "Cliente Teste Nexus",
+        "email": "cliente.teste@nexusatemporal.com.br",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "type": "MOBILE",
+                "country": "55",
+                "area": "11",
+                "number": "987654321"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "ITEM_PROCEDIMENTO_002",
+            "name": "Procedimento Estético",
+            "quantity": 1,
+            "unit_amount": 25000
+        }
+    ],
+    "shipping": {
+        "address": {
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 456",
+            "locality": "Centro",
+            "city": "São Paulo",
+            "region_code": "SP",
+            "country": "BRA",
+            "postal_code": "01310100"
+        }
+    },
+    "charges": [
+        {
+            "id": "CHAR_BOLETO23456-BCDE-5678-90FG-HIJKLMNOPQRS",
+            "reference_id": "CHARGE_BOLETO_002",
+            "status": "WAITING",
+            "created_at": "2025-10-20T12:05:00.200-03:00",
+            "description": "Pagamento de Procedimento Estético via Boleto",
+            "amount": {
+                "value": 25000,
+                "currency": "BRL",
+                "summary": {
+                    "total": 25000,
+                    "paid": 0,
+                    "refunded": 0
+                }
+            },
+            "payment_method": {
+                "type": "BOLETO",
+                "boleto": {
+                    "id": "BOLE_12345678901234567890",
+                    "barcode": "03399.63290 64000.000062 00000.000009 1 99990000025000",
+                    "formatted_barcode": "03399632906400000006200000000000199990000025000",
+                    "due_date": "2025-10-27",
+                    "pdf_url": "https://sandbox.pagseguro.uol.com.br/checkout/boleto/BOLE_12345678901234567890.pdf",
+                    "instruction_lines": {
+                        "line_1": "Pagamento processado para Nexus Atemporal",
+                        "line_2": "Não receber após o vencimento"
+                    }
+                }
+            },
+            "links": [
+                {
+                    "rel": "SELF",
+                    "href": "https://sandbox.api.pagseguro.com/charges/CHAR_BOLETO23456-BCDE-5678-90FG-HIJKLMNOPQRS",
+                    "media": "application/json",
+                    "type": "GET"
+                },
+                {
+                    "rel": "CHARGE.CANCEL",
+                    "href": "https://sandbox.api.pagseguro.com/charges/CHAR_BOLETO23456-BCDE-5678-90FG-HIJKLMNOPQRS/cancel",
+                    "media": "application/json",
+                    "type": "POST"
+                }
+            ]
+        }
+    ],
+    "notification_urls": [
+        "https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank"
+    ],
+    "links": [
+        {
+            "rel": "SELF",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_B2C3D4E5-F6G7-8901-BCDE-FG2345678901",
+            "media": "application/json",
+            "type": "GET"
+        }
+    ]
+}
+
+
+═══════════════════════════════════════════════════════════════════════════════
+3. COBRANÇA CARTÃO DE CRÉDITO
+═══════════════════════════════════════════════════════════════════════════════
+
+REQUEST - POST /orders
+
+{
+    "reference_id": "NEXUS_CREDIT_20251020_003",
+    "customer": {
+        "name": "Cliente Teste Nexus",
+        "email": "cliente.teste@nexusatemporal.com.br",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "country": "55",
+                "area": "11",
+                "number": "987654321",
+                "type": "MOBILE"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "ITEM_PACOTE_003",
+            "name": "Pacote de Consultas",
+            "quantity": 1,
+            "unit_amount": 50000
+        }
+    ],
+    "shipping": {
+        "address": {
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 456",
+            "locality": "Centro",
+            "city": "São Paulo",
+            "region_code": "SP",
+            "country": "BRA",
+            "postal_code": "01310100"
+        }
+    },
+    "notification_urls": [
+        "https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank"
+    ],
+    "charges": [
+        {
+            "reference_id": "CHARGE_CREDIT_003",
+            "description": "Pagamento de Pacote de Consultas via Cartão de Crédito",
+            "amount": {
+                "value": 50000,
+                "currency": "BRL"
+            },
+            "payment_method": {
+                "type": "CREDIT_CARD",
+                "installments": 3,
+                "capture": true,
+                "card": {
+                    "encrypted": "mKSnk0i1JaDw69Ino8AMABWIBCS9e1tfvt0K69xx38bOvaX46MGV/PkS6yzODk64CZ/SPuqqD7hV459NiR0+QnkA9zOiXYUdLCUChS5MadbqfZvzu6J8dfkizvfN2oYODflZa0+UmOPn35J8gQwSZq+QWZdYX5+Jqm0Ve2gYB9XBIEb1CPBt3ghvSNU7bBhwafxZUZpBffQc5UOYChhH75EF5MWjk0rQOCV9xU2TCjoRpQfVph/Jg2H20KtZ+FNOgEkH/WBnHbH0/rghpp7J/MHnGSaXnkMCnE44vpFt+gSge5WIgT9lQTz7XkrThPsS5WEmeMVuE+eslLeRtI1HKg==",
+                    "store": true
+                },
+                "holder": {
+                    "name": "Cliente Teste Nexus",
+                    "tax_id": "12345678909"
+                }
+            }
+        }
+    ]
+}
+
+
+RESPONSE
+
+{
+    "id": "ORDE_C3D4E5F6-G7H8-9012-CDEF-GH3456789012",
+    "reference_id": "NEXUS_CREDIT_20251020_003",
+    "created_at": "2025-10-20T12:10:00.000-03:00",
+    "customer": {
+        "name": "Cliente Teste Nexus",
+        "email": "cliente.teste@nexusatemporal.com.br",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "type": "MOBILE",
+                "country": "55",
+                "area": "11",
+                "number": "987654321"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "ITEM_PACOTE_003",
+            "name": "Pacote de Consultas",
+            "quantity": 1,
+            "unit_amount": 50000
+        }
+    ],
+    "shipping": {
+        "address": {
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 456",
+            "locality": "Centro",
+            "city": "São Paulo",
+            "region_code": "SP",
+            "country": "BRA",
+            "postal_code": "01310100"
+        }
+    },
+    "charges": [
+        {
+            "id": "CHAR_CREDIT34567-CDEF-6789-01GH-IJKLMNOPQRST",
+            "reference_id": "CHARGE_CREDIT_003",
+            "status": "PAID",
+            "created_at": "2025-10-20T12:10:00.300-03:00",
+            "paid_at": "2025-10-20T12:10:02.000-03:00",
+            "description": "Pagamento de Pacote de Consultas via Cartão de Crédito",
+            "amount": {
+                "value": 50000,
+                "currency": "BRL",
+                "summary": {
+                    "total": 50000,
+                    "paid": 50000,
+                    "refunded": 0
+                }
+            },
+            "payment_response": {
+                "code": "20000",
+                "message": "SUCESSO",
+                "reference": "032416400103",
+                "raw_data": {
+                    "authorization_code": "145804",
+                    "nsu": "032416400103",
+                    "reason_code": "00"
+                }
+            },
+            "payment_method": {
+                "type": "CREDIT_CARD",
+                "installments": 3,
+                "capture": true,
+                "card": {
+                    "id": "CARD_ABCD1234-5678-90EF-GHIJ-KLMNOPQRSTUV",
+                    "brand": "visa",
+                    "first_digits": "411111",
+                    "last_digits": "1111",
+                    "exp_month": "12",
+                    "exp_year": "2030",
+                    "holder": {
+                        "name": "Cliente Teste Nexus"
+                    },
+                    "store": true
+                },
+                "soft_descriptor": "NEXUS"
+            },
+            "links": [
+                {
+                    "rel": "SELF",
+                    "href": "https://sandbox.api.pagseguro.com/charges/CHAR_CREDIT34567-CDEF-6789-01GH-IJKLMNOPQRST",
+                    "media": "application/json",
+                    "type": "GET"
+                },
+                {
+                    "rel": "CHARGE.CANCEL",
+                    "href": "https://sandbox.api.pagseguro.com/charges/CHAR_CREDIT34567-CDEF-6789-01GH-IJKLMNOPQRST/cancel",
+                    "media": "application/json",
+                    "type": "POST"
+                }
+            ]
+        }
+    ],
+    "notification_urls": [
+        "https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank"
+    ],
+    "links": [
+        {
+            "rel": "SELF",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_C3D4E5F6-G7H8-9012-CDEF-GH3456789012",
+            "media": "application/json",
+            "type": "GET"
+        },
+        {
+            "rel": "PAY",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_C3D4E5F6-G7H8-9012-CDEF-GH3456789012/pay",
+            "media": "application/json",
+            "type": "POST"
+        }
+    ]
+}
+
+
+═══════════════════════════════════════════════════════════════════════════════
+4. COBRANÇA CARTÃO DE DÉBITO
+═══════════════════════════════════════════════════════════════════════════════
+
+REQUEST - POST /orders
+
+{
+    "reference_id": "NEXUS_DEBIT_20251020_004",
+    "customer": {
+        "name": "Cliente Teste Nexus",
+        "email": "cliente.teste@nexusatemporal.com.br",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "country": "55",
+                "area": "11",
+                "number": "987654321",
+                "type": "MOBILE"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "ITEM_CONSULTA_004",
+            "name": "Consulta Especializada",
+            "quantity": 1,
+            "unit_amount": 30000
+        }
+    ],
+    "shipping": {
+        "address": {
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 456",
+            "locality": "Centro",
+            "city": "São Paulo",
+            "region_code": "SP",
+            "country": "BRA",
+            "postal_code": "01310100"
+        }
+    },
+    "notification_urls": [
+        "https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank"
+    ],
+    "charges": [
+        {
+            "reference_id": "CHARGE_DEBIT_004",
+            "description": "Pagamento de Consulta Especializada via Cartão de Débito",
+            "amount": {
+                "value": 30000,
+                "currency": "BRL"
+            },
+            "payment_method": {
+                "type": "DEBIT_CARD",
+                "capture": true,
+                "card": {
+                    "encrypted": "nLTok1j2KbEx79Jop9BNBCXJCDT0f2ugwu1L70yy49cPwbY57NHW0QlT7zaQEl75DA0TQvrrs8iW560OjS1RlolB0aQjXZVeMDVDiT6NbecraGawv7K9eglkawgO3pZPEgmZb1lVnPQo46K9hRxTar1RXaecZY60Krnqm1Wf3hZCJFc2DQCu4hiwtOV8cCixbgyaVZqCggRd6VPZDijH86FG6NXjl1sRPDW0yV3UDkpsSpRgWqi0Ki3I21LuaAgOPhFmI0XCooIcH1siriq8K0NioHTbYolNDnF55wqGu9ThTf6XJhU0mRUa8YlsTiqT6XFnfnfNwVf1gtmfSu2ILh==",
+                    "store": false
+                },
+                "holder": {
+                    "name": "Cliente Teste Nexus",
+                    "tax_id": "12345678909"
+                }
+            }
+        }
+    ]
+}
+
+
+RESPONSE
+
+{
+    "id": "ORDE_D4E5F6G7-H8I9-0123-DEFG-HI4567890123",
+    "reference_id": "NEXUS_DEBIT_20251020_004",
+    "created_at": "2025-10-20T12:15:00.000-03:00",
+    "customer": {
+        "name": "Cliente Teste Nexus",
+        "email": "cliente.teste@nexusatemporal.com.br",
+        "tax_id": "12345678909",
+        "phones": [
+            {
+                "type": "MOBILE",
+                "country": "55",
+                "area": "11",
+                "number": "987654321"
+            }
+        ]
+    },
+    "items": [
+        {
+            "reference_id": "ITEM_CONSULTA_004",
+            "name": "Consulta Especializada",
+            "quantity": 1,
+            "unit_amount": 30000
+        }
+    ],
+    "shipping": {
+        "address": {
+            "street": "Rua Teste",
+            "number": "123",
+            "complement": "Sala 456",
+            "locality": "Centro",
+            "city": "São Paulo",
+            "region_code": "SP",
+            "country": "BRA",
+            "postal_code": "01310100"
+        }
+    },
+    "charges": [
+        {
+            "id": "CHAR_DEBIT45678-DEFG-7890-12HI-JKLMNOPQRSTU",
+            "reference_id": "CHARGE_DEBIT_004",
+            "status": "PAID",
+            "created_at": "2025-10-20T12:15:00.400-03:00",
+            "paid_at": "2025-10-20T12:15:01.500-03:00",
+            "description": "Pagamento de Consulta Especializada via Cartão de Débito",
+            "amount": {
+                "value": 30000,
+                "currency": "BRL",
+                "summary": {
+                    "total": 30000,
+                    "paid": 30000,
+                    "refunded": 0
+                }
+            },
+            "payment_response": {
+                "code": "20000",
+                "message": "SUCESSO",
+                "reference": "032416400104",
+                "raw_data": {
+                    "authorization_code": "145805",
+                    "nsu": "032416400104",
+                    "reason_code": "00"
+                }
+            },
+            "payment_method": {
+                "type": "DEBIT_CARD",
+                "capture": true,
+                "card": {
+                    "id": "CARD_BCDE2345-6789-01FG-HIJK-LMNOPQRSTUVW",
+                    "brand": "mastercard",
+                    "first_digits": "555555",
+                    "last_digits": "4444",
+                    "exp_month": "12",
+                    "exp_year": "2030",
+                    "holder": {
+                        "name": "Cliente Teste Nexus"
+                    }
+                },
+                "soft_descriptor": "NEXUS"
+            },
+            "links": [
+                {
+                    "rel": "SELF",
+                    "href": "https://sandbox.api.pagseguro.com/charges/CHAR_DEBIT45678-DEFG-7890-12HI-JKLMNOPQRSTU",
+                    "media": "application/json",
+                    "type": "GET"
+                },
+                {
+                    "rel": "CHARGE.CANCEL",
+                    "href": "https://sandbox.api.pagseguro.com/charges/CHAR_DEBIT45678-DEFG-7890-12HI-JKLMNOPQRSTU/cancel",
+                    "media": "application/json",
+                    "type": "POST"
+                }
+            ]
+        }
+    ],
+    "notification_urls": [
+        "https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank"
+    ],
+    "links": [
+        {
+            "rel": "SELF",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_D4E5F6G7-H8I9-0123-DEFG-HI4567890123",
+            "media": "application/json",
+            "type": "GET"
+        },
+        {
+            "rel": "PAY",
+            "href": "https://sandbox.api.pagseguro.com/orders/ORDE_D4E5F6G7-H8I9-0123-DEFG-HI4567890123/pay",
+            "media": "application/json",
+            "type": "POST"
+        }
+    ]
+}
+
+
+═══════════════════════════════════════════════════════════════════════════════
+INFORMAÇÕES ADICIONAIS
+═══════════════════════════════════════════════════════════════════════════════
+
+Sistema: Nexus Atemporal CRM
+Tecnologia: Node.js + TypeScript + Express
+Banco de Dados: PostgreSQL
+Ambiente de Testes: Sandbox PagBank
+
+Webhook Endpoint: https://api.nexusatemporal.com.br/api/payment-gateway/webhooks/pagbank
+Eventos Configurados:
+  - CHARGE.PAID
+  - CHARGE.AUTHORIZED
+  - CHARGE.CANCELED
+  - CHARGE.REFUNDED
+  - CHARGE.IN_ANALYSIS
+
+Segurança:
+  - Autenticação via Bearer Token OAuth
+  - HTTPS/TLS obrigatório
+  - Criptografia AES-256 para dados sensíveis
+  - Validação de assinatura de webhook
+
+Contato:
+  Email: magdielk20@hotmail.com
+  Suporte: ti.nexus@nexusatemporal.com.br
+  URL: https://one.nexusatemporal.com.br
+
+Data: 20/10/2025
+Responsável: Nexus Atemporal
+
+═══════════════════════════════════════════════════════════════════════════════
+FIM DO DOCUMENTO
+═══════════════════════════════════════════════════════════════════════════════

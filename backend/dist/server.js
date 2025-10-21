@@ -29,6 +29,8 @@ const io = new socket_io_1.Server(httpServer, {
     }
 });
 exports.io = io;
+// Trust proxy - necessário quando atrás do Traefik
+app.set('trust proxy', true);
 // Middleware
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({

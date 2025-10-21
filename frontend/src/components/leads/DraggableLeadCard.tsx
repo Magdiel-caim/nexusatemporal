@@ -1,13 +1,15 @@
 import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { Lead } from '@/services/leadsService';
-import { User, Phone, MapPin, MessageCircle, Mail } from 'lucide-react';
+import { User, Phone, MapPin, MessageCircle, Mail, Trash2 } from 'lucide-react';
 import { useRef, useEffect } from 'react';
 
 interface DraggableLeadCardProps {
   lead: Lead;
   formatCurrency: (value?: number) => string;
   onClick: () => void;
+  onDelete?: (lead: Lead) => void;
+  userRole?: string;
 }
 
 const getChannelIcon = (channel?: string) => {
@@ -68,10 +70,13 @@ const getUserInitials = (name?: string) => {
   return name.substring(0, 2).toUpperCase();
 };
 
-export default function DraggableLeadCard({ lead, formatCurrency, onClick }: DraggableLeadCardProps) {
+export default function DraggableLeadCard({ lead, formatCurrency, onClick, onDelete, userRole }: DraggableLeadCardProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: lead.id,
   });
+
+  // Verificar se usuário tem permissão para excluir
+  const canDelete = userRole === 'admin' || userRole === 'gestor';
 
   const style = {
     transform: CSS.Translate.toString(transform),
@@ -112,6 +117,14 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
     }
   };
 
+  // Handler para excluir lead
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevenir o onClick do card
+    if (onDelete && canDelete) {
+      onDelete(lead);
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -119,21 +132,32 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
       {...listeners}
       {...attributes}
       onClick={handleClick}
-      className="bg-white p-3 rounded-lg shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing border border-gray-200"
+      className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing border border-gray-200 dark:border-gray-700"
     >
-      {/* Header: Nome + Responsável */}
+      {/* Header: Nome + Botão Excluir + Responsável */}
       <div className="flex items-start justify-between mb-2">
-        <h4 className="font-semibold text-gray-900 text-sm flex-1 pr-2 line-clamp-2">
+        <h4 className="font-semibold text-gray-900 dark:text-white text-sm flex-1 pr-2 line-clamp-2">
           {lead.name}
         </h4>
-        {lead.assignedTo && (
-          <div
-            className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold"
-            title={`Responsável: ${lead.assignedTo.name}`}
-          >
-            {getUserInitials(lead.assignedTo.name)}
-          </div>
-        )}
+        <div className="flex items-center gap-1.5">
+          {canDelete && onDelete && (
+            <button
+              onClick={handleDelete}
+              className="flex-shrink-0 w-6 h-6 rounded hover:bg-red-100 flex items-center justify-center text-red-600 hover:text-red-700 transition-colors"
+              title="Excluir lead"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {lead.assignedTo && (
+            <div
+              className="flex-shrink-0 w-7 h-7 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-semibold"
+              title={`Responsável: ${lead.assignedTo.name}`}
+            >
+              {getUserInitials(lead.assignedTo.name)}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Procedimento */}
@@ -153,7 +177,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
 
       {/* Valor Estimado */}
       {lead.estimatedValue && (
-        <p className="text-sm font-bold text-primary-600 mb-2">
+        <p className="text-sm font-bold text-primary-600 dark:text-primary-400 mb-2">
           {formatCurrency(lead.estimatedValue)}
         </p>
       )}
@@ -162,7 +186,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
       <div className="space-y-1.5 mb-2">
         {/* Canal */}
         {lead.channel && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             {getChannelIcon(lead.channel)}
             <span>{getChannelLabel(lead.channel)}</span>
           </div>
@@ -170,7 +194,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
 
         {/* Situação do Cliente */}
         {lead.clientStatus && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             <User className="w-3.5 h-3.5" />
             <span>{getClientStatusLabel(lead.clientStatus)}</span>
           </div>
@@ -178,7 +202,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
 
         {/* Local de Atendimento */}
         {lead.attendanceLocation && (
-          <div className="flex items-center gap-1.5 text-xs text-gray-600">
+          <div className="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400">
             <MapPin className="w-3.5 h-3.5" />
             <span>{getLocationLabel(lead.attendanceLocation)}</span>
           </div>
@@ -186,7 +210,7 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
       </div>
 
       {/* Contatos (Email e Telefone - apenas ícones) */}
-      <div className="flex items-center gap-2 text-xs text-gray-400">
+      <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500">
         {lead.email && (
           <span title={lead.email}><Mail className="w-3.5 h-3.5" /></span>
         )}
@@ -204,13 +228,13 @@ export default function DraggableLeadCard({ lead, formatCurrency, onClick }: Dra
           {lead.tags.slice(0, 2).map((tag, idx) => (
             <span
               key={idx}
-              className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded"
+              className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded"
             >
               {tag}
             </span>
           ))}
           {lead.tags.length > 2 && (
-            <span className="text-xs px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded">
+            <span className="text-xs px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
               +{lead.tags.length - 2}
             </span>
           )}

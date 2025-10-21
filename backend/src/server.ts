@@ -25,6 +25,9 @@ const io = new SocketIOServer(httpServer, {
   }
 });
 
+// Trust proxy - necessário quando atrás do Traefik
+app.set('trust proxy', true);
+
 // Middleware
 app.use(helmet());
 app.use(cors({

@@ -36,13 +36,14 @@ async function uploadFile(key, body, contentType, metadata) {
             Body: body,
             ContentType: contentType,
             Metadata: metadata,
+            ACL: 'public-read', // Permitir acesso público para leitura
         });
         await s3Client.send(command);
         logger_1.logger.info(`File uploaded successfully: ${key}`);
         return `${process.env.S3_ENDPOINT}/${BUCKET_NAME}/${key}`;
     }
     catch (error) {
-        logger_1.logger.error('Error uploading file to S3:', error);
+        logger_1.logger.error('Error uploading file to S3:', error.message || error);
         throw error;
     }
 }
@@ -59,7 +60,7 @@ async function downloadFile(key) {
         return response.Body;
     }
     catch (error) {
-        logger_1.logger.error('Error downloading file from S3:', error);
+        logger_1.logger.error('Error downloading file from S3:', error.message || error);
         throw error;
     }
 }
@@ -76,7 +77,7 @@ async function deleteFile(key) {
         logger_1.logger.info(`File deleted successfully: ${key}`);
     }
     catch (error) {
-        logger_1.logger.error('Error deleting file from S3:', error);
+        logger_1.logger.error('Error deleting file from S3:', error.message || error);
         throw error;
     }
 }
@@ -93,7 +94,7 @@ async function getPresignedUrl(key, expiresIn = 3600) {
         return url;
     }
     catch (error) {
-        logger_1.logger.error('Error generating presigned URL:', error);
+        logger_1.logger.error('Error generating presigned URL:', error.message || error);
         throw error;
     }
 }
@@ -110,7 +111,7 @@ async function listFiles(prefix = '') {
         return response.Contents || [];
     }
     catch (error) {
-        logger_1.logger.error('Error listing files from S3:', error);
+        logger_1.logger.error('Error listing files from S3:', error.message || error);
         throw error;
     }
 }

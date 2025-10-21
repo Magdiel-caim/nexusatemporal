@@ -1,0 +1,59 @@
+version: '3.8'
+
+networks:
+  nexusatnet:
+    external: true
+    name: nexusatnet
+
+volumes:
+  n8n_data:
+
+services:
+  # n8n - Workflow Automation
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=NexusN8n2025!Secure
+      - WEBHOOK_URL=https://automahook.nexusatemporal.com.br
+      - N8N_HOST=automacao.nexusatemporal.com.br
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=https
+      - NODE_ENV=production
+      - N8N_ENCRYPTION_KEY=NexusEncryptionKey2025SecureRandom32Chars
+      - EXECUTIONS_PROCESS=main
+      - EXECUTIONS_MODE=regular
+    volumes:
+      - n8n_data:/home/node/.n8n
+    networks:
+      - nexusatnet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        # Editor/UI - automacao.nexusatemporal.com.br
+        - "traefik.enable=true"
+        - "traefik.docker.network=nexusatnet"
+        - "traefik.http.routers.n8n-ui.rule=Host(`automacao.nexusatemporal.com.br`)"
+        - "traefik.http.routers.n8n-ui.entrypoints=websecure"
+        - "traefik.http.routers.n8n-ui.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.n8n-ui.service=n8n-ui"
+        - "traefik.http.services.n8n-ui.loadbalancer.server.port=5678"
+
+        # Webhooks - automahook.nexusatemporal.com.br
+        - "traefik.http.routers.n8n-webhook.rule=Host(`automahook.nexusatemporal.com.br`)"
+        - "traefik.http.routers.n8n-webhook.entrypoints=websecure"
+        - "traefik.http.routers.n8n-webhook.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.n8n-webhook.service=n8n-webhook"
+        - "traefik.http.services.n8n-webhook.loadbalancer.server.port=5678"
+
+# Observações:
+# - Waha já existe na stack 'waha' (serviço: waha_waha)
+#   URL existente: https://apiwts.nexusatemporal.com.br
+#   Se necessário novo domínio, usar: whats.nexusatemporal.com.br
+# - Typebot será adicionado posteriormente conforme orientações específicas

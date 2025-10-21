@@ -1,0 +1,27 @@
+MÓDULOS EM DESENVOLVIMENTO - SESSÃO B
+=====================================
+
+MÓDULO 1: RELATÓRIOS E GRÁFICOS
+- Aba "Relatórios" no EstoquePage
+- Gráfico: Movimentações mensais (entrada vs saída)
+- Gráfico: Top 10 produtos mais usados
+- Gráfico: Valor do estoque por categoria
+- Backend: Endpoints de agregação de dados
+
+MÓDULO 2: EXPORTAÇÃO DE DADOS
+- Botão exportar Excel em ProductList
+- Botão exportar Excel em MovementList
+- Botão exportar PDF em AlertList
+- Biblioteca: xlsx para Excel
+- Biblioteca: jsPDF para PDF
+
+MÓDULO 3: INTEGRAÇÃO COM PROCEDIMENTOS
+- Backend: Endpoint POST /api/stock/procedures/:id/consume
+- Backend: Validação de estoque disponível
+- Backend: Baixa automática ao finalizar procedimento
+- Frontend: Seleção de produtos no procedimento
+- Frontend: Validação visual de estoque insuficiente
+- Usa tabela: procedure_products (já criada)
+
+STATUS: EM PROGRESSO
+VERSÃO ALVO: v91-complete-features

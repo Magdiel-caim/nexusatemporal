@@ -1,8 +1,158 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.N8NWebhookController = void 0;
 const data_source_1 = require("../../database/data-source");
 class N8NWebhookController {
+    /**
+     * Recebe mensagens do N8N com mídia em base64 e faz upload no S3
+     * POST /api/chat/webhook/n8n/message-media
+     */
+    async receiveMessageWithMedia(req, res) {
+        try {
+            const { sessionName, phoneNumber, contactName, messageType, content, mediaBase64, direction, wahaMessageId, timestamp } = req.body;
+            console.log('📨 Mensagem com mídia recebida do N8N:', {
+                session: sessionName,
+                from: phoneNumber,
+                type: messageType,
+                direction: direction,
+                hasMediaBase64: !!mediaBase64,
+            });
+            if (!mediaBase64) {
+                return res.status(400).json({
+                    success: false,
+                    error: 'mediaBase64 is required for media messages',
+                });
+            }
+            // Importar funções S3
+            const { uploadFile } = await Promise.resolve().then(() => __importStar(require('../../integrations/idrive/s3-client')));
+            // Converter base64 para Buffer
+            const base64Data = mediaBase64.replace(/^data:.+;base64,/, '');
+            const buffer = Buffer.from(base64Data, 'base64');
+            // Determinar extensão e contentType
+            let extension = 'bin';
+            let contentType = 'application/octet-stream';
+            if (messageType === 'image') {
+                extension = 'jpg';
+                contentType = 'image/jpeg';
+            }
+            else if (messageType === 'video') {
+                extension = 'mp4';
+                contentType = 'video/mp4';
+            }
+            else if (messageType === 'audio' || messageType === 'ptt') {
+                extension = 'ogg';
+                contentType = 'audio/ogg';
+            }
+            else if (messageType === 'sticker') {
+                extension = 'webp';
+                contentType = 'image/webp';
+            }
+            // Upload no S3
+            const timestamp_str = new Date().toISOString().replace(/[:.]/g, '-');
+            const s3Key = `whatsapp/${sessionName}/${timestamp_str}-${wahaMessageId || Date.now()}.${extension}`;
+            console.log('☁️ Fazendo upload no S3:', s3Key);
+            const s3Url = await uploadFile(s3Key, buffer, contentType, {
+                source: 'whatsapp',
+                session: sessionName,
+                type: messageType,
+                messageId: wahaMessageId || '',
+                phoneNumber: phoneNumber,
+            });
+            console.log('✅ Upload S3 concluído:', s3Url);
+            // Salvar mensagem no banco com URL do S3
+            const result = await data_source_1.AppDataSource.query(`INSERT INTO chat_messages (
+          session_name,
+          phone_number,
+          contact_name,
+          direction,
+          message_type,
+          content,
+          media_url,
+          waha_message_id,
+          status,
+          created_at
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        RETURNING *`, [
+                sessionName,
+                phoneNumber,
+                contactName || phoneNumber,
+                direction,
+                messageType,
+                content || '',
+                s3Url,
+                wahaMessageId || null,
+                'received',
+                timestamp ? new Date(timestamp) : new Date(),
+            ]);
+            const savedMessage = result[0];
+            // Emitir via WebSocket
+            const io = req.app.get('io');
+            if (io) {
+                io.emit('chat:new-message', {
+                    id: savedMessage.id,
+                    sessionName: savedMessage.session_name,
+                    phoneNumber: savedMessage.phone_number,
+                    contactName: savedMessage.contact_name,
+                    direction: savedMessage.direction,
+                    messageType: savedMessage.message_type,
+                    content: savedMessage.content,
+                    mediaUrl: savedMessage.media_url,
+                    createdAt: savedMessage.created_at,
+                });
+                console.log('✅ Mensagem emitida via WebSocket');
+            }
+            res.json({
+                success: true,
+                message: 'Media uploaded to S3 and message saved',
+                data: {
+                    id: savedMessage.id,
+                    sessionName: savedMessage.session_name,
+                    phoneNumber: savedMessage.phone_number,
+                    mediaUrl: s3Url,
+                },
+            });
+        }
+        catch (error) {
+            console.error('❌ Erro ao processar mídia do N8N:', error.message || error);
+            res.status(500).json({
+                success: false,
+                error: error.message || 'Unknown error',
+            });
+        }
+    }
     /**
      * Recebe mensagens do N8N (vindas da WAHA)
      * POST /api/chat/webhook/n8n/message
@@ -15,7 +165,21 @@ class N8NWebhookController {
                 from: payload.phoneNumber,
                 type: payload.messageType,
                 direction: payload.direction,
+                hasMedia: !!payload.mediaUrl,
             });
+            // ESTRATÉGIA ANTI-DUPLICAÇÃO:
+            // N8N processa APENAS mensagens COM MÍDIA
+            // Mensagens de texto são processadas pelo webhook direto do WAHA
+            const hasMedia = payload.mediaUrl && payload.mediaUrl.trim() !== '';
+            if (!hasMedia) {
+                console.log('⏭️ Mensagem de texto ignorada pelo N8N (já processada pelo WAHA direto)');
+                return res.json({
+                    success: true,
+                    message: 'Text message skipped (already processed by direct WAHA webhook)',
+                    skipped: true,
+                });
+            }
+            console.log('📷 Mensagem com mídia - processando e salvando com URL S3');
             // Salvar mensagem no banco
             const result = await data_source_1.AppDataSource.query(`INSERT INTO chat_messages (
           session_name,
@@ -372,28 +536,57 @@ class N8NWebhookController {
             if (quotedMessageId) {
                 requestBody.reply_to = quotedMessageId;
             }
+            // Detectar se fileUrl é base64 ou URL
+            const isBase64 = fileUrl.startsWith('data:');
+            let filePayload;
+            if (isBase64) {
+                // Extrair mimetype e data do base64
+                const match = fileUrl.match(/^data:([^;]+);base64,(.+)$/);
+                if (!match) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Invalid base64 format',
+                    });
+                }
+                const mimetype = match[1];
+                const data = match[2];
+                // Determinar filename baseado no tipo
+                const extension = mimetype.split('/')[1] || 'bin';
+                const filename = `media_${Date.now()}.${extension}`;
+                filePayload = {
+                    mimetype,
+                    filename,
+                    data,
+                };
+            }
+            else {
+                // URL pública
+                filePayload = { url: fileUrl };
+            }
             // Determinar endpoint WAHA baseado no tipo de mídia
             switch (messageType) {
                 case 'image':
                     wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendImage';
-                    requestBody.file = { url: fileUrl };
+                    requestBody.file = filePayload;
                     if (caption)
                         requestBody.caption = caption;
                     break;
                 case 'video':
                     wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendVideo';
-                    requestBody.file = { url: fileUrl };
+                    requestBody.file = filePayload;
                     if (caption)
                         requestBody.caption = caption;
                     break;
                 case 'audio':
                 case 'ptt':
+                    // Áudio/PTT - usar sendVoice com conversão automática do WAHA Plus
                     wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendVoice';
-                    requestBody.file = { url: fileUrl };
+                    requestBody.file = filePayload;
+                    requestBody.convert = true; // WAHA Plus converte automaticamente para OPUS/OGG
                     break;
                 case 'document':
                     wahaUrl = 'https://apiwts.nexusatemporal.com.br/api/sendFile';
-                    requestBody.file = { url: fileUrl };
+                    requestBody.file = filePayload;
                     if (caption)
                         requestBody.caption = caption;
                     break;
@@ -573,7 +766,13 @@ class N8NWebhookController {
             // Conteúdo da mensagem
             const content = payload.body || '';
             // URL de mídia (se houver)
-            const mediaUrl = payload._data?.mediaUrl || null;
+            // IMPORTANTE: Ignorar base64 - apenas N8N processa mídias e faz upload no S3
+            let mediaUrl = payload._data?.mediaUrl || null;
+            // Se mediaUrl for base64, definir como null (N8N processará e fará upload no S3)
+            if (mediaUrl && mediaUrl.startsWith('data:')) {
+                console.log('🔄 Base64 detectado - será processado pelo N8N workflow');
+                mediaUrl = null;
+            }
             // Direção (incoming ou outgoing)
             const direction = payload.fromMe ? 'outgoing' : 'incoming';
             // Timestamp (converter de segundos para milissegundos)

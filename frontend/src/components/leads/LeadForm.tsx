@@ -31,7 +31,6 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
     clientStatus: initialData?.clientStatus || 'conversa_iniciada',
     attendanceLocation: initialData?.attendanceLocation || 'moema',
     estimatedValue: initialData?.estimatedValue || '',
-    expectedCloseDate: initialData?.expectedCloseDate?.split('T')[0] || '',
     notes: initialData?.notes || '',
     tags: initialData?.tags?.join(', ') || '',
   });
@@ -87,8 +86,6 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
         neighborhood: formData.neighborhood || undefined,
         city: formData.city || undefined,
         state: formData.state || undefined,
-        // Convert empty strings to null for dates
-        expectedCloseDate: formData.expectedCloseDate || undefined,
         // Parse numeric values
         estimatedValue: formData.estimatedValue ? parseFloat(formData.estimatedValue as any) : undefined,
         // Parse tags
@@ -114,94 +111,94 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Informações Básicas */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-4">Informações Básicas</h4>
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">Informações Básicas</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Nome do Lead <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Nome completo"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Email</label>
             <input
               type="email"
               value={formData.email}
               onChange={(e) => handleChange('email', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="email@exemplo.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Telefone</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Telefone</label>
             <input
               type="tel"
               value={formData.phone}
               onChange={(e) => handleChange('phone', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="(00) 00000-0000"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Telefone 2</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Telefone 2</label>
             <input
               type="tel"
               value={formData.phone2}
               onChange={(e) => handleChange('phone2', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="(00) 00000-0000"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">WhatsApp</label>
             <input
               type="tel"
               value={formData.whatsapp}
               onChange={(e) => handleChange('whatsapp', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="(00) 00000-0000"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Bairro</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Bairro</label>
             <input
               type="text"
               value={formData.neighborhood}
               onChange={(e) => handleChange('neighborhood', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Bairro"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Cidade</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Cidade</label>
             <input
               type="text"
               value={formData.city}
               onChange={(e) => handleChange('city', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Cidade"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Estado</label>
             <select
               value={formData.state}
               onChange={(e) => handleChange('state', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Selecione</option>
               <option value="AC">Acre</option>
@@ -235,13 +232,13 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
               Estágio <span className="text-red-500">*</span>
             </label>
             <select
               value={formData.stageId}
               onChange={(e) => handleChange('stageId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               required
             >
               {stages.map(stage => (
@@ -253,11 +250,11 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Procedimento</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Procedimento</label>
             <select
               value={formData.procedureId}
               onChange={(e) => handleChange('procedureId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Selecione um procedimento</option>
               {procedures.map(procedure => {
@@ -272,13 +269,13 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Responsável <span className="text-xs text-gray-500">(Atendimento)</span>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+              Responsável <span className="text-xs text-gray-500 dark:text-gray-300">(Atendimento)</span>
             </label>
             <select
               value={formData.assignedToId}
               onChange={(e) => handleChange('assignedToId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="">Selecione um responsável</option>
               {users.map(user => (
@@ -293,89 +290,84 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
 
       {/* Detalhes da Venda */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-4">Detalhes da Venda</h4>
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">Detalhes da Venda</h4>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Origem</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Origem</label>
             <select
               value={formData.source}
               onChange={(e) => handleChange('source', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="website">Website</option>
-              <option value="referral">Indicação</option>
-              <option value="social_media">Redes Sociais</option>
+              <option value="facebook">Facebook</option>
+              <option value="instagram">Instagram</option>
+              <option value="whatsapp">WhatsApp</option>
               <option value="email">Email</option>
               <option value="phone">Telefone</option>
+              <option value="referral">Indicação</option>
+              <option value="walk_in">Visita Presencial</option>
               <option value="other">Outro</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Canal</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Canal</label>
             <select
               value={formData.channel}
               onChange={(e) => handleChange('channel', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="whatsapp">WhatsApp</option>
+              <option value="phone">Telefone</option>
+              <option value="email">Email</option>
               <option value="instagram">Instagram</option>
               <option value="facebook">Facebook</option>
-              <option value="site">Site</option>
-              <option value="campanha">Campanha</option>
-              <option value="bairro">Bairro</option>
-              <option value="indicacao">Indicação</option>
+              <option value="website">Website</option>
+              <option value="in_person">Presencial</option>
+              <option value="other">Outro</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Situação do Cliente</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Situação do Cliente</label>
             <select
               value={formData.clientStatus}
               onChange={(e) => handleChange('clientStatus', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="conversa_iniciada">Conversa Iniciada</option>
-              <option value="cliente_potencial">Cliente Potencial</option>
-              <option value="sem_potencial">Sem Potencial</option>
-              <option value="contatar_futuro">Contatar no Futuro</option>
-              <option value="sem_retorno">Sem Retorno</option>
-              <option value="pre_qualificado">Pré Qualificado</option>
-              <option value="qualificado">Qualificado</option>
+              <option value="agendamento_pendente">Agendamento Pendente</option>
+              <option value="agendado">Agendado</option>
+              <option value="em_tratamento">Em Tratamento</option>
+              <option value="finalizado">Finalizado</option>
+              <option value="cancelado">Cancelado</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Local de Atendimento</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Local de Atendimento</label>
             <select
               value={formData.attendanceLocation}
               onChange={(e) => handleChange('attendanceLocation', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="moema">Moema</option>
-              <option value="av_paulista">Av. Paulista</option>
+              <option value="perdizes">Perdizes</option>
+              <option value="online">Online</option>
+              <option value="a_domicilio">A Domicílio</option>
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Valor Estimado</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Valor Estimado</label>
             <input
               type="number"
               step="0.01"
               value={formData.estimatedValue}
               onChange={(e) => handleChange('estimatedValue', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="0.00"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Data de Fechamento Esperada</label>
-            <input
-              type="date"
-              value={formData.expectedCloseDate}
-              onChange={(e) => handleChange('expectedCloseDate', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
         </div>
@@ -383,27 +375,27 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
 
       {/* Informações Adicionais */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-700 mb-4">Informações Adicionais</h4>
+        <h4 className="text-sm font-semibold text-gray-700 dark:text-white mb-4">Informações Adicionais</h4>
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Tags</label>
             <input
               type="text"
               value={formData.tags}
               onChange={(e) => handleChange('tags', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Separadas por vírgula: tag1, tag2, tag3"
             />
-            <p className="text-xs text-gray-500 mt-1">Separe as tags com vírgulas</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Separe as tags com vírgulas</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Observações</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Observações</label>
             <textarea
               value={formData.notes}
               onChange={(e) => handleChange('notes', e.target.value)}
               rows={4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               placeholder="Adicione observações sobre este lead..."
             />
           </div>
@@ -411,11 +403,11 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
       </div>
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
         <button
           type="button"
           onClick={onCancel}
-          className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50"
+          className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600"
           disabled={loading}
         >
           Cancelar

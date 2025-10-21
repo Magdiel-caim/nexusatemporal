@@ -3,11 +3,16 @@ import authRoutes from '@/modules/auth/auth.routes';
 import dataRoutes from '@/modules/config/data.routes';
 import leadsRoutes from '@/modules/leads/leads.routes';
 import chatRoutes from '@/modules/chat/chat.routes';
+import appointmentRoutes from '@/modules/agenda/appointment.routes';
+import publicAppointmentRoutes from '@/modules/agenda/public-appointment.routes';
+import medicalRecordRoutes from '@/modules/medical-records/medical-record.routes';
+import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
+import paymentGatewayRoutes from '@/modules/payment-gateway/payment-gateway.routes';
+import usersRoutes from '@/modules/users/users.routes';
+import automationRoutes from '@/modules/automation/automation.routes';
+import estoqueRoutes from '@/modules/estoque/estoque.routes';
+import vendasRoutes from '@/modules/vendas/vendas.routes';
 // Import other module routes as they are created
-// import agendaRoutes from '@/modules/agenda/agenda.routes';
-// import prontuariosRoutes from '@/modules/prontuarios/prontuarios.routes';
-// import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
-// import estoqueRoutes from '@/modules/estoque/estoque.routes';
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import biRoutes from '@/modules/bi/bi.routes';
 // import marketingRoutes from '@/modules/marketing/marketing.routes';
@@ -29,12 +34,17 @@ router.use('/auth', authRoutes);
 router.use('/data', dataRoutes); // Required /api/data endpoint
 router.use('/leads', leadsRoutes);
 router.use('/chat', chatRoutes);
+router.use('/appointments', appointmentRoutes);
+router.use('/public/appointments', publicAppointmentRoutes); // Public API for external integrations
+router.use('/medical-records', medicalRecordRoutes);
+router.use('/financial', financeiroRoutes);
+router.use('/payment-gateway', paymentGatewayRoutes); // Payment gateway integration (Asaas, PagBank)
+router.use('/users', usersRoutes); // User management and permissions
+router.use('/automation', automationRoutes); // Automation system (triggers, workflows, integrations)
+router.use('/stock', estoqueRoutes); // Stock/Inventory management
+router.use('/vendas', vendasRoutes); // Sales and commissions management
 
 // Uncomment as modules are implemented
-// router.use('/agenda', agendaRoutes);
-// router.use('/prontuarios', prontuariosRoutes);
-// router.use('/financeiro', financeiroRoutes);
-// router.use('/estoque', estoqueRoutes);
 // router.use('/colaboracao', colaboracaoRoutes);
 // router.use('/bi', biRoutes);
 // router.use('/marketing', marketingRoutes);

@@ -1,0 +1,325 @@
+{
+  "name": "WAHA - Receber Mensagens (COM S3) v3.1 CORRIGIDO",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "waha-receive-message",
+        "options": {}
+      },
+      "id": "webhook-receive",
+      "name": "Webhook WAHA",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "waha-receive-message"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "message-event",
+              "leftValue": "={{ $json.body.event }}",
+              "rightValue": "message",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filter-messages",
+      "name": "Filtrar Mensagens",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Processar dados da mensagem WAHA\nconst payload = $input.item.json.body.payload;\nconst session = $input.item.json.body.session;\n\n// Detectar se é grupo ou conversa individual\nconst isGroup = payload.from && payload.from.includes('@g.us');\n\n// Para grupos, usar participant; para individual, usar from\nlet phoneNumber = '';\nif (isGroup && payload.participant) {\n  phoneNumber = payload.participant.replace(/@lid|@s.whatsapp.net|@c.us/g, '');\n} else if (payload.from) {\n  phoneNumber = payload.from.replace(/@c.us|@lid/g, '');\n}\n\n// Nome do contato\nconst contactName = payload._data?.Info?.PushName || payload._data?.notifyName || phoneNumber;\n\n// CORREÇÃO: Extrair URL da mídia do campo correto (payload.media.url)\nlet mediaUrl = null;\nlet messageType = 'text';\n\nif (payload.media && payload.media.url) {\n  // WAHA fornece mídia em payload.media.url\n  mediaUrl = payload.media.url;\n  \n  // Detectar tipo pela mimetype\n  if (payload.media.mimetype) {\n    if (payload.media.mimetype.includes('image')) {\n      messageType = 'image';\n    } else if (payload.media.mimetype.includes('video')) {\n      messageType = 'video';\n    } else if (payload.media.mimetype.includes('audio')) {\n      messageType = 'audio';\n    } else if (payload.media.mimetype.includes('application')) {\n      messageType = 'document';\n    }\n  }\n} else if (payload._data?.mediaUrl) {\n  // Fallback: URL antiga (por compatibilidade)\n  mediaUrl = payload._data.mediaUrl;\n  messageType = payload.type || 'image';\n}\n\nconsole.log('📥 Mensagem processada:', {\n  id: payload.id,\n  hasMedia: !!mediaUrl,\n  mediaUrl: mediaUrl,\n  type: messageType\n});\n\nreturn {\n  sessionName: session,\n  wahaMessageId: payload.id,\n  phoneNumber: phoneNumber,\n  contactName: contactName,\n  messageType: messageType,\n  content: payload.body || '',\n  mediaUrl: mediaUrl,\n  direction: payload.fromMe ? 'outgoing' : 'incoming',\n  timestamp: payload.timestamp ? payload.timestamp * 1000 : Date.now(),\n  rawPayload: payload\n};"
+      },
+      "id": "process-message",
+      "name": "Processar Mensagem",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-media-url",
+              "leftValue": "={{ $json.mediaUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-has-media",
+      "name": "Tem Mídia?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [910, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.mediaUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "mediaFile"
+            }
+          }
+        }
+      },
+      "id": "download-media",
+      "name": "Baixar Mídia do WAHA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 180],
+      "notes": "Baixa a mídia da URL do WAHA"
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "backupsistemaonenexus",
+        "fileName": "=whatsapp/{{ $json.sessionName }}/{{ $now.toFormat('yyyyMMdd-HHmmss') }}-{{ $json.wahaMessageId }}.{{ $json.messageType === 'image' ? 'jpg' : $json.messageType === 'video' ? 'mp4' : $json.messageType === 'audio' || $json.messageType === 'ptt' ? 'ogg' : $json.messageType === 'sticker' ? 'webp' : 'bin' }}",
+        "binaryPropertyName": "mediaFile",
+        "additionalFields": {
+          "contentType": "={{ $json.messageType === 'image' ? 'image/jpeg' : $json.messageType === 'video' ? 'video/mp4' : $json.messageType === 'audio' || $json.messageType === 'ptt' ? 'audio/ogg' : $json.messageType === 'sticker' ? 'image/webp' : 'application/octet-stream' }}",
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "source",
+                "value": "whatsapp"
+              },
+              {
+                "name": "session",
+                "value": "={{ $json.sessionName }}"
+              },
+              {
+                "name": "type",
+                "value": "={{ $json.messageType }}"
+              },
+              {
+                "name": "messageId",
+                "value": "={{ $json.wahaMessageId }}"
+              },
+              {
+                "name": "phoneNumber",
+                "value": "={{ $json.phoneNumber }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "upload-s3",
+      "name": "Upload para S3 IDrive",
+      "type": "n8n-nodes-base.aws",
+      "typeVersion": 1.1,
+      "position": [1350, 180],
+      "credentials": {
+        "aws": {
+          "id": "idrive-s3-nexus",
+          "name": "IDrive S3 - Nexus"
+        }
+      },
+      "notes": "Faz upload da mídia para o S3/IDrive permanentemente"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Substituir mediaUrl do WAHA pela URL permanente do S3\nconst item = $input.first();\nconst s3Response = item.json;\n\n// Construir URL pública do S3\nconst s3Endpoint = 'https://c1k7.va.idrivee2-46.com';\nconst bucket = 'backupsistemaonenexus';\nconst fileName = s3Response.Key || s3Response.key;\nconst s3Url = `${s3Endpoint}/${bucket}/${fileName}`;\n\nconsole.log('✅ Mídia salva no S3:', s3Url);\n\n// Retornar dados originais com mediaUrl atualizada\nconst originalData = items[0].json;\nreturn {\n  ...originalData,\n  mediaUrl: s3Url,\n  originalMediaUrl: originalData.mediaUrl,\n  s3FileName: fileName\n};"
+      },
+      "id": "replace-media-url",
+      "name": "Substituir URL do WAHA por S3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1570, 180],
+      "notes": "Substitui a URL do WAHA pela URL permanente do S3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.nexusatemporal.com.br/api/chat/webhook/n8n/message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "send-to-nexus-with-s3",
+      "name": "Enviar para Backend (COM URL S3)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1790, 180],
+      "notes": "Envia para o backend com URL do S3 (permanente)"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.nexusatemporal.com.br/api/chat/webhook/n8n/message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "send-to-nexus-no-media",
+      "name": "Enviar para Backend (SEM MÍDIA)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1130, 420],
+      "notes": "Envia mensagens de texto direto (sem mídia)"
+    }
+  ],
+  "connections": {
+    "Webhook WAHA": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Mensagens",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Mensagens": {
+      "main": [
+        [
+          {
+            "node": "Processar Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Tem Mídia?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Mídia?": {
+      "main": [
+        [
+          {
+            "node": "Baixar Mídia do WAHA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar para Backend (SEM MÍDIA)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar Mídia do WAHA": {
+      "main": [
+        [
+          {
+            "node": "Upload para S3 IDrive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload para S3 IDrive": {
+      "main": [
+        [
+          {
+            "node": "Substituir URL do WAHA por S3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Substituir URL do WAHA por S3": {
+      "main": [
+        [
+          {
+            "node": "Enviar para Backend (COM URL S3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "id": "s3-media-v31",
+      "name": "S3 Media v3.1 Fixed"
+    }
+  ],
+  "pinData": {},
+  "versionId": "3.1"
+}

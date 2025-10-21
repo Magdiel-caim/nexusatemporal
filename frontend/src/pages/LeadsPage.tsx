@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { leadsService, Pipeline, Stage, Lead } from '@/services/leadsService';
+import { leadsService, Pipeline, Stage, Lead, Procedure } from '@/services/leadsService';
+import appointmentService, { CreateAppointmentDto } from '@/services/appointmentService';
+import { useAuthStore } from '@/store/authStore';
 import Modal from '@/components/ui/Modal';
 import LeadDetails from '@/components/leads/LeadDetails';
 import LeadsFilter, { LeadFilters } from '@/components/leads/LeadsFilter';
@@ -11,8 +13,10 @@ import ListView from '@/components/leads/ListView';
 import GridView from '@/components/leads/GridView';
 import TimelineView from '@/components/leads/TimelineView';
 import DivisionView from '@/components/leads/DivisionView';
+import LeadsExportButtons from '@/components/leads/LeadsExportButtons';
+import LeadsImportModal from '@/components/leads/LeadsImportModal';
 import toast from 'react-hot-toast';
-import { LayoutGrid, List, Columns, Clock, Split } from 'lucide-react';
+import { LayoutGrid, List, Columns, Clock, Split, X } from 'lucide-react';
 import {
   DndContext,
   DragEndEvent,
@@ -28,6 +32,7 @@ type ViewMode = 'kanban' | 'list' | 'grid' | 'timeline' | 'division';
 
 export default function LeadsPage() {
   const location = useLocation();
+  const { user } = useAuthStore();
   const [selectedPipeline, setSelectedPipeline] = useState<Pipeline | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [filteredLeads, setFilteredLeads] = useState<Lead[]>([]);
@@ -38,6 +43,24 @@ export default function LeadsPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('kanban');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filters, setFilters] = useState<LeadFilters>({});
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+  // Appointment modal states
+  const [isAppointmentModalOpen, setIsAppointmentModalOpen] = useState(false);
+  const [leadForAppointment, setLeadForAppointment] = useState<Lead | null>(null);
+  const [procedures, setProcedures] = useState<Procedure[]>([]);
+  const [refreshAppointmentsTrigger, setRefreshAppointmentsTrigger] = useState(0);
+  const [appointmentData, setAppointmentData] = useState({
+    scheduledDate: '',
+    scheduledTime: '09:00',
+    location: 'moema',
+    paymentAmount: '',
+    paymentMethod: 'pix',
+    hasReturn: false,
+    returnCount: 0,
+    returnFrequency: 30,
+    notes: '',
+  });
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -49,6 +72,7 @@ export default function LeadsPage() {
 
   useEffect(() => {
     loadPipelines();
+    loadProcedures();
   }, []);
 
   useEffect(() => {
@@ -99,6 +123,63 @@ export default function LeadsPage() {
     } catch (error: any) {
       toast.error('Erro ao carregar leads');
       console.error(error);
+    }
+  };
+
+  const loadProcedures = async () => {
+    try {
+      const data = await leadsService.getProcedures();
+      setProcedures(data);
+    } catch (error: any) {
+      console.error('Erro ao carregar procedimentos:', error);
+    }
+  };
+
+  const handleScheduleAppointment = (lead: Lead) => {
+    setLeadForAppointment(lead);
+    setAppointmentData({
+      scheduledDate: '',
+      scheduledTime: '09:00',
+      location: 'moema',
+      paymentAmount: lead.procedure?.price?.toString() || '',
+      paymentMethod: 'pix',
+      hasReturn: false,
+      returnCount: 0,
+      returnFrequency: 30,
+      notes: '',
+    });
+    setIsAppointmentModalOpen(true);
+  };
+
+  const handleSubmitAppointment = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!leadForAppointment) return;
+
+    try {
+      const scheduledDate = new Date(`${appointmentData.scheduledDate}T${appointmentData.scheduledTime}:00`);
+
+      const dto: CreateAppointmentDto = {
+        leadId: leadForAppointment.id,
+        procedureId: leadForAppointment.procedureId || procedures[0]?.id,
+        scheduledDate: scheduledDate.toISOString(),
+        location: appointmentData.location,
+        paymentAmount: appointmentData.paymentAmount ? parseFloat(appointmentData.paymentAmount) : undefined,
+        paymentMethod: appointmentData.paymentMethod,
+        hasReturn: appointmentData.hasReturn,
+        returnCount: appointmentData.hasReturn ? appointmentData.returnCount : undefined,
+        returnFrequency: appointmentData.hasReturn ? appointmentData.returnFrequency : undefined,
+        notes: appointmentData.notes || undefined,
+      };
+
+      await appointmentService.create(dto);
+      toast.success('Agendamento criado com sucesso!');
+      setIsAppointmentModalOpen(false);
+      setLeadForAppointment(null);
+      // Trigger refresh dos agendamentos no card do lead
+      setRefreshAppointmentsTrigger(prev => prev + 1);
+    } catch (error: any) {
+      toast.error('Erro ao criar agendamento: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -191,6 +272,21 @@ export default function LeadsPage() {
     handleCloseModal();
   };
 
+  const handleDeleteLead = async (lead: Lead) => {
+    if (!window.confirm(`Tem certeza que deseja excluir o lead "${lead.name}"?\n\nEsta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      await leadsService.deleteLead(lead.id);
+      toast.success('Lead excluído com sucesso!');
+      await loadLeads();
+    } catch (error: any) {
+      console.error('Erro ao excluir lead:', error);
+      toast.error('Erro ao excluir lead');
+    }
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event;
     const lead = filteredLeads.find(l => l.id === active.id);
@@ -247,7 +343,7 @@ export default function LeadsPage() {
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Carregando...</p>
         </div>
       </div>
     );
@@ -257,8 +353,8 @@ export default function LeadsPage() {
     return (
       <div className="p-6">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Nenhum Pipeline Encontrado</h2>
-          <p className="text-gray-600 mb-6">Crie seu primeiro pipeline para começar a gerenciar leads.</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Nenhum Pipeline Encontrado</h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-6">Crie seu primeiro pipeline para começar a gerenciar leads.</p>
           <button className="btn-primary">
             Criar Pipeline
           </button>
@@ -303,6 +399,8 @@ export default function LeadsPage() {
             stages={selectedPipeline?.stages || []}
             formatCurrency={formatCurrency}
             onLeadClick={handleEditLead}
+            onScheduleAppointment={handleScheduleAppointment}
+            refreshTrigger={refreshAppointmentsTrigger}
           />
         );
       case 'kanban':
@@ -317,23 +415,23 @@ export default function LeadsPage() {
                 return (
                   <div
                     key={stage.id}
-                    className="flex-shrink-0 w-80 bg-gray-100 rounded-lg flex flex-col"
+                    className="flex-shrink-0 w-80 bg-gray-100 dark:bg-gray-700 rounded-lg flex flex-col"
                   >
                     {/* Stage Header */}
-                    <div className="p-4 border-b border-gray-200">
+                    <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <div
                             className="w-3 h-3 rounded-full"
                             style={{ backgroundColor: stage.color }}
                           ></div>
-                          <h3 className="font-semibold text-gray-900">{stage.name}</h3>
+                          <h3 className="font-semibold text-gray-900 dark:text-white">{stage.name}</h3>
                         </div>
-                        <span className="text-sm font-medium text-gray-600">
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
                           {stageLeads.length}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-400">
                         {formatCurrency(stageValue)} • {stage.probability}% prob.
                       </div>
                     </div>
@@ -341,7 +439,7 @@ export default function LeadsPage() {
                     {/* Leads List */}
                     <DroppableStageColumn id={stage.id}>
                       {stageLeads.length === 0 ? (
-                        <div className="text-center py-8 text-gray-400 text-sm">
+                        <div className="text-center py-8 text-gray-400 dark:text-gray-500 text-sm">
                           Nenhum lead neste estágio
                         </div>
                       ) : (
@@ -351,6 +449,8 @@ export default function LeadsPage() {
                             lead={lead}
                             formatCurrency={formatCurrency}
                             onClick={() => handleEditLead(lead)}
+                            onDelete={handleDeleteLead}
+                            userRole={user?.role}
                           />
                         ))
                       )}
@@ -367,16 +467,16 @@ export default function LeadsPage() {
   return (
     <div className="flex flex-col min-h-[calc(100vh-8rem)]">
       {/* Header */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-4">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">{selectedPipeline.name}</h2>
-              <p className="text-sm text-gray-500">Pipeline de vendas</p>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{selectedPipeline.name}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Pipeline de vendas</p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setIsFilterOpen(true)}
-                className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 relative"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 relative"
               >
                 Filtros
                 {Object.keys(filters).filter(key => filters[key as keyof LeadFilters]).length > 0 && (
@@ -384,6 +484,16 @@ export default function LeadsPage() {
                     {Object.keys(filters).filter(key => filters[key as keyof LeadFilters]).length}
                   </span>
                 )}
+              </button>
+              <LeadsExportButtons leads={filteredLeads} />
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <span>Importar</span>
               </button>
               <button onClick={handleCreateLead} className="btn-primary">
                 + Novo Lead
@@ -393,14 +503,14 @@ export default function LeadsPage() {
 
           {/* View Mode Selector */}
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600 mr-2">Visualização:</span>
-            <div className="flex bg-gray-100 rounded-lg p-1 gap-1">
+            <span className="text-sm text-gray-600 dark:text-gray-400 mr-2">Visualização:</span>
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1 gap-1">
               <button
                 onClick={() => setViewMode('kanban')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'kanban'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Columns size={16} />
@@ -410,8 +520,8 @@ export default function LeadsPage() {
                 onClick={() => setViewMode('list')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'list'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <List size={16} />
@@ -421,8 +531,8 @@ export default function LeadsPage() {
                 onClick={() => setViewMode('grid')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'grid'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <LayoutGrid size={16} />
@@ -432,8 +542,8 @@ export default function LeadsPage() {
                 onClick={() => setViewMode('timeline')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'timeline'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Clock size={16} />
@@ -443,8 +553,8 @@ export default function LeadsPage() {
                 onClick={() => setViewMode('division')}
                 className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   viewMode === 'division'
-                    ? 'bg-white text-primary-600 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
                 }`}
               >
                 <Split size={16} />
@@ -469,6 +579,8 @@ export default function LeadsPage() {
                   lead={activeDragLead}
                   formatCurrency={formatCurrency}
                   onClick={() => {}}
+                  onDelete={handleDeleteLead}
+                  userRole={user?.role}
                 />
               ) : null}
             </DragOverlay>
@@ -494,10 +606,170 @@ export default function LeadsPage() {
                 stages={selectedPipeline.stages || []}
                 onSubmit={handleSubmitLead}
                 onClose={handleCloseModal}
+                onScheduleAppointment={handleScheduleAppointment}
+                refreshAppointmentsTrigger={refreshAppointmentsTrigger}
               />
             )}
           </ErrorBoundary>
         </Modal>
+      )}
+
+      {/* Modal de Agendamento */}
+      {isAppointmentModalOpen && leadForAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-[10100] p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-2xl font-bold dark:text-white">Novo Agendamento</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    Paciente: <span className="font-medium">{leadForAppointment.name}</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setIsAppointmentModalOpen(false)}
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmitAppointment} className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data *</label>
+                    <input
+                      type="date"
+                      required
+                      value={appointmentData.scheduledDate}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, scheduledDate: e.target.value })}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Horário *</label>
+                    <input
+                      type="time"
+                      required
+                      value={appointmentData.scheduledTime}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, scheduledTime: e.target.value })}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Local *</label>
+                  <select
+                    value={appointmentData.location}
+                    onChange={(e) => setAppointmentData({ ...appointmentData, location: e.target.value })}
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
+                  >
+                    <option value="moema">Moema</option>
+                    <option value="av_paulista">Av. Paulista</option>
+                    <option value="perdizes">Perdizes</option>
+                    <option value="online">Online</option>
+                    <option value="a_domicilio">A Domicílio</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Valor</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={appointmentData.paymentAmount}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, paymentAmount: e.target.value })}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Forma de Pagamento</label>
+                    <select
+                      value={appointmentData.paymentMethod}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, paymentMethod: e.target.value })}
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
+                    >
+                      <option value="pix">PIX</option>
+                      <option value="cartao">Cartão</option>
+                      <option value="dinheiro">Dinheiro</option>
+                      <option value="boleto">Boleto</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={appointmentData.hasReturn}
+                      onChange={(e) => setAppointmentData({ ...appointmentData, hasReturn: e.target.checked })}
+                    />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Agendar retornos automáticos</span>
+                  </label>
+                </div>
+
+                {appointmentData.hasReturn && (
+                  <div className="grid grid-cols-2 gap-4 pl-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Quantidade de retornos</label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="12"
+                        value={appointmentData.returnCount}
+                        onChange={(e) => setAppointmentData({ ...appointmentData, returnCount: parseInt(e.target.value) })}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">A cada (dias)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={appointmentData.returnFrequency}
+                        onChange={(e) => setAppointmentData({ ...appointmentData, returnFrequency: parseInt(e.target.value) })}
+                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>
+                  <textarea
+                    value={appointmentData.notes}
+                    onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
+                    rows={3}
+                    placeholder="Observações sobre o agendamento..."
+                  />
+                </div>
+
+                <div className="flex gap-2 justify-end pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setIsAppointmentModalOpen(false)}
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                  >
+                    Criar Agendamento
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Painel de Filtros */}
@@ -508,6 +780,16 @@ export default function LeadsPage() {
         filters={filters}
         onApplyFilters={handleApplyFilters}
         onClearFilters={handleClearFilters}
+      />
+
+      {/* Modal de Importação */}
+      <LeadsImportModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onSuccess={() => {
+          loadLeads();
+          setIsImportModalOpen(false);
+        }}
       />
     </div>
   );

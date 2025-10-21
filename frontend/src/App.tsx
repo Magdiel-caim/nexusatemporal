@@ -1,11 +1,20 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'react-hot-toast';
+import { ThemeProvider } from './contexts/ThemeContext';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
 import LeadsPage from './pages/LeadsPage';
 import ChatPage from './pages/ChatPage';
+import AgendaPage from './pages/AgendaPage';
+import ProntuariosPage from './pages/ProntuariosPage';
+import FinanceiroPage from './pages/FinanceiroPage';
+import VendasPage from './pages/Vendas/VendasPage';
+import EstoquePage from './pages/EstoquePage';
+import AutomationPage from './pages/AutomationPage';
+import ConfiguracoesPage from './pages/ConfiguracoesPage';
+import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 
@@ -20,9 +29,10 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Routes>
           {/* Public routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
@@ -73,10 +83,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">Agenda</h2>
-                    <p className="text-gray-600">Em desenvolvimento...</p>
-                  </div>
+                  <AgendaPage />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -86,10 +93,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">Prontuários</h2>
-                    <p className="text-gray-600">Em desenvolvimento...</p>
-                  </div>
+                  <ProntuariosPage />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -99,10 +103,17 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">Financeiro</h2>
-                    <p className="text-gray-600">Em desenvolvimento...</p>
-                  </div>
+                  <FinanceiroPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/vendas"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <VendasPage />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -112,10 +123,17 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">Estoque</h2>
-                    <p className="text-gray-600">Em desenvolvimento...</p>
-                  </div>
+                  <EstoquePage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/automation"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <AutomationPage />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -160,6 +178,26 @@ function App() {
             }
           />
           <Route
+            path="/configuracoes"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <ConfiguracoesPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/configuracoes/integracoes/pagamentos"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <IntegracoesPagamentosPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/settings"
             element={
               <ProtectedRoute>
@@ -176,6 +214,7 @@ function App() {
       </BrowserRouter>
       <Toaster position="top-right" />
     </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { leadsService } from '@/services/leadsService';
+import appointmentService, { Appointment } from '@/services/appointmentService';
 import {
   Users,
   DollarSign,
@@ -38,14 +39,6 @@ interface RecentActivity {
   color: string;
 }
 
-interface Attendance {
-  id: string;
-  patientName: string;
-  doctorName: string;
-  room: string;
-  procedure: string;
-  status: 'aguardando' | 'em_atendimento' | 'finalizado' | 'retorno_marcado';
-}
 
 export default function DashboardPage() {
   const { user } = useAuthStore();
@@ -62,9 +55,11 @@ export default function DashboardPage() {
   });
   const [newLeads, setNewLeads] = useState<any[]>([]);
   const [showNewLeadsPopup, setShowNewLeadsPopup] = useState(false);
+  const [showAlertsPopup, setShowAlertsPopup] = useState(false);
   const [recentActivities, setRecentActivities] = useState<RecentActivity[]>([]);
-  const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [todayAppointments, setTodayAppointments] = useState<Appointment[]>([]);
   const [leadsWithoutResponse, setLeadsWithoutResponse] = useState(0);
+  const [leadsNoResponseList, setLeadsNoResponseList] = useState<any[]>([]);
 
   useEffect(() => {
     loadDashboardData();
@@ -74,8 +69,11 @@ export default function DashboardPage() {
     try {
       setLoading(true);
 
-      // Carregar leads
-      const leads = await leadsService.getLeads();
+      // Carregar leads e agendamentos em paralelo
+      const [leads, appointments] = await Promise.all([
+        leadsService.getLeads(),
+        appointmentService.getToday(),
+      ]);
 
       // Calcular estatísticas
       const today = new Date();
@@ -97,81 +95,96 @@ export default function DashboardPage() {
         return lastActivity < twoDaysAgo;
       });
 
-      // Calcular conversão (leads que viraram fechado)
-      const closedLeads = leads.filter(lead => lead.state === 'won');
+      // Calcular conversão (leads que viraram fechado) - CORRIGIDO: usando status ao invés de state
+      const closedLeads = leads.filter(lead => lead.status === 'won');
       const conversionRate = leads.length > 0 ? (closedLeads.length / leads.length) * 100 : 0;
 
-      // Calcular ticket médio
-      const totalValue = closedLeads.reduce((sum, lead) => sum + (lead.estimatedValue || 0), 0);
-      const avgTicket = closedLeads.length > 0 ? totalValue / closedLeads.length : 0;
+      // Calcular ticket médio baseado em agendamentos pagos
+      const paidAppointments = appointments.filter(apt => apt.paymentAmount && apt.paymentAmount > 0);
+      const totalRevenue = paidAppointments.reduce((sum, apt) => sum + (Number(apt.paymentAmount) || 0), 0);
+      const avgTicket = paidAppointments.length > 0 ? totalRevenue / paidAppointments.length : 0;
 
-      // Separar por clínica
-      const moemaClinics = leads.filter(l => l.attendanceLocation === 'moema' || l.city?.toLowerCase().includes('moema'));
-      const avPaulistaLeads = leads.filter(l => l.city?.toLowerCase().includes('paulista'));
+      // Calcular tempo médio de atendimento baseado em agendamentos finalizados
+      const finalizedAppointments = appointments.filter(apt => apt.status === 'finalizado' && apt.estimatedDuration);
+      const avgAttendanceTime = finalizedAppointments.length > 0
+        ? finalizedAppointments.reduce((sum, apt) => sum + (apt.estimatedDuration || 0), 0) / finalizedAppointments.length
+        : 45;
+
+      // Separar agendamentos por clínica (com filtro robusto)
+      const moemaAppointments = appointments.filter(apt =>
+        apt.location?.toLowerCase().includes('moema')
+      );
+      const avPaulistaAppointments = appointments.filter(apt =>
+        apt.location?.toLowerCase().includes('paulista') || apt.location === 'av_paulista'
+      );
 
       setStats({
         newLeads: newLeadsToday.length,
         totalPatients: leads.length,
-        avgAttendanceTime: 45, // Mock - seria calculado com base em agendamentos
+        avgAttendanceTime: Math.round(avgAttendanceTime),
         conversionRate: Math.round(conversionRate),
         avgTicket: avgTicket,
         uptime: 99.9,
         attendancesByClinic: {
-          moema: moemaClinics.length,
-          avPaulista: avPaulistaLeads.length,
+          moema: moemaAppointments.length,
+          avPaulista: avPaulistaAppointments.length,
         },
       });
 
       setNewLeads(newLeadsToday.slice(0, 10));
       setLeadsWithoutResponse(leadsNoResponse.length);
+      setLeadsNoResponseList(leadsNoResponse);
+      setTodayAppointments(appointments);
 
-      // Mock de atividades recentes (em produção viria da API)
-      setRecentActivities([
-        {
+      // Atividades recentes baseadas em dados reais
+      const activities: RecentActivity[] = [];
+
+      if (newLeadsToday.length > 0) {
+        activities.push({
           id: '1',
           type: 'lead',
           title: 'Novo lead cadastrado',
-          description: newLeadsToday.length > 0 ? newLeadsToday[0].name : 'Aguardando novos leads',
-          time: 'Há 5 minutos',
+          description: newLeadsToday[0].name,
+          time: 'Hoje',
           color: 'bg-blue-100 text-blue-600',
-        },
-        {
+        });
+      }
+
+      const confirmedToday = appointments.filter(apt => apt.status === 'confirmado');
+      if (confirmedToday.length > 0) {
+        activities.push({
           id: '2',
           type: 'appointment',
           title: 'Agendamento confirmado',
-          description: 'Cliente confirmou consulta para amanhã',
-          time: 'Há 15 minutos',
+          description: confirmedToday[0].lead?.name || 'Cliente',
+          time: 'Hoje',
           color: 'bg-green-100 text-green-600',
-        },
-        {
+        });
+      }
+
+      if (paidAppointments.length > 0) {
+        activities.push({
           id: '3',
           type: 'payment',
           title: 'Pagamento recebido',
-          description: 'R$ 350,00 via PIX',
-          time: 'Há 1 hora',
+          description: `R$ ${Number(paidAppointments[0].paymentAmount).toFixed(2)} via ${paidAppointments[0].paymentMethod || 'PIX'}`,
+          time: 'Hoje',
           color: 'bg-purple-100 text-purple-600',
-        },
-      ]);
+        });
+      }
 
-      // Mock de atendimentos (em produção viria da API de agenda)
-      setAttendances([
-        {
+      if (activities.length === 0) {
+        activities.push({
           id: '1',
-          patientName: 'Maria Silva',
-          doctorName: 'Dr. João Santos',
-          room: 'Sala 1',
-          procedure: 'Consulta Inicial',
-          status: 'em_atendimento',
-        },
-        {
-          id: '2',
-          patientName: 'Pedro Oliveira',
-          doctorName: 'Dra. Ana Costa',
-          room: 'Sala 2',
-          procedure: 'Retorno',
-          status: 'aguardando',
-        },
-      ]);
+          type: 'info',
+          title: 'Nenhuma atividade recente',
+          description: 'Aguardando novas atividades',
+          time: 'Hoje',
+          color: 'bg-gray-100 text-gray-600',
+        });
+      }
+
+      setRecentActivities(activities);
 
     } catch (error) {
       console.error('Erro ao carregar dashboard:', error);
@@ -183,20 +196,26 @@ export default function DashboardPage() {
 
   const getStatusLabel = (status: string) => {
     const labels: Record<string, string> = {
-      aguardando: 'Aguardando',
+      aguardando_pagamento: 'Aguardando Pagamento',
+      aguardando_confirmacao: 'Aguardando Confirmação',
+      confirmado: 'Confirmado',
+      check_in: 'Check-in Realizado',
       em_atendimento: 'Em Atendimento',
       finalizado: 'Finalizado',
-      retorno_marcado: 'Retorno Marcado',
+      cancelado: 'Cancelado',
     };
     return labels[status] || status;
   };
 
   const getStatusColor = (status: string) => {
     const colors: Record<string, string> = {
-      aguardando: 'bg-yellow-100 text-yellow-800',
-      em_atendimento: 'bg-blue-100 text-blue-800',
-      finalizado: 'bg-green-100 text-green-800',
-      retorno_marcado: 'bg-purple-100 text-purple-800',
+      aguardando_pagamento: 'bg-orange-100 text-orange-800',
+      aguardando_confirmacao: 'bg-yellow-100 text-yellow-800',
+      confirmado: 'bg-green-100 text-green-800',
+      check_in: 'bg-blue-100 text-blue-800',
+      em_atendimento: 'bg-indigo-100 text-indigo-800',
+      finalizado: 'bg-gray-100 text-gray-800',
+      cancelado: 'bg-red-100 text-red-800',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -365,17 +384,21 @@ export default function DashboardPage() {
           </h2>
           <div className="space-y-3">
             {leadsWithoutResponse > 0 && (
-              <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div
+                onClick={() => setShowAlertsPopup(true)}
+                className="p-4 bg-orange-50 border border-orange-200 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors"
+              >
                 <div className="flex items-start gap-3">
                   <AlertCircle className="text-orange-600 flex-shrink-0 mt-0.5" size={20} />
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium text-orange-900">
                       {leadsWithoutResponse} Lead{leadsWithoutResponse > 1 ? 's' : ''} sem resposta
                     </p>
                     <p className="text-sm text-orange-700 mt-1">
-                      Existem leads aguardando retorno há mais de 2 dias
+                      Clique para ver os leads aguardando retorno há mais de 2 dias
                     </p>
                   </div>
+                  <ChevronRight className="text-orange-600 flex-shrink-0" size={20} />
                 </div>
               </div>
             )}
@@ -412,54 +435,63 @@ export default function DashboardPage() {
 
       {/* Tabela de Atendimentos */}
       <div className="card">
-        <h2 className="text-xl font-bold mb-4">Atendimentos Hoje</h2>
+        <h2 className="text-xl font-bold mb-4">Agendamentos Hoje</h2>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Horário
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Paciente
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Médico
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sala
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Procedimento
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Local
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Valor
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-              {attendances.length === 0 ? (
+              {todayAppointments.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    Nenhum atendimento agendado para hoje
+                  <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                    Nenhum agendamento para hoje
                   </td>
                 </tr>
               ) : (
-                attendances.map(attendance => (
-                  <tr key={attendance.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                todayAppointments.map(appointment => (
+                  <tr key={appointment.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                      {new Date(appointment.scheduledDate).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                      {attendance.patientName}
+                      {appointment.lead?.name || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {attendance.doctorName}
+                      {appointment.procedure?.name || 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {attendance.room}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {attendance.procedure}
+                      {appointment.location === 'moema' ? 'Moema' : appointment.location === 'av_paulista' ? 'Av. Paulista' : appointment.location}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(attendance.status)}`}>
-                        {getStatusLabel(attendance.status)}
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(appointment.status)}`}>
+                        {getStatusLabel(appointment.status)}
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                      {appointment.paymentAmount ? `R$ ${Number(appointment.paymentAmount).toFixed(2)}` : '-'}
                     </td>
                   </tr>
                 ))
@@ -534,6 +566,90 @@ export default function DashboardPage() {
               <button
                 onClick={() => {
                   setShowNewLeadsPopup(false);
+                  navigate('/leads');
+                }}
+                className="w-full btn-primary"
+              >
+                Ver Todos os Leads
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal/Popup Leads Sem Resposta */}
+      {showAlertsPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="text-orange-600" size={28} />
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    Leads Sem Resposta ({leadsNoResponseList.length})
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setShowAlertsPopup(false)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                Leads aguardando retorno há mais de 2 dias
+              </p>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+              {leadsNoResponseList.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <CheckCircle className="mx-auto mb-3 text-green-600" size={48} />
+                  <p>Nenhum lead sem resposta</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {leadsNoResponseList.map(lead => (
+                    <div
+                      key={lead.id}
+                      onClick={() => {
+                        setShowAlertsPopup(false);
+                        navigate('/leads', { state: { openLeadId: lead.id } });
+                      }}
+                      className="p-4 border border-orange-200 bg-orange-50 dark:border-orange-700 dark:bg-orange-900/20 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30 cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-900 dark:text-white">
+                            {lead.name}
+                          </h4>
+                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
+                            {lead.phone && <span>📞 {lead.phone}</span>}
+                            {lead.procedure && <span>{lead.procedure.name}</span>}
+                            {lead.activities && lead.activities.length > 0 && (
+                              <span className="text-orange-600 font-medium">
+                                Última atividade: {new Date(lead.activities[0].createdAt).toLocaleDateString('pt-BR')}
+                              </span>
+                            )}
+                            {(!lead.activities || lead.activities.length === 0) && (
+                              <span className="text-red-600 font-medium">
+                                Nenhuma atividade registrada
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <ChevronRight className="text-orange-600" size={20} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+              <button
+                onClick={() => {
+                  setShowAlertsPopup(false);
                   navigate('/leads');
                 }}
                 className="w-full btn-primary"

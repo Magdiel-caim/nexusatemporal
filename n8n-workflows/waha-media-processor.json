@@ -1,0 +1,395 @@
+{
+  "name": "WAHA Media Processor - WhatsApp to S3",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "waha-media",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-waha-media",
+      "name": "Webhook - WAHA",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300],
+      "webhookId": "waha-media-processor"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "has-media",
+              "leftValue": "={{ $json.payload.hasMedia }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "has-media-url",
+              "leftValue": "={{ $json.payload._data.mediaUrl }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combineOperation": "all"
+        },
+        "options": {}
+      },
+      "id": "check-has-media",
+      "name": "Tem Mídia?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.payload._data.mediaUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "download-media-whatsapp",
+      "name": "Baixar Mídia WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 180]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "bucketName": "backupsistemaonenexus",
+        "fileName": "=whatsapp/{{ $json.session }}/{{ $now.toFormat('yyyyMMdd-HHmmss') }}-{{ $json.payload.id }}.{{ $json.payload.type === 'image' ? 'jpg' : $json.payload.type === 'video' ? 'mp4' : $json.payload.type === 'audio' || $json.payload.type === 'ptt' ? 'ogg' : 'bin' }}",
+        "binaryData": true,
+        "additionalFields": {
+          "contentType": "={{ $json.payload.type === 'image' ? 'image/jpeg' : $json.payload.type === 'video' ? 'video/mp4' : $json.payload.type === 'audio' || $json.payload.type === 'ptt' ? 'audio/ogg' : 'application/octet-stream' }}",
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "source",
+                "value": "whatsapp"
+              },
+              {
+                "name": "session",
+                "value": "={{ $json.session }}"
+              },
+              {
+                "name": "type",
+                "value": "={{ $json.payload.type }}"
+              },
+              {
+                "name": "messageId",
+                "value": "={{ $json.payload.id }}"
+              }
+            ]
+          }
+        }
+      },
+      "id": "upload-to-s3",
+      "name": "Upload para S3 IDrive",
+      "type": "n8n-nodes-base.aws",
+      "typeVersion": 1.1,
+      "position": [900, 180],
+      "credentials": {
+        "aws": {
+          "id": "idrive-s3-credentials",
+          "name": "IDrive S3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst s3Data = item.json;\nconst originalData = items[0].json;\n\n// Construir URL pública do S3\nconst s3Endpoint = 'https://c1k7.va.idrivee2-46.com';\nconst bucket = 'backupsistemaonenexus';\nconst fileName = s3Data.Key || s3Data.fileName;\nconst s3Url = `${s3Endpoint}/${bucket}/${fileName}`;\n\nconsole.log('✅ Mídia no S3:', s3Url);\n\n// Preparar payload para o backend\nconst payload = {\n  sessionName: originalData.session,\n  phoneNumber: originalData.payload.from.replace(/@c\\.us|@lid|@s\\.whatsapp\\.net/g, ''),\n  contactName: originalData.payload._data?.Info?.PushName || \n                originalData.payload._data?.notifyName || \n                originalData.payload.from.replace(/@c\\.us|@lid|@s\\.whatsapp\\.net/g, ''),\n  direction: originalData.payload.fromMe ? 'outgoing' : 'incoming',\n  messageType: originalData.payload.type || 'text',\n  content: originalData.payload.body || '',\n  mediaUrl: s3Url, // URL do S3 ao invés da URL temporária do WhatsApp\n  wahaMessageId: originalData.payload.id,\n  status: 'received',\n  timestamp: originalData.payload.timestamp * 1000,\n  rawPayload: originalData\n};\n\nreturn { json: payload };"
+      },
+      "id": "prepare-backend-payload",
+      "name": "Preparar Payload Backend",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 180]
+    },
+    {
+      "parameters": {
+        "url": "https://api.nexusatemporal.com.br/api/chat/webhook/n8n/message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "sessionName",
+              "value": "={{ $json.sessionName }}"
+            },
+            {
+              "name": "phoneNumber",
+              "value": "={{ $json.phoneNumber }}"
+            },
+            {
+              "name": "contactName",
+              "value": "={{ $json.contactName }}"
+            },
+            {
+              "name": "direction",
+              "value": "={{ $json.direction }}"
+            },
+            {
+              "name": "messageType",
+              "value": "={{ $json.messageType }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.content }}"
+            },
+            {
+              "name": "mediaUrl",
+              "value": "={{ $json.mediaUrl }}"
+            },
+            {
+              "name": "wahaMessageId",
+              "value": "={{ $json.wahaMessageId }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.status }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $json.timestamp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-to-backend",
+      "name": "Enviar para Backend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1340, 180],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nexus-api-auth",
+          "name": "Nexus API Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Mensagem sem mídia - preparar payload direto\nconst item = $input.first();\nconst data = item.json;\n\nconst payload = {\n  sessionName: data.session,\n  phoneNumber: data.payload.from.replace(/@c\\.us|@lid|@s\\.whatsapp\\.net/g, ''),\n  contactName: data.payload._data?.Info?.PushName || \n                data.payload._data?.notifyName || \n                data.payload.from.replace(/@c\\.us|@lid|@s\\.whatsapp\\.net/g, ''),\n  direction: data.payload.fromMe ? 'outgoing' : 'incoming',\n  messageType: data.payload.type || 'text',\n  content: data.payload.body || '',\n  mediaUrl: null,\n  wahaMessageId: data.payload.id,\n  status: 'received',\n  timestamp: data.payload.timestamp * 1000,\n  rawPayload: data\n};\n\nreturn { json: payload };"
+      },
+      "id": "prepare-no-media-payload",
+      "name": "Preparar Payload Sem Mídia",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 420]
+    },
+    {
+      "parameters": {
+        "url": "https://api.nexusatemporal.com.br/api/chat/webhook/n8n/message",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "sessionName",
+              "value": "={{ $json.sessionName }}"
+            },
+            {
+              "name": "phoneNumber",
+              "value": "={{ $json.phoneNumber }}"
+            },
+            {
+              "name": "contactName",
+              "value": "={{ $json.contactName }}"
+            },
+            {
+              "name": "direction",
+              "value": "={{ $json.direction }}"
+            },
+            {
+              "name": "messageType",
+              "value": "={{ $json.messageType }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.content }}"
+            },
+            {
+              "name": "wahaMessageId",
+              "value": "={{ $json.wahaMessageId }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.status }}"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ $json.timestamp }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "send-no-media-to-backend",
+      "name": "Enviar para Backend (Sem Mídia)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 420],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "nexus-api-auth",
+          "name": "Nexus API Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "id": "response-success",
+      "name": "Responder Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"success\": true, \"message\": \"Media processed successfully\", \"s3Url\": $json.mediaUrl } }}",
+        "options": {}
+      },
+      "id": "response-webhook",
+      "name": "Responder Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 420]
+    }
+  ],
+  "connections": {
+    "Webhook - WAHA": {
+      "main": [
+        [
+          {
+            "node": "Tem Mídia?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Mídia?": {
+      "main": [
+        [
+          {
+            "node": "Baixar Mídia WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Preparar Payload Sem Mídia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar Mídia WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Upload para S3 IDrive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload para S3 IDrive": {
+      "main": [
+        [
+          {
+            "node": "Preparar Payload Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Payload Backend": {
+      "main": [
+        [
+          {
+            "node": "Enviar para Backend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar para Backend": {
+      "main": [
+        [
+          {
+            "node": "Responder Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Payload Sem Mídia": {
+      "main": [
+        [
+          {
+            "node": "Enviar para Backend (Sem Mídia)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar para Backend (Sem Mídia)": {
+      "main": [
+        [
+          {
+            "node": "Responder Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-10-14T21:30:00.000Z",
+      "updatedAt": "2025-10-14T21:30:00.000Z",
+      "id": "whatsapp-media",
+      "name": "WhatsApp Media"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-10-14T21:30:00.000Z",
+  "versionId": "1"
+}

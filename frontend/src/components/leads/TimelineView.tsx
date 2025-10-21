@@ -46,16 +46,16 @@ export default function TimelineView({ leads, stages, formatCurrency, onLeadClic
   return (
     <div className="space-y-6">
       {groupedLeads.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
+        <div className="text-center py-12 text-gray-500 dark:text-gray-400">
           Nenhum lead encontrado
         </div>
       ) : (
         groupedLeads.map(([date, dateLeads]) => (
           <div key={date} className="relative">
             {/* Date Header */}
-            <div className="sticky top-0 bg-gray-50 border-l-4 border-primary-500 pl-4 py-2 mb-4 flex items-center gap-3">
+            <div className="sticky top-0 bg-gray-50 dark:bg-gray-900 border-l-4 border-primary-500 dark:border-primary-400 pl-4 py-2 mb-4 flex items-center gap-3">
               <div className="flex items-center gap-2">
-                <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -63,9 +63,9 @@ export default function TimelineView({ leads, stages, formatCurrency, onLeadClic
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <h3 className="text-lg font-semibold text-gray-900">{date}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{date}</h3>
               </div>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-gray-600 dark:text-gray-400">
                 {dateLeads.length} {dateLeads.length === 1 ? 'lead' : 'leads'}
               </span>
             </div>
@@ -76,19 +76,19 @@ export default function TimelineView({ leads, stages, formatCurrency, onLeadClic
                 <div
                   key={lead.id}
                   onClick={() => onLeadClick(lead)}
-                  className="relative bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200"
+                  className="relative bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-200 dark:border-gray-700"
                 >
                   {/* Timeline Dot */}
                   <div
-                    className="absolute -left-10 top-6 w-4 h-4 rounded-full border-4 border-white"
+                    className="absolute -left-10 top-6 w-4 h-4 rounded-full border-4 border-white dark:border-gray-800"
                     style={{ backgroundColor: getStageColor(lead.stageId) }}
                   ></div>
 
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{lead.name}</h4>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">{lead.name}</h4>
                       {lead.email && (
-                        <p className="text-sm text-gray-500">{lead.email}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{lead.email}</p>
                       )}
                     </div>
 
@@ -103,7 +103,7 @@ export default function TimelineView({ leads, stages, formatCurrency, onLeadClic
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                     {lead.procedure && (
                       <span
                         className="inline-flex px-2 py-1 text-xs font-medium rounded-md"
@@ -117,7 +117,7 @@ export default function TimelineView({ leads, stages, formatCurrency, onLeadClic
                     )}
 
                     {lead.estimatedValue && (
-                      <span className="font-semibold text-primary-600">
+                      <span className="font-semibold text-primary-600 dark:text-primary-400">
                         {formatCurrency(lead.estimatedValue)}
                       </span>
                     )}

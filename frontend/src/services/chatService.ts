@@ -213,17 +213,33 @@ class ChatService {
 
   // ===== WHATSAPP =====
 
+  async getWhatsAppSessions(): Promise<Array<{
+    sessionName: string;
+    totalContacts: number;
+    totalMessages: number;
+    unreadMessages: number;
+    lastActivity: string;
+  }>> {
+    const { data } = await api.get('/chat/whatsapp/sessions');
+    const result = data.data || data;
+    return Array.isArray(result) ? result : [];
+  }
+
   async getWhatsAppConversations(): Promise<Conversation[]> {
     const { data } = await api.get('/chat/n8n/conversations');
-    return data.data || data;
+    const result = data.data || data;
+    return Array.isArray(result) ? result : [];
   }
 
   async getWhatsAppMessages(sessionName: string, phoneNumber?: string): Promise<Message[]> {
     const params = new URLSearchParams();
     if (phoneNumber) params.append('phoneNumber', phoneNumber);
 
+    console.log('🌐 Chamando API:', `/chat/n8n/messages/${sessionName}?${params.toString()}`);
     const { data } = await api.get(`/chat/n8n/messages/${sessionName}?${params.toString()}`);
-    return data.data || data;
+    console.log('📦 Resposta da API:', data);
+    const result = data.data || data;
+    return Array.isArray(result) ? result : [];
   }
 
   async markWhatsAppAsRead(sessionName: string, phoneNumber: string): Promise<void> {
