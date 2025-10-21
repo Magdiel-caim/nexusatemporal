@@ -318,4 +318,9 @@ export class StockMovementService {
 
     return productsData;
   }
+
+  // Método para query raw (relatórios)
+  async executeRawQuery(query: string, parameters: any[]): Promise<any[]> {
+    return await this.movementRepository.query(query, parameters);
+  }
 }

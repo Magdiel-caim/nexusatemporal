@@ -412,7 +412,7 @@ router.get('/reports/movements-monthly', authenticate, async (req, res) => {
       ORDER BY month DESC, type
     `;
 
-    const result = await (getMovementService() as any).repository.query(query, [tenantId]);
+    const result = await getMovementService().executeRawQuery(query, [tenantId]);
     res.json({ data: result });
   } catch (error: any) {
     console.error('Error getting monthly movements report:', error);
@@ -443,7 +443,7 @@ router.get('/reports/most-used-products', authenticate, async (req, res) => {
       LIMIT $2
     `;
 
-    const result = await (getMovementService() as any).repository.query(query, [tenantId, parseInt(limit as string)]);
+    const result = await getMovementService().executeRawQuery(query, [tenantId, parseInt(limit as string)]);
     res.json({ data: result });
   } catch (error: any) {
     console.error('Error getting most used products report:', error);
@@ -469,7 +469,7 @@ router.get('/reports/stock-value-by-category', authenticate, async (req, res) =>
       ORDER BY total_value DESC
     `;
 
-    const result = await (getProductService() as any).repository.query(query, [tenantId]);
+    const result = await getProductService().executeRawQuery(query, [tenantId]);
     res.json({ data: result });
   } catch (error: any) {
     console.error('Error getting stock value by category report:', error);

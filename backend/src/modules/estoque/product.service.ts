@@ -260,4 +260,9 @@ export class ProductService {
       totalItems: parseFloat(result.totalItems) || 0,
     };
   }
+
+  // Método para query raw (relatórios)
+  async executeRawQuery(query: string, parameters: any[]): Promise<any[]> {
+    return await this.productRepository.query(query, parameters);
+  }
 }
