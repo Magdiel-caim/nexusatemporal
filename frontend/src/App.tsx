@@ -15,6 +15,7 @@ import EstoquePage from './pages/EstoquePage';
 import AutomationPage from './pages/AutomationPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
+import IntegracoesSociaisPage from './pages/IntegracoesSociaisPage';
 import BIDashboard from './pages/BI/BIDashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
@@ -184,6 +185,16 @@ function App() {
                     <h2 className="text-2xl font-bold mb-4">Marketing</h2>
                     <p className="text-gray-600">Em desenvolvimento...</p>
                   </div>
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/integracoes-sociais"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <IntegracoesSociaisPage />
                 </MainLayout>
               </ProtectedRoute>
             }
