@@ -270,10 +270,10 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {product.purchasePrice && (
-                          <div>Compra: R$ {product.purchasePrice.toFixed(2)}</div>
+                          <div>Compra: R$ {Number(product.purchasePrice).toFixed(2)}</div>
                         )}
                         {product.salePrice && (
-                          <div>Venda: R$ {product.salePrice.toFixed(2)}</div>
+                          <div>Venda: R$ {Number(product.salePrice).toFixed(2)}</div>
                         )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">

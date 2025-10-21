@@ -88,6 +88,62 @@ class ChatService {
         await this.updateConversation(conversationId, { tags: updatedTags });
         return this.getConversationById(conversationId);
     }
+    async archiveConversation(conversationId) {
+        return this.updateConversation(conversationId, {
+            status: 'archived',
+        });
+    }
+    async unarchiveConversation(conversationId) {
+        return this.updateConversation(conversationId, {
+            status: 'active',
+        });
+    }
+    async resolveConversation(conversationId) {
+        return this.updateConversation(conversationId, {
+            status: 'closed',
+        });
+    }
+    async reopenConversation(conversationId) {
+        return this.updateConversation(conversationId, {
+            status: 'active',
+        });
+    }
+    async setPriority(conversationId, priority) {
+        const conversation = await this.getConversationById(conversationId);
+        if (!conversation)
+            throw new Error('Conversation not found');
+        const metadata = conversation.metadata || {};
+        metadata.priority = priority;
+        return this.updateConversation(conversationId, { metadata });
+    }
+    async setCustomAttribute(conversationId, key, value) {
+        const conversation = await this.getConversationById(conversationId);
+        if (!conversation)
+            throw new Error('Conversation not found');
+        const metadata = conversation.metadata || {};
+        if (!metadata.customAttributes) {
+            metadata.customAttributes = {};
+        }
+        metadata.customAttributes[key] = value;
+        return this.updateConversation(conversationId, { metadata });
+    }
+    async removeCustomAttribute(conversationId, key) {
+        const conversation = await this.getConversationById(conversationId);
+        if (!conversation)
+            throw new Error('Conversation not found');
+        const metadata = conversation.metadata || {};
+        if (metadata.customAttributes) {
+            delete metadata.customAttributes[key];
+        }
+        return this.updateConversation(conversationId, { metadata });
+    }
+    async getConversationHistory(phoneNumber, limit = 10) {
+        return this.conversationRepository.find({
+            where: { phoneNumber },
+            order: { createdAt: 'DESC' },
+            take: limit,
+        });
+    }
     // ===== MESSAGE OPERATIONS =====
     async createMessage(data) {
         const message = this.messageRepository.create({

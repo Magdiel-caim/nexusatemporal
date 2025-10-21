@@ -428,43 +428,75 @@ export default function EstoquePage() {
 
         {/* Content */}
         <div className="mt-6">
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              </div>
-            }
-          >
-            {loading && activeTab === 'dashboard' ? (
-              <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              </div>
-            ) : (
-              <div>
-                <div style={{ display: activeTab === 'dashboard' ? 'block' : 'none' }}>
-                  {renderDashboard()}
-                </div>
-                <div style={{ display: activeTab === 'products' ? 'block' : 'none' }}>
+          {loading && activeTab === 'dashboard' ? (
+            <div className="flex items-center justify-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <>
+              {activeTab === 'dashboard' && renderDashboard()}
+
+              {activeTab === 'products' && (
+                <Suspense fallback={
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                }>
                   <ProductList onEdit={handleEditProduct} refreshKey={refreshKey} />
-                </div>
-                <div style={{ display: activeTab === 'movements' ? 'block' : 'none' }}>
+                </Suspense>
+              )}
+
+              {activeTab === 'movements' && (
+                <Suspense fallback={
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                }>
                   <MovementList refreshKey={refreshKey} />
-                </div>
-                <div style={{ display: activeTab === 'alerts' ? 'block' : 'none' }}>
+                </Suspense>
+              )}
+
+              {activeTab === 'alerts' && (
+                <Suspense fallback={
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                }>
                   <AlertList refreshKey={refreshKey} onRefresh={() => setRefreshKey((prev) => prev + 1)} />
-                </div>
-                <div style={{ display: activeTab === 'reports' ? 'block' : 'none' }}>
+                </Suspense>
+              )}
+
+              {activeTab === 'reports' && (
+                <Suspense fallback={
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                }>
                   <ReportsView />
-                </div>
-                <div style={{ display: activeTab === 'procedures' ? 'block' : 'none' }}>
+                </Suspense>
+              )}
+
+              {activeTab === 'procedures' && (
+                <Suspense fallback={
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                }>
                   <ProcedureStockTab />
-                </div>
-                <div style={{ display: activeTab === 'inventory' ? 'block' : 'none' }}>
+                </Suspense>
+              )}
+
+              {activeTab === 'inventory' && (
+                <Suspense fallback={
+                  <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                  </div>
+                }>
                   <InventoryCountTab />
-                </div>
-              </div>
-            )}
-          </Suspense>
+                </Suspense>
+              )}
+            </>
+          )}
         </div>
       </div>
 
