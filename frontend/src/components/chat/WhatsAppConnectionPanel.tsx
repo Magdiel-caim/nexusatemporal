@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { QrCode, Loader, CheckCircle, XCircle, RefreshCw, Smartphone } from 'lucide-react';
+import { QrCode, Loader, CheckCircle, XCircle, RefreshCw, Smartphone, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../services/api';
 import { Socket } from 'socket.io-client';
@@ -271,6 +271,23 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
     }
   };
 
+  const handleDelete = async (session: any) => {
+    if (!confirm(`Tem certeza que deseja excluir a conexão "${session.friendlyName || session.name}"?`)) {
+      return;
+    }
+
+    try {
+      await api.delete(`/chat/whatsapp/sessions/${session.name}`);
+      toast.success(`${session.friendlyName || session.name} excluído com sucesso`);
+
+      // Recarregar lista imediatamente
+      await loadConnectedSessions();
+    } catch (error) {
+      console.error('Error deleting session:', error);
+      toast.error('Erro ao excluir conexão');
+    }
+  };
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
       <div className="flex items-center gap-3 mb-6">
@@ -283,20 +300,29 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
       {/* Sessões Conectadas */}
       {connectedSessions.length > 0 && (
-        <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-          <h3 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
+        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+          <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2 flex items-center gap-2">
             <CheckCircle className="h-5 w-5" />
             Conexões Ativas
           </h3>
           {connectedSessions.map((session) => (
             <div key={session.name} className="flex items-center justify-between py-2">
-              <span className="text-green-700 font-medium">{session.friendlyName || session.name}</span>
-              <button
-                onClick={() => handleDisconnect(session)}
-                className="text-sm text-red-600 hover:text-red-700 underline"
-              >
-                Desconectar
-              </button>
+              <span className="text-green-700 dark:text-green-400 font-medium">{session.friendlyName || session.name}</span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleDisconnect(session)}
+                  className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 underline"
+                >
+                  Desconectar
+                </button>
+                <button
+                  onClick={() => handleDelete(session)}
+                  className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 rounded"
+                  title="Excluir conexão"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -304,23 +330,32 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
       {/* Sessões Inativas */}
       {disconnectedSessions.length > 0 && (
-        <div className="mb-6 p-4 bg-orange-50 rounded-lg border border-orange-200">
-          <h3 className="font-semibold text-orange-800 mb-2 flex items-center gap-2">
+        <div className="mb-6 p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-700">
+          <h3 className="font-semibold text-orange-800 dark:text-orange-300 mb-2 flex items-center gap-2">
             <XCircle className="h-5 w-5" />
             Conexões Inativas
           </h3>
           {disconnectedSessions.map((session) => (
             <div key={session.name} className="flex items-center justify-between py-2">
               <div>
-                <span className="text-orange-700 font-medium">{session.friendlyName || session.name}</span>
-                <p className="text-xs text-orange-600">Status: {session.status}</p>
+                <span className="text-orange-700 dark:text-orange-400 font-medium">{session.friendlyName || session.name}</span>
+                <p className="text-xs text-orange-600 dark:text-orange-500">Status: {session.status}</p>
               </div>
-              <button
-                onClick={() => handleReconnect(session)}
-                className="text-sm text-blue-600 hover:text-blue-700 font-semibold underline"
-              >
-                Reconectar
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleReconnect(session)}
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold underline"
+                >
+                  Reconectar
+                </button>
+                <button
+                  onClick={() => handleDelete(session)}
+                  className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-100 dark:hover:bg-red-900/30 rounded"
+                  title="Excluir conexão"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -342,7 +377,7 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
                 }
               }}
               placeholder="Ex: whatsapp_comercial"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400"
               maxLength={50}
               autoFocus
             />
@@ -372,13 +407,13 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
       {status === 'qr_ready' && qrCodeData && (
         <div className="space-y-4">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-            <QrCode className="h-8 w-8 text-green-600 mx-auto mb-2" />
-            <h3 className="font-semibold text-green-800 mb-1">QR Code Gerado!</h3>
-            <p className="text-sm text-green-700">Escaneie com seu WhatsApp para conectar</p>
+          <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-700 rounded-lg p-4 text-center">
+            <QrCode className="h-8 w-8 text-green-600 dark:text-green-400 mx-auto mb-2" />
+            <h3 className="font-semibold text-green-800 dark:text-green-300 mb-1">QR Code Gerado!</h3>
+            <p className="text-sm text-green-700 dark:text-green-400">Escaneie com seu WhatsApp para conectar</p>
           </div>
 
-          <div className="bg-white border-4 border-green-500 rounded-lg p-4 flex justify-center">
+          <div className="bg-white dark:bg-gray-700 border-4 border-green-500 dark:border-green-600 rounded-lg p-4 flex justify-center">
             <img
               src={qrCodeData}
               alt="QR Code WhatsApp"
@@ -387,10 +422,10 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
           </div>
 
           <div className="text-center space-y-2">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
               <strong>Como conectar:</strong>
             </p>
-            <ol className="text-sm text-gray-600 dark:text-gray-400 text-left space-y-1 max-w-md mx-auto">
+            <ol className="text-sm text-gray-600 dark:text-gray-300 text-left space-y-1 max-w-md mx-auto">
               <li>1. Abra o WhatsApp no seu celular</li>
               <li>2. Toque em <strong>Configurações</strong> {'>'} <strong>Aparelhos conectados</strong></li>
               <li>3. Toque em <strong>Conectar um aparelho</strong></li>
@@ -409,9 +444,9 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
       {status === 'connected' && (
         <div className="text-center py-12">
-          <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-green-800 mb-2">Conectado com Sucesso!</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Seu WhatsApp está conectado e pronto para usar</p>
+          <CheckCircle className="h-16 w-16 text-green-600 dark:text-green-400 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-green-800 dark:text-green-300 mb-2">Conectado com Sucesso!</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">Seu WhatsApp está conectado e pronto para usar</p>
           <button
             onClick={handleReset}
             className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg"
@@ -423,9 +458,9 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
 
       {status === 'failed' && (
         <div className="text-center py-12">
-          <XCircle className="h-16 w-16 text-red-600 mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-red-800 mb-2">Falha na Conexão</h3>
-          <p className="text-gray-600 dark:text-gray-400 mb-6">Não foi possível conectar seu WhatsApp</p>
+          <XCircle className="h-16 w-16 text-red-600 dark:text-red-400 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-red-800 dark:text-red-300 mb-2">Falha na Conexão</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">Não foi possível conectar seu WhatsApp</p>
           <button
             onClick={handleReset}
             className="bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-6 rounded-lg flex items-center justify-center gap-2 mx-auto"
