@@ -15,6 +15,7 @@ import EstoquePage from './pages/EstoquePage';
 import AutomationPage from './pages/AutomationPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
+import BIDashboard from './pages/BI/BIDashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 
@@ -134,6 +135,16 @@ function App() {
               <ProtectedRoute>
                 <MainLayout>
                   <AutomationPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/bi"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <BIDashboard />
                 </MainLayout>
               </ProtectedRoute>
             }

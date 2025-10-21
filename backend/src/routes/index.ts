@@ -12,9 +12,9 @@ import usersRoutes from '@/modules/users/users.routes';
 import automationRoutes from '@/modules/automation/automation.routes';
 import estoqueRoutes from '@/modules/estoque/estoque.routes';
 import vendasRoutes from '@/modules/vendas/vendas.routes';
+// import biRoutes from '@/modules/bi/bi.routes'; // TODO: Corrigir dependências NestJS
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
-// import biRoutes from '@/modules/bi/bi.routes';
 // import marketingRoutes from '@/modules/marketing/marketing.routes';
 // import configRoutes from '@/modules/config/config.routes';
 
@@ -43,10 +43,10 @@ router.use('/users', usersRoutes); // User management and permissions
 router.use('/automation', automationRoutes); // Automation system (triggers, workflows, integrations)
 router.use('/stock', estoqueRoutes); // Stock/Inventory management
 router.use('/vendas', vendasRoutes); // Sales and commissions management
+// router.use('/bi', biRoutes); // Business Intelligence - Dashboards, KPIs, Analytics, Reports (TODO: Corrigir backend)
 
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);
-// router.use('/bi', biRoutes);
 // router.use('/marketing', marketingRoutes);
 // router.use('/config', configRoutes);
 
