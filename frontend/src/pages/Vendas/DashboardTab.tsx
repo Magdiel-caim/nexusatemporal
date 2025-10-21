@@ -44,19 +44,19 @@ const DashboardTab: React.FC = () => {
   const [rankingAno, setRankingAno] = useState<number | undefined>(currentYear);
 
   // Query para estatísticas de vendas
-  const { data: vendasStats } = useQuery<VendasStats>({
+  const { data: vendasStats, isError: isErrorVendas } = useQuery<VendasStats>({
     queryKey: ['vendas-stats'],
     queryFn: () => getVendasStats(),
   });
 
   // Query para estatísticas de comissões
-  const { data: comissoesStats } = useQuery<ComissoesStats>({
+  const { data: comissoesStats, isError: isErrorComissoes } = useQuery<ComissoesStats>({
     queryKey: ['comissoes-stats'],
     queryFn: () => getComissoesStats(),
   });
 
   // Query para ranking de vendedores
-  const { data: ranking = [], isLoading: isLoadingRanking } = useQuery<
+  const { data: ranking = [], isLoading: isLoadingRanking, isError: isErrorRanking } = useQuery<
     RankingVendedor[]
   >({
     queryKey: ['ranking', rankingMes, rankingAno],
@@ -107,6 +107,28 @@ const DashboardTab: React.FC = () => {
         return null;
     }
   };
+
+  // Tratamento de erro
+  if (isErrorVendas || isErrorComissoes || isErrorRanking) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="text-center space-y-4">
+          <div className="text-red-600 dark:text-red-400 text-lg font-semibold">
+            ⚠️ Erro ao carregar dados do dashboard
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Não foi possível carregar as estatísticas. Tente novamente mais tarde.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Recarregar Página
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

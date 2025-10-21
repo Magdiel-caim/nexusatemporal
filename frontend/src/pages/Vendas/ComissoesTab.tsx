@@ -56,7 +56,7 @@ const ComissoesTab: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Query para listar comissões
-  const { data: comissoes = [], isLoading } = useQuery({
+  const { data: comissoes = [], isLoading, isError: isErrorComissoes } = useQuery({
     queryKey: ['comissoes', statusFilter, vendedorFilter, mesFilter, anoFilter],
     queryFn: () =>
       listComissoes({
@@ -68,7 +68,7 @@ const ComissoesTab: React.FC = () => {
   });
 
   // Query para listar vendedores (para filtro)
-  const { data: vendedores = [] } = useQuery({
+  const { data: vendedores = [], isError: isErrorVendedores } = useQuery({
     queryKey: ['vendedores'],
     queryFn: () => import('@/services/vendasService').then((m) => m.listVendedores()),
   });
@@ -145,8 +145,8 @@ const ComissoesTab: React.FC = () => {
   const filteredComissoes = comissoes.filter((comissao) => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      comissao.vendedor?.nome.toLowerCase().includes(searchLower) ||
-      comissao.venda?.numeroVenda.toLowerCase().includes(searchLower)
+      comissao.vendedor?.nome?.toLowerCase().includes(searchLower) ||
+      comissao.venda?.numeroVenda?.toLowerCase().includes(searchLower)
     );
   });
 
@@ -180,6 +180,28 @@ const ComissoesTab: React.FC = () => {
   ];
 
   const anos = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
+  // Tratamento de erro
+  if (isErrorComissoes || isErrorVendedores) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="text-center space-y-4">
+          <div className="text-red-600 dark:text-red-400 text-lg font-semibold">
+            ⚠️ Erro ao carregar dados
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Não foi possível carregar as informações. Tente novamente mais tarde.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Recarregar Página
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

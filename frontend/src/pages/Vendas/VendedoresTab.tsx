@@ -64,7 +64,7 @@ const VendedoresTab: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Query para listar vendedores
-  const { data: vendedores = [], isLoading } = useQuery({
+  const { data: vendedores = [], isLoading, isError } = useQuery({
     queryKey: ['vendedores'],
     queryFn: listVendedores,
   });
@@ -182,10 +182,32 @@ const VendedoresTab: React.FC = () => {
     const searchLower = searchTerm.toLowerCase();
     return (
       vendedor.codigoVendedor.toLowerCase().includes(searchLower) ||
-      vendedor.user?.name.toLowerCase().includes(searchLower) ||
-      vendedor.user?.email.toLowerCase().includes(searchLower)
+      vendedor.user?.name?.toLowerCase().includes(searchLower) ||
+      vendedor.user?.email?.toLowerCase().includes(searchLower)
     );
   });
+
+  // Tratamento de erro
+  if (isError) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="text-center space-y-4">
+          <div className="text-red-600 dark:text-red-400 text-lg font-semibold">
+            ⚠️ Erro ao carregar dados
+          </div>
+          <p className="text-gray-600 dark:text-gray-400">
+            Não foi possível carregar as informações. Tente novamente mais tarde.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
+            Recarregar Página
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
