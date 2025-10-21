@@ -12,31 +12,18 @@ const notificame_stats_service_1 = __importDefault(require("./notificame-stats.s
  */
 class NotificaMeController {
     /**
-     * Obter instância do serviço com as credenciais do tenant
+     * Obter instância do serviço (usando API Key global do revendedor)
+     * A API Key é única para todos os tenants (modelo de revendedor)
      */
-    async getServiceInstance(tenantId) {
-        const db = (0, database_1.getAutomationDbPool)();
-        const query = `
-      SELECT * FROM integrations
-      WHERE tenant_id = $1
-      AND integration_type = 'notificame'
-      AND status = 'active'
-      LIMIT 1
-    `;
-        const result = await db.query(query, [tenantId]);
-        if (!result.rows[0]) {
-            throw new Error('Integração Notifica.me não configurada. Configure em Configurações > Integrações');
-        }
-        const integration = result.rows[0];
-        const credentials = typeof integration.credentials === 'string'
-            ? JSON.parse(integration.credentials)
-            : integration.credentials;
-        if (!credentials?.notificame_api_key) {
-            throw new Error('API Key do Notifica.me não configurada');
+    getServiceInstance() {
+        const apiKey = process.env.NOTIFICAME_API_KEY;
+        const baseURL = process.env.NOTIFICAME_BASE_URL;
+        if (!apiKey) {
+            throw new Error('NOTIFICAME_API_KEY não configurada no ambiente. Configure no docker-compose.yml');
         }
         return new NotificaMeService_1.NotificaMeService({
-            apiKey: credentials.notificame_api_key,
-            baseURL: credentials.notificame_api_url,
+            apiKey,
+            baseURL,
         });
     }
     /**
@@ -50,7 +37,7 @@ class NotificaMeController {
                 res.status(401).json({ error: 'Tenant não identificado' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const result = await service.testConnection();
             res.json(result);
         }
@@ -78,7 +65,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'Phone e message são obrigatórios' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const result = await service.sendMessage({ phone, message, instanceId });
             res.json({ success: true, data: result });
         }
@@ -110,7 +97,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'mediaType deve ser: image, video, audio ou document' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const result = await service.sendMedia({
                 phone,
                 mediaUrl,
@@ -145,7 +132,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'Phone e templateName são obrigatórios' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const result = await service.sendTemplate({
                 phone,
                 templateName,
@@ -182,7 +169,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'Buttons deve ter entre 1 e 3 botões' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const result = await service.sendButtons({
                 phone,
                 message,
@@ -216,7 +203,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'Phone, message, buttonText e sections (array) são obrigatórios' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const result = await service.sendList({
                 phone,
                 message,
@@ -245,7 +232,7 @@ class NotificaMeController {
                 res.status(401).json({ error: 'Tenant não identificado' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const instances = await service.getInstances();
             res.json({ success: true, data: instances });
         }
@@ -273,7 +260,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'instanceId é obrigatório' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const instance = await service.getInstance(instanceId);
             res.json({ success: true, data: instance });
         }
@@ -301,7 +288,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'instanceId é obrigatório' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const result = await service.getQRCode(instanceId);
             res.json({ success: true, data: result });
         }
@@ -329,7 +316,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'instanceId é obrigatório' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             await service.disconnectInstance(instanceId);
             res.json({ success: true, message: 'Instância desconectada com sucesso' });
         }
@@ -626,7 +613,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'Phone é obrigatório' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             const messages = await service.getMessageHistory(phone, limit ? parseInt(limit) : 50);
             res.json({ success: true, data: messages });
         }
@@ -655,7 +642,7 @@ class NotificaMeController {
                 res.status(400).json({ error: 'messageId é obrigatório' });
                 return;
             }
-            const service = await this.getServiceInstance(tenantId);
+            const service = this.getServiceInstance();
             await service.markAsRead(messageId, instanceId);
             res.json({ success: true, message: 'Mensagem marcada como lida' });
         }

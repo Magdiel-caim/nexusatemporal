@@ -6,10 +6,12 @@ import {
   Phone,
   Video,
   MoreVertical,
-  Tag as TagIcon,
+  Tag as 
   User,
   X,
   Smartphone,
+  Zap,
+  Settings,
 } from 'lucide-react';
 import chatService, { Conversation, Message, QuickReply } from '../services/chatService';
 import toast from 'react-hot-toast';
@@ -23,6 +25,8 @@ import AudioRecorder from '../components/chat/AudioRecorder';
 import EmojiPicker from 'emoji-picker-react';
 import ChannelSelector from '../components/chat/ChannelSelector';
 import ConversationDetailsPanel from '../components/chat/ConversationDetailsPanel';
+import QuickReplyManager from '../components/chat/QuickReplyManager';
+import TypingIndicator from '../components/chat/TypingIndicator';
 
 const ChatPage: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -35,6 +39,8 @@ const ChatPage: React.FC = () => {
   const [selectedChannel, setSelectedChannel] = useState<string | null>(null); // Filtro por canal/sessão
   const [showQuickReplies, setShowQuickReplies] = useState(false);
   const [quickReplies, setQuickReplies] = useState<QuickReply[]>([]);
+  const [showQuickReplyManager, setShowQuickReplyManager] = useState(false);
+  const [quickReplySuggestions, setQuickReplySuggestions] = useState<QuickReply[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [socket, setSocket] = useState<Socket | null>(null);
   const [showWhatsAppConnection, setShowWhatsAppConnection] = useState(false);
@@ -43,6 +49,8 @@ const ChatPage: React.FC = () => {
   const [fileCaption, setFileCaption] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [quotedMessage, setQuotedMessage] = useState<Message | null>(null);
+  const [isTyping, setIsTyping] = useState(false);
+  const [typingUser, setTypingUser] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedConversationRef = useRef<Conversation | null>(null);
 
@@ -149,6 +157,23 @@ const ChatPage: React.FC = () => {
           setMessages((prev) => prev.filter((msg) => msg.id !== deletedData.messageId));
           toast.success('Mensagem deletada no WhatsApp');
         }
+      }
+    });
+
+    // Listen para typing indicators
+    socketInstance.on('typing:start', (data: { conversationId: string; userName: string }) => {
+      const currentConversation = selectedConversationRef.current;
+      if (currentConversation && currentConversation.id === data.conversationId) {
+        setIsTyping(true);
+        setTypingUser(data.userName || 'Alguém');
+      }
+    });
+
+    socketInstance.on('typing:stop', (data: { conversationId: string }) => {
+      const currentConversation = selectedConversationRef.current;
+      if (currentConversation && currentConversation.id === data.conversationId) {
+        setIsTyping(false);
+        setTypingUser('');
       }
     });
 
@@ -796,6 +821,7 @@ const ChatPage: React.FC = () => {
                     onDelete={handleDeleteMessage}
                   />
                 ))}
+                {isTyping && <TypingIndicator name={typingUser} />}
                 <div ref={messagesEndRef} />
               </>
             )}
@@ -849,7 +875,16 @@ const ChatPage: React.FC = () => {
                 className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg"
                 title="Respostas Rápidas"
               >
-                <TagIcon className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
+                <Zap className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
+              </button>
+
+              {/* Gerenciar Respostas Rápidas */}
+              <button
+                onClick={() => setShowQuickReplyManager(true)}
+                className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg"
+                title="Gerenciar Respostas Rápidas"
+              >
+                <Settings className="h-4 w-4 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
               </button>
 
               {/* Upload de Documento */}
@@ -873,15 +908,57 @@ const ChatPage: React.FC = () => {
               {/* Input de Texto */}
               <input
                 type="text"
-                placeholder="Digite uma mensagem..."
+                placeholder="Digite uma mensagem ou / para respostas rápidas..."
                 value={messageInput}
                 onChange={(e) => {
-                  setMessageInput(e.target.value);
+                  const value = e.target.value;
+                  setMessageInput(value);
                   handleTyping();
+
+                  // Detectar atalho de quick reply (/)
+                  if (value.startsWith('/') && value.length > 1) {
+                    const search = value.slice(1).toLowerCase();
+                    const filtered = quickReplies.filter(qr =>
+                      qr.shortcut?.toLowerCase().includes(search) ||
+                      qr.title.toLowerCase().includes(search)
+                    );
+                    setQuickReplySuggestions(filtered.slice(0, 5));
+                  } else {
+                    setQuickReplySuggestions([]);
+                  }
                 }}
                 onKeyDown={handleKeyDown}
                 className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+
+              {/* Quick Reply Suggestions Dropdown */}
+              {quickReplySuggestions.length > 0 && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
+                  {quickReplySuggestions.map((qr) => (
+                    <button
+                      key={qr.id}
+                      onClick={() => {
+                        setMessageInput(qr.content);
+                        setQuickReplySuggestions([]);
+                      }}
+                      className="w-full flex items-start gap-3 px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors border-b border-gray-100 dark:border-gray-600 last:border-0"
+                    >
+                      <Zap className="h-4 w-4 text-indigo-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1 text-left">
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">{qr.title}</p>
+                          {qr.shortcut && (
+                            <span className="px-1.5 py-0.5 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded font-mono">
+                              {qr.shortcut}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">{qr.content}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
 
               {/* Emoji Picker */}
               <button
@@ -953,6 +1030,19 @@ const ChatPage: React.FC = () => {
             setSelectedFile(null);
             setFilePreview(null);
             setFileCaption('');
+          }}
+        />
+      )}
+
+      {/* Quick Reply Manager Modal */}
+      {showQuickReplyManager && (
+        <QuickReplyManager
+          onClose={() => {
+            setShowQuickReplyManager(false);
+            loadQuickReplies(); // Reload quick replies after changes
+          }}
+          onSelect={(content) => {
+            setMessageInput(content);
           }}
         />
       )}

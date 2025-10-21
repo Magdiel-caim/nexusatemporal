@@ -17,11 +17,15 @@ import {
   Plus,
   Trash2,
   Flag,
+  Tag as TagIcon,
 } from 'lucide-react';
 import chatService, { Conversation } from '../../services/chatService';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import toast from 'react-hot-toast';
+import TagSelector from './TagSelector';
+import TagManager from './TagManager';
+import UserAssignment from './UserAssignment';
 
 interface ConversationDetailsPanelProps {
   conversation: Conversation;
@@ -42,6 +46,8 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
 }) => {
   const [sections, setSections] = useState<AccordionSection[]>([
     { id: 'actions', title: 'Ações da conversa', icon: <Zap className="h-4 w-4" />, isOpen: true },
+    { id: 'tags', title: 'Tags', icon: <TagIcon className="h-4 w-4" />, isOpen: false },
+    { id: 'assignment', title: 'Atendente', icon: <UserPlus className="h-4 w-4" />, isOpen: false },
     { id: 'info', title: 'Informação da conversa', icon: <Hash className="h-4 w-4" />, isOpen: false },
     { id: 'attributes', title: 'Atributos do contato', icon: <UserPlus className="h-4 w-4" />, isOpen: false },
     { id: 'history', title: 'Conversas anteriores', icon: <Clock className="h-4 w-4" />, isOpen: false },
@@ -53,6 +59,7 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
   const [newAttributeKey, setNewAttributeKey] = useState('');
   const [newAttributeValue, setNewAttributeValue] = useState('');
   const [selectedPriority, setSelectedPriority] = useState<string>('normal');
+  const [showTagManager, setShowTagManager] = useState(false);
 
   const customAttributes = conversation.metadata?.customAttributes || {};
   const priority = conversation.metadata?.priority || 'normal';
@@ -413,6 +420,27 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
     </div>
   );
 
+  const renderTags = () => (
+    <div className="px-3">
+      <TagSelector
+        conversationId={conversation.id}
+        selectedTags={conversation.tags || []}
+        onUpdate={onUpdate}
+        onManageTags={() => setShowTagManager(true)}
+      />
+    </div>
+  );
+
+  const renderAssignment = () => (
+    <div className="px-3">
+      <UserAssignment
+        conversationId={conversation.id}
+        assignedUserId={conversation.assignedUserId}
+        onUpdate={onUpdate}
+      />
+    </div>
+  );
+
   const renderParticipants = () => (
     <div className="space-y-2 px-3">
       <div className="flex items-center gap-2 text-sm">
@@ -495,6 +523,8 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
             {section.isOpen && (
               <div className="pb-4">
                 {section.id === 'actions' && renderActions()}
+                {section.id === 'tags' && renderTags()}
+                {section.id === 'assignment' && renderAssignment()}
                 {section.id === 'info' && renderInfo()}
                 {section.id === 'attributes' && renderAttributes()}
                 {section.id === 'history' && renderHistory()}
@@ -504,6 +534,11 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Tag Manager Modal */}
+      {showTagManager && (
+        <TagManager onClose={() => setShowTagManager(false)} />
+      )}
     </div>
   );
 };

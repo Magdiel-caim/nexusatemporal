@@ -7,24 +7,20 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Loader2, Instagram, MessageCircle, CheckCircle2, XCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import notificaMeService, { type NotificaMeInstance } from '@/services/notificaMeService';
 import { integrationService } from '@/services/automationService';
 
 interface NotificaMeConfigProps {
-  apiKey?: string;
   onConfigChange?: () => void;
 }
 
-const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ apiKey: initialApiKey, onConfigChange }) => {
+const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) => {
   const [instances, setInstances] = useState<NotificaMeInstance[]>([]);
   const [loading, setLoading] = useState(true);
   const [testing, setTesting] = useState(false);
   const [qrCode, setQrCode] = useState<{ instanceId: string; code: string } | null>(null);
-  const [apiKey, setApiKey] = useState(initialApiKey || '');
   const [isConfigured, setIsConfigured] = useState(false);
 
   useEffect(() => {
@@ -47,7 +43,6 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ apiKey: initialApiK
 
       if (notificameIntegration) {
         setIsConfigured(true);
-        setApiKey('••••••••••••••••'); // Masked
       }
     } catch (error) {
       console.error('Error checking configuration:', error);
@@ -58,31 +53,28 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ apiKey: initialApiK
 
   /**
    * Configurar integração automaticamente
+   * Modelo Revendedor: API Key está no backend, apenas ativamos a integração
    */
   const handleConfigure = async () => {
-    if (!apiKey || apiKey === '••••••••••••••••') {
-      toast.error('Insira uma API Key válida');
-      return;
-    }
-
     try {
       setTesting(true);
 
-      // Criar integração
+      // Criar integração (API Key vem do backend via env var)
       await integrationService.create({
         name: 'Notifica.me - Instagram & Messenger',
         type: 'notificame',
         credentials: {
-          notificame_api_key: apiKey,
-          notificame_api_url: 'https://app.notificame.com.br/api',
+          // API Key é gerenciada pelo backend (modelo revendedor)
+          configured_by: 'reseller',
         },
         config: {
           auto_configure: true,
+          reseller_mode: true,
         },
         isActive: true,
       });
 
-      toast.success('Integração configurada com sucesso!');
+      toast.success('Integração ativada com sucesso!');
       setIsConfigured(true);
       loadInstances();
 
@@ -90,7 +82,7 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ apiKey: initialApiK
         onConfigChange();
       }
     } catch (error: any) {
-      toast.error('Erro ao configurar integração', {
+      toast.error('Erro ao ativar integração', {
         description: error.response?.data?.message || error.message,
       });
     } finally {
@@ -208,39 +200,27 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ apiKey: initialApiK
             Conectar Instagram & Messenger
           </CardTitle>
           <CardDescription>
-            Configure sua API Key do Notifica.me para conectar suas redes sociais
+            Ative a integração com Instagram e Messenger para começar a receber mensagens
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="apiKey">API Key do Notifica.me</Label>
-            <Input
-              id="apiKey"
-              type="password"
-              placeholder="Sua API Key"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-            />
+          <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+              <p className="font-medium">Integração via Revendedor</p>
+            </div>
             <p className="text-sm text-muted-foreground">
-              Obtenha sua API Key em{' '}
-              <a
-                href="https://app.notificame.com.br"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                app.notificame.com.br
-              </a>
+              A chave de API já está configurada pelo sistema. Você só precisa ativar a integração e conectar suas contas sociais.
             </p>
           </div>
 
           <Button
             onClick={handleConfigure}
-            disabled={testing || !apiKey}
+            disabled={testing}
             className="w-full"
           >
             {testing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Configurar Integração
+            Ativar Integração
           </Button>
         </CardContent>
       </Card>

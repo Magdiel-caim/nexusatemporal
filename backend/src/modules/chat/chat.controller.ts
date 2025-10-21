@@ -299,9 +299,16 @@ export class ChatController {
 
   getQuickReplies = async (req: Request, res: Response) => {
     try {
-      // TODO: Implement quick replies when needed
-      // For now, return empty array
-      res.json([]);
+      const { id: userId } = req.user as any;
+      const { category, search } = req.query;
+
+      const quickReplies = await this.chatService.getQuickReplies({
+        category: category as string,
+        userId,
+        search: search as string,
+      });
+
+      res.json(quickReplies);
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }

@@ -185,6 +185,11 @@ class ChatService {
     return data;
   }
 
+  async assignConversation(conversationId: string, userId: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/assign`, { userId });
+    return data;
+  }
+
   // ===== MESSAGES =====
 
   async getMessages(conversationId: string): Promise<Message[]> {
