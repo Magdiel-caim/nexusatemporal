@@ -38,6 +38,8 @@ export interface DashboardData {
     salesFunnel: ChartDataPoint[];
     revenueVsExpenses: { revenue: number; expenses: number };
   };
+  isRealData?: boolean; // Indica se são dados reais ou mock
+  dataSource?: 'api' | 'mock'; // Fonte dos dados
 }
 
 class BIService {
@@ -50,11 +52,20 @@ class BIService {
   }): Promise<DashboardData> {
     try {
       const { data } = await api.get('/bi/dashboards/executive', { params: filters });
-      return data;
+      return {
+        ...data,
+        isRealData: true,
+        dataSource: 'api' as const,
+      };
     } catch (error) {
       console.error('Error fetching executive dashboard:', error);
+      console.warn('⚠️  Usando dados de demonstração devido a erro na API');
       // Fallback para dados mock em caso de erro
-      return this.getMockData();
+      return {
+        ...this.getMockData(),
+        isRealData: false,
+        dataSource: 'mock' as const,
+      };
     }
   }
 
@@ -67,10 +78,19 @@ class BIService {
   }): Promise<DashboardData> {
     try {
       const { data } = await api.get('/bi/dashboards/sales', { params: filters });
-      return data;
+      return {
+        ...data,
+        isRealData: true,
+        dataSource: 'api' as const,
+      };
     } catch (error) {
       console.error('Error fetching sales dashboard:', error);
-      return this.getMockData();
+      console.warn('⚠️  Usando dados de demonstração devido a erro na API');
+      return {
+        ...this.getMockData(),
+        isRealData: false,
+        dataSource: 'mock' as const,
+      };
     }
   }
 
