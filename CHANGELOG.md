@@ -2,6 +2,173 @@
 
 ---
 
+## ⚠️ v114: CORREÇÕES CHAT - DATABASE TABLES (2025-10-21) - PARCIALMENTE RESOLVIDO
+
+### 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Corrigir erros 400 em todas as ações do Chat
+
+**Status Final:** ⚠️ **PARCIALMENTE RESOLVIDO** | ⚠️ **ERROS AINDA PERSISTEM**
+
+**Versões Deployadas:**
+- Backend: v113-auth-fix
+- Frontend: v111-chat-complete
+- Database: Migration 011
+
+**Data:** 2025-10-21 19:00-20:15 UTC
+
+**Tempo:** 1h 15min
+
+---
+
+### 🐛 BUGS CORRIGIDOS (3 total)
+
+#### BUG #1: Conversas WhatsApp Não Existiam no Banco (v112)
+**Problema:** IDs virtuais `whatsapp-session-phone` não existiam na tabela `conversations`
+
+**Solução:** Criada função `ensureConversationExists()` que:
+- Detecta IDs virtuais
+- Extrai sessionName e phoneNumber
+- Cria conversa no banco se não existir
+- Retorna ID real para executar ações
+
+**Endpoints Corrigidos:** 10 (addTag, removeTag, assign, archive, unarchive, resolve, reopen, setPriority, setCustomAttribute, removeCustomAttribute)
+
+**Arquivo:** `backend/src/modules/chat/chat.controller.ts:13-52`
+
+#### BUG #2: Erro de Autenticação req.user (v113)
+**Problema:** Middleware salva `req.user.userId` mas controllers tentavam acessar `req.user.id`
+
+**Solução:** Corrigido acesso: `const userId = (req.user as any)?.userId`
+
+**Endpoints Corrigidos:** getQuickReplies, createQuickReply, sendMessage
+
+**Logging:** Adicionado `console.error()` em todos os catch blocks
+
+#### BUG #3: Tabelas Não Existiam (Migration 011) ⚠️ ROOT CAUSE
+**Problema:** **TABELAS DE CHAT NÃO EXISTIAM NO BANCO!**
+
+Logs mostravam:
+```
+relation "conversations" does not exist
+relation "quick_replies" does not exist
+```
+
+**Solução:** Migration 011 criada e executada
+
+**Tabelas Criadas:**
+- ✅ conversations (conversas)
+- ✅ messages (mensagens)
+- ✅ attachments (anexos)
+- ✅ chat_tags (etiquetas)
+- ✅ quick_replies (respostas rápidas)
+
+**Features:**
+- Foreign keys com ON DELETE CASCADE
+- Índices para performance
+- Triggers para updated_at
+- CHECK constraints
+
+**Arquivo:** `backend/src/database/migrations/011_create_chat_tables.sql`
+
+---
+
+### 📦 ARQUIVOS MODIFICADOS
+
+**Backend:**
+1. `backend/src/modules/chat/chat.controller.ts`
+   - Função `ensureConversationExists()` (linha 13-52)
+   - Corrigido `req.user.userId` em 3 endpoints
+   - Logging em todos os catch blocks
+
+2. `backend/src/database/migrations/011_create_chat_tables.sql`
+   - Nova migration (143 linhas)
+   - 5 tabelas + índices + triggers
+
+**Frontend:**
+3. `frontend/src/pages/ChatPage.tsx`
+   - Dark mode quoted message fix (linha 857)
+
+---
+
+### 🚀 DEPLOY
+
+**Backend v112:**
+```bash
+npm run build
+docker build -t nexus-backend:v112-whatsapp-actions-fix
+docker service update --image nexus-backend:v112-whatsapp-actions-fix nexus_backend
+# ✅ CONVERGED 19:30 UTC
+```
+
+**Backend v113:**
+```bash
+npm run build
+docker build -t nexus-backend:v113-auth-fix
+docker service update --image nexus-backend:v113-auth-fix nexus_backend
+# ✅ CONVERGED 19:56 UTC
+```
+
+**Migration 011:**
+```bash
+docker cp 011_create_chat_tables.sql postgres:/tmp/
+docker exec postgres psql -U nexus_admin -d nexus_master -f /tmp/011_create_chat_tables.sql
+# ✅ EXECUTADA 20:11 UTC
+```
+
+**Frontend v111:**
+```bash
+npm run build
+docker build -t nexus-frontend:v111-chat-complete
+docker service update --image nexus-frontend:v111-chat-complete nexus_frontend
+# ✅ CONVERGED 19:15 UTC
+```
+
+---
+
+### ⚠️ STATUS ATUAL
+
+**O Que Foi Corrigido:**
+- ✅ Helper ensureConversationExists()
+- ✅ Acesso req.user.userId corrigido
+- ✅ Logging adicionado
+- ✅ 5 tabelas criadas no banco
+- ✅ Dark mode quoted message
+
+**⚠️ USUÁRIO CONFIRMOU QUE AINDA HÁ ERROS**
+- Trocou de navegador (não é cache)
+- Erros persistem após todas as correções
+
+**Próximos Passos v114:**
+1. Obter erro EXATO do usuário (screenshot + logs)
+2. Verificar backend logs pós-migration
+3. Verificar entity vs migration (column names)
+4. Testar endpoints com curl
+5. Considerar restart backend
+6. Verificar se tabelas têm dados
+
+---
+
+### 📄 DOCUMENTAÇÃO
+
+- `CHAT_v111_CORRECOES_DEPLOY.md` - Dark mode fix
+- `CHAT_v112_WHATSAPP_ACTIONS_FIX.md` - Helper ensureConversationExists
+- `CHAT_v113_AUTH_FIX.md` - req.user.userId fix
+- `CHAT_v114_DATABASE_FIX.md` - Migration 011
+- `SESSAO_B_21OUT_RESUMO_COMPLETO.md` - Resumo completo da sessão
+
+---
+
+### 🔐 CREDENCIAIS
+
+**Database:**
+- Host: postgres (container)
+- User: nexus_admin
+- Password: 6uyJZdc0xsCe7ymief3x2Izi9QubcTYP
+- Database: nexus_master
+
+---
+
 ## ⚠️ v113: MELHORIAS UX NOTIFICAME (2025-10-21) - COM ERROS
 
 ### 📝 RESUMO EXECUTIVO

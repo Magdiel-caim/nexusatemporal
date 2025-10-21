@@ -854,14 +854,14 @@ const ChatPage: React.FC = () => {
           <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
             {/* Quoted Message Display */}
             {quotedMessage && (
-              <div className="mb-3 p-3 bg-blue-50 border-l-4 border-blue-500 flex items-center justify-between rounded">
+              <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/30 border-l-4 border-blue-500 dark:border-blue-400 flex items-center justify-between rounded">
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-blue-700">Respondendo:</p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300 truncate">{quotedMessage.content}</p>
+                  <p className="text-xs font-semibold text-blue-700 dark:text-blue-300">Respondendo:</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-200 truncate">{quotedMessage.content}</p>
                 </div>
                 <button
                   onClick={() => setQuotedMessage(null)}
-                  className="ml-2 text-gray-500 dark:text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:text-gray-300"
+                  className="ml-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
                 >
                   <X className="h-4 w-4" />
                 </button>

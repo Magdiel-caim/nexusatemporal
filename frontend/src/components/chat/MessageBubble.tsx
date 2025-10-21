@@ -47,13 +47,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
 
     switch (status) {
       case 'sent':
-        return <Check className="h-3 w-3 text-gray-400" title={getTooltip()} />;
+        return <span title={getTooltip()}><Check className="h-3 w-3 text-gray-400" /></span>;
       case 'delivered':
-        return <CheckCheck className="h-3 w-3 text-gray-400" title={getTooltip()} />;
+        return <span title={getTooltip()}><CheckCheck className="h-3 w-3 text-gray-400" /></span>;
       case 'read':
-        return <CheckCheck className="h-3 w-3 text-blue-500" title={getTooltip()} />;
+        return <span title={getTooltip()}><CheckCheck className="h-3 w-3 text-blue-500" /></span>;
       case 'pending':
-        return <Clock className="h-3 w-3 text-gray-400" title="Enviando..." />;
+        return <span title="Enviando..."><Clock className="h-3 w-3 text-gray-400" /></span>;
       default:
         return null;
     }
