@@ -4,6 +4,7 @@ import { ProductService } from './product.service';
 import { StockMovementService } from './stock-movement.service';
 import { StockAlertService } from './stock-alert.service';
 import { ProcedureProductService } from './procedure-product.service';
+import { InventoryCountService } from './inventory-count.service';
 import { Pool } from 'pg';
 
 const router = Router();
@@ -13,6 +14,7 @@ let productService: ProductService;
 let movementService: StockMovementService;
 let alertService: StockAlertService;
 let procedureProductService: ProcedureProductService;
+let inventoryCountService: InventoryCountService;
 
 function getProductService(): ProductService {
   if (!productService) {
@@ -42,6 +44,13 @@ function getProcedureProductService(): ProcedureProductService {
   return procedureProductService;
 }
 
+function getInventoryCountService(): InventoryCountService {
+  if (!inventoryCountService) {
+    inventoryCountService = new InventoryCountService();
+  }
+  return inventoryCountService;
+}
+
 // ============================================
 // PUBLIC ROUTES (sem autenticação)
 // ============================================
@@ -54,7 +63,7 @@ router.get('/health', (req, res) => {
     message: 'Stock module is running',
     timestamp: new Date().toISOString(),
     database: 'connected',
-    entities: ['products', 'stock_movements', 'stock_alerts', 'procedure_products']
+    entities: ['products', 'stock_movements', 'stock_alerts', 'procedure_products', 'inventory_counts', 'inventory_count_items']
   });
 });
 
@@ -604,6 +613,211 @@ router.put('/procedure-products/:id/quantity', authenticate, async (req, res) =>
   } catch (error: any) {
     console.error('Error updating product quantity:', error);
     res.status(400).json({ error: error.message });
+  }
+});
+
+// ============================================
+// INVENTORY COUNT ROUTES
+// ============================================
+
+// Listar contagens de inventário
+router.get('/inventory-counts', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { status, startDate, endDate, location, limit, offset } = req.query;
+
+    const result = await getInventoryCountService().findAll({
+      tenantId,
+      status: status as any,
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined,
+      location: location as string,
+      limit: limit ? parseInt(limit as string) : 50,
+      offset: offset ? parseInt(offset as string) : 0,
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error fetching inventory counts:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Criar nova contagem de inventário
+router.post('/inventory-counts', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const userId = req.user?.userId || 'system';
+    const { description, location, countDate } = req.body;
+
+    const inventoryCount = await getInventoryCountService().createInventoryCount({
+      description,
+      location,
+      countDate: countDate ? new Date(countDate) : undefined,
+      userId,
+      tenantId,
+    });
+
+    res.status(201).json(inventoryCount);
+  } catch (error: any) {
+    console.error('Error creating inventory count:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Obter contagem específica com todos os itens
+router.get('/inventory-counts/:id', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+
+    const inventoryCount = await getInventoryCountService().findOne(id, tenantId);
+    res.json(inventoryCount);
+  } catch (error: any) {
+    console.error('Error fetching inventory count:', error);
+    res.status(404).json({ error: error.message });
+  }
+});
+
+// Adicionar item à contagem
+router.post('/inventory-counts/:id/items', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id: inventoryCountId } = req.params;
+    const { productId, countedStock, notes } = req.body;
+
+    if (!productId || countedStock === undefined) {
+      return res.status(400).json({ error: 'productId e countedStock são obrigatórios' });
+    }
+
+    const item = await getInventoryCountService().addCountItem({
+      inventoryCountId,
+      productId,
+      countedStock: Number(countedStock),
+      notes,
+      tenantId,
+    });
+
+    res.status(201).json(item);
+  } catch (error: any) {
+    console.error('Error adding count item:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Atualizar item da contagem
+router.put('/inventory-count-items/:id', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+    const { countedStock, notes } = req.body;
+
+    if (countedStock === undefined) {
+      return res.status(400).json({ error: 'countedStock é obrigatório' });
+    }
+
+    const item = await getInventoryCountService().updateCountItem(
+      id,
+      tenantId,
+      Number(countedStock),
+      notes
+    );
+
+    res.json(item);
+  } catch (error: any) {
+    console.error('Error updating count item:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Excluir item da contagem
+router.delete('/inventory-count-items/:id', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+
+    await getInventoryCountService().deleteCountItem(id, tenantId);
+    res.json({ message: 'Item removido com sucesso' });
+  } catch (error: any) {
+    console.error('Error deleting count item:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Ajustar estoque de um item
+router.post('/inventory-count-items/:id/adjust', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const userId = req.user?.userId || 'system';
+    const { id } = req.params;
+
+    const result = await getInventoryCountService().adjustInventoryItem(id, tenantId, userId);
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error adjusting inventory item:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Ajustar todos os itens de uma contagem em lote
+router.post('/inventory-counts/:id/adjust-all', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const userId = req.user?.userId || 'system';
+    const { id: inventoryCountId } = req.params;
+
+    const result = await getInventoryCountService().batchAdjustInventory(
+      inventoryCountId,
+      tenantId,
+      userId
+    );
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error adjusting inventory:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Concluir contagem de inventário
+router.post('/inventory-counts/:id/complete', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+
+    const inventoryCount = await getInventoryCountService().completeInventoryCount(id, tenantId);
+    res.json(inventoryCount);
+  } catch (error: any) {
+    console.error('Error completing inventory count:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Cancelar contagem de inventário
+router.post('/inventory-counts/:id/cancel', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+
+    const inventoryCount = await getInventoryCountService().cancelInventoryCount(id, tenantId);
+    res.json(inventoryCount);
+  } catch (error: any) {
+    console.error('Error cancelling inventory count:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Obter relatório de divergências
+router.get('/inventory-counts/:id/discrepancies', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+
+    const report = await getInventoryCountService().getDiscrepancyReport(id, tenantId);
+    res.json(report);
+  } catch (error: any) {
+    console.error('Error getting discrepancy report:', error);
+    res.status(500).json({ error: error.message });
   }
 });
 

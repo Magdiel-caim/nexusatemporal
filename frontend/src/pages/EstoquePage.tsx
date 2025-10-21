@@ -20,8 +20,10 @@ const MovementList = lazy(() => import('../components/estoque/MovementList'));
 const MovementForm = lazy(() => import('../components/estoque/MovementForm'));
 const AlertList = lazy(() => import('../components/estoque/AlertList'));
 const ReportsView = lazy(() => import('../components/estoque/ReportsView'));
+const ProcedureStockTab = lazy(() => import('../components/estoque/ProcedureStockTab'));
+const InventoryCountTab = lazy(() => import('../components/estoque/InventoryCountTab'));
 
-type ActiveTab = 'dashboard' | 'products' | 'movements' | 'alerts' | 'reports';
+type ActiveTab = 'dashboard' | 'products' | 'movements' | 'alerts' | 'reports' | 'procedures' | 'inventory';
 
 export default function EstoquePage() {
   const [loading, setLoading] = useState(true);
@@ -394,6 +396,32 @@ export default function EstoquePage() {
               >
                 Relatórios
               </button>
+              <button
+                onClick={() => setActiveTab('procedures')}
+                className={`
+                  py-4 px-1 border-b-2 font-medium text-sm transition-colors
+                  ${
+                    activeTab === 'procedures'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }
+                `}
+              >
+                Procedimentos
+              </button>
+              <button
+                onClick={() => setActiveTab('inventory')}
+                className={`
+                  py-4 px-1 border-b-2 font-medium text-sm transition-colors
+                  ${
+                    activeTab === 'inventory'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  }
+                `}
+              >
+                Inventário
+              </button>
             </nav>
           </div>
         </div>
@@ -449,6 +477,28 @@ export default function EstoquePage() {
                   }
                 >
                   <ReportsView />
+                </Suspense>
+              )}
+              {activeTab === 'procedures' && (
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center h-64">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                  }
+                >
+                  <ProcedureStockTab />
+                </Suspense>
+              )}
+              {activeTab === 'inventory' && (
+                <Suspense
+                  fallback={
+                    <div className="flex items-center justify-center h-64">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                    </div>
+                  }
+                >
+                  <InventoryCountTab />
                 </Suspense>
               )}
             </>
