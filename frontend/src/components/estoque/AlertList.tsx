@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { stockService, StockAlert, AlertType, AlertStatus } from '@/services/stockService';
 import { AlertTriangle, CheckCircle, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { exportAlertsToPDF } from '@/services/exportService';
 
 interface AlertListProps {
   refreshKey: number;
@@ -77,64 +76,8 @@ export default function AlertList({ refreshKey, onRefresh }: AlertListProps) {
 
   const handleExportPDF = () => {
     try {
-      const doc = new jsPDF();
-
-      // Título
-      doc.setFontSize(18);
-      doc.text('Relatório de Alertas de Estoque', 14, 20);
-
-      // Data de geração
-      doc.setFontSize(11);
-      const dataGeracao = new Date().toLocaleString('pt-BR');
-      doc.text(`Gerado em: ${dataGeracao}`, 14, 28);
-
-      // Filtro aplicado
-      const filtroTexto = statusFilter
-        ? `Status: ${statusFilter === 'ACTIVE' ? 'Ativos' : statusFilter === 'RESOLVED' ? 'Resolvidos' : 'Ignorados'}`
-        : 'Todos os status';
-      doc.text(`Filtro: ${filtroTexto}`, 14, 34);
-
-      // Preparar dados para a tabela
-      const tableData = alerts.map((alert) => [
-        alert.product?.name || 'N/A',
-        alert.type.replace('_', ' '),
-        alert.status,
-        alert.currentStock !== undefined ? `${alert.currentStock} ${alert.product?.unit || ''}` : 'N/A',
-        alert.minimumStock ? `${alert.minimumStock} ${alert.product?.unit || ''}` : 'N/A',
-        new Date(alert.createdAt).toLocaleDateString('pt-BR'),
-      ]);
-
-      // Gerar tabela
-      autoTable(doc, {
-        startY: 40,
-        head: [['Produto', 'Tipo', 'Status', 'Estoque Atual', 'Estoque Mínimo', 'Data']],
-        body: tableData,
-        theme: 'striped',
-        headStyles: { fillColor: [59, 130, 246] },
-        styles: { fontSize: 9 },
-        columnStyles: {
-          0: { cellWidth: 50 },
-          1: { cellWidth: 35 },
-          2: { cellWidth: 25 },
-          3: { cellWidth: 25 },
-          4: { cellWidth: 25 },
-          5: { cellWidth: 25 },
-        },
-      });
-
-      // Resumo
-      const finalY = (doc as any).lastAutoTable.finalY || 40;
-      doc.setFontSize(11);
-      doc.text(`Total de alertas: ${alerts.length}`, 14, finalY + 10);
-
-      // Gerar nome do arquivo com timestamp
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `alertas_${timestamp}.pdf`;
-
-      // Salvar PDF
-      doc.save(filename);
-
-      toast.success(`Arquivo ${filename} exportado com sucesso!`);
+      exportAlertsToPDF(alerts);
+      toast.success('Alertas exportados para PDF com sucesso!');
     } catch (error: any) {
       console.error('Erro ao exportar PDF:', error);
       toast.error('Erro ao exportar arquivo PDF');
