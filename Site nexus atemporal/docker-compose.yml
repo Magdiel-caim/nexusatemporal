@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  website:
+    build:
+      context: ./website
+      dockerfile: Dockerfile
+    image: nexus-website:latest
+    networks:
+      - nexusatnet
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_APP_URL=https://app.nexustemporal.com.br
+      - NEXT_PUBLIC_API_URL=https://api.nexustemporal.com.br
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 5s
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      labels:
+        # Traefik
+        - "traefik.enable=true"
+        - "traefik.docker.network=nexusatnet"
+
+        # HTTP Router
+        - "traefik.http.routers.nexus-website.rule=Host(`nexustemporal.com.br`) || Host(`www.nexustemporal.com.br`)"
+        - "traefik.http.routers.nexus-website.entrypoints=websecure"
+        - "traefik.http.routers.nexus-website.tls=true"
+        - "traefik.http.routers.nexus-website.tls.certresolver=letsencryptresolver"
+
+        # Service
+        - "traefik.http.services.nexus-website.loadbalancer.server.port=3000"
+
+        # Middleware - WWW redirect
+        - "traefik.http.middlewares.nexus-website-redirect.redirectregex.regex=^https://www.nexustemporal.com.br/(.*)"
+        - "traefik.http.middlewares.nexus-website-redirect.redirectregex.replacement=https://nexustemporal.com.br/$${1}"
+        - "traefik.http.middlewares.nexus-website-redirect.redirectregex.permanent=true"
+        - "traefik.http.routers.nexus-website.middlewares=nexus-website-redirect"
+
+networks:
+  nexusatnet:
+    external: true
