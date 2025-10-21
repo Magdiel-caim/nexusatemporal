@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { stockService, Product, ProductCategory } from '@/services/stockService';
-import { Package, Edit2, Trash2, Search, AlertTriangle, CheckCircle, FileSpreadsheet } from 'lucide-react';
+import { Package, Edit2, Trash2, Search, AlertTriangle, CheckCircle, FileSpreadsheet, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
-import * as XLSX from 'xlsx';
+import { exportProductsToExcel, exportProductsToPDF } from '@/services/exportService';
 
 interface ProductListProps {
   onEdit: (product: Product) => void;
@@ -68,65 +68,23 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
     }
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     try {
-      // Preparar dados para exportação
-      const exportData = products.map((product) => ({
-        'Nome': product.name,
-        'SKU': product.sku || '',
-        'Código de Barras': product.barcode || '',
-        'Categoria': product.category,
-        'Unidade': product.unit,
-        'Estoque Atual': product.currentStock,
-        'Estoque Mínimo': product.minimumStock,
-        'Estoque Máximo': product.maximumStock || '',
-        'Preço de Compra (R$)': product.purchasePrice ? product.purchasePrice.toFixed(2) : '',
-        'Preço de Venda (R$)': product.salePrice ? product.salePrice.toFixed(2) : '',
-        'Localização': product.location || '',
-        'Lote': product.batchNumber || '',
-        'Validade': product.expirationDate ? new Date(product.expirationDate).toLocaleDateString('pt-BR') : '',
-        'Ativo': product.isActive ? 'Sim' : 'Não',
-        'Status': getStockStatus(product).text,
-      }));
-
-      // Criar workbook e worksheet
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(exportData);
-
-      // Ajustar largura das colunas
-      const colWidths = [
-        { wch: 30 }, // Nome
-        { wch: 15 }, // SKU
-        { wch: 18 }, // Código de Barras
-        { wch: 15 }, // Categoria
-        { wch: 10 }, // Unidade
-        { wch: 15 }, // Estoque Atual
-        { wch: 15 }, // Estoque Mínimo
-        { wch: 15 }, // Estoque Máximo
-        { wch: 18 }, // Preço de Compra
-        { wch: 18 }, // Preço de Venda
-        { wch: 20 }, // Localização
-        { wch: 15 }, // Lote
-        { wch: 12 }, // Validade
-        { wch: 8 },  // Ativo
-        { wch: 15 }, // Status
-      ];
-      ws['!cols'] = colWidths;
-
-      // Adicionar worksheet ao workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Produtos');
-
-      // Gerar nome do arquivo com timestamp
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `produtos_${timestamp}.xlsx`;
-
-      // Salvar arquivo
-      XLSX.writeFile(wb, filename);
-
-      toast.success(`Arquivo ${filename} exportado com sucesso!`);
+      await exportProductsToExcel(products);
+      toast.success('Produtos exportados para Excel com sucesso!');
     } catch (error: any) {
       console.error('Erro ao exportar Excel:', error);
       toast.error('Erro ao exportar arquivo Excel');
+    }
+  };
+
+  const handleExportPDF = () => {
+    try {
+      exportProductsToPDF(products);
+      toast.success('Produtos exportados para PDF com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar arquivo PDF');
     }
   };
 
@@ -140,8 +98,8 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
 
   return (
     <div className="space-y-4">
-      {/* Export Button */}
-      <div className="flex justify-end">
+      {/* Export Buttons */}
+      <div className="flex justify-end gap-3">
         <button
           onClick={handleExportExcel}
           disabled={products.length === 0}
@@ -150,6 +108,15 @@ export default function ProductList({ onEdit, refreshKey }: ProductListProps) {
         >
           <FileSpreadsheet className="h-5 w-5 mr-2" />
           Exportar Excel
+        </button>
+        <button
+          onClick={handleExportPDF}
+          disabled={products.length === 0}
+          className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Exportar lista de produtos para PDF"
+        >
+          <FileText className="h-5 w-5 mr-2" />
+          Exportar PDF
         </button>
       </div>
 

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { stockService, StockMovement, MovementType, MovementReason } from '@/services/stockService';
-import { ArrowUpCircle, ArrowDownCircle, Calendar, Filter, FileSpreadsheet } from 'lucide-react';
+import { ArrowUpCircle, ArrowDownCircle, Calendar, Filter, FileSpreadsheet, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
-import * as XLSX from 'xlsx';
+import { exportMovementsToExcel, exportMovementsToPDF } from '@/services/exportService';
 
 interface MovementListProps {
   refreshKey: number;
@@ -55,65 +55,23 @@ export default function MovementList({ refreshKey }: MovementListProps) {
     setEndDate('');
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     try {
-      // Preparar dados para exportação
-      const exportData = movements.map((movement) => ({
-        'Data/Hora': new Date(movement.createdAt).toLocaleString('pt-BR'),
-        'Produto': movement.product?.name || 'Produto não encontrado',
-        'SKU': movement.product?.sku || '',
-        'Tipo': movement.type,
-        'Motivo': movement.reason,
-        'Quantidade': movement.quantity,
-        'Unidade': movement.product?.unit || '',
-        'Estoque Anterior': movement.previousStock,
-        'Estoque Novo': movement.newStock,
-        'Preço Unitário (R$)': movement.unitPrice ? movement.unitPrice.toFixed(2) : '',
-        'Valor Total (R$)': movement.totalPrice ? movement.totalPrice.toFixed(2) : '',
-        'Lote': movement.batchNumber || '',
-        'NF': movement.invoiceNumber || '',
-        'Observações': movement.notes || '',
-        'Usuário': movement.user?.name || '',
-      }));
-
-      // Criar workbook e worksheet
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(exportData);
-
-      // Ajustar largura das colunas
-      const colWidths = [
-        { wch: 18 }, // Data/Hora
-        { wch: 30 }, // Produto
-        { wch: 15 }, // SKU
-        { wch: 12 }, // Tipo
-        { wch: 20 }, // Motivo
-        { wch: 12 }, // Quantidade
-        { wch: 10 }, // Unidade
-        { wch: 15 }, // Estoque Anterior
-        { wch: 15 }, // Estoque Novo
-        { wch: 18 }, // Preço Unitário
-        { wch: 18 }, // Valor Total
-        { wch: 15 }, // Lote
-        { wch: 15 }, // NF
-        { wch: 30 }, // Observações
-        { wch: 20 }, // Usuário
-      ];
-      ws['!cols'] = colWidths;
-
-      // Adicionar worksheet ao workbook
-      XLSX.utils.book_append_sheet(wb, ws, 'Movimentações');
-
-      // Gerar nome do arquivo com timestamp
-      const timestamp = new Date().toISOString().split('T')[0];
-      const filename = `movimentacoes_${timestamp}.xlsx`;
-
-      // Salvar arquivo
-      XLSX.writeFile(wb, filename);
-
-      toast.success(`Arquivo ${filename} exportado com sucesso!`);
+      await exportMovementsToExcel(movements);
+      toast.success('Movimentações exportadas para Excel com sucesso!');
     } catch (error: any) {
       console.error('Erro ao exportar Excel:', error);
       toast.error('Erro ao exportar arquivo Excel');
+    }
+  };
+
+  const handleExportPDF = () => {
+    try {
+      exportMovementsToPDF(movements);
+      toast.success('Movimentações exportadas para PDF com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao exportar PDF:', error);
+      toast.error('Erro ao exportar arquivo PDF');
     }
   };
 
@@ -127,8 +85,8 @@ export default function MovementList({ refreshKey }: MovementListProps) {
 
   return (
     <div className="space-y-4">
-      {/* Export Button */}
-      <div className="flex justify-end">
+      {/* Export Buttons */}
+      <div className="flex justify-end gap-3">
         <button
           onClick={handleExportExcel}
           disabled={movements.length === 0}
@@ -137,6 +95,15 @@ export default function MovementList({ refreshKey }: MovementListProps) {
         >
           <FileSpreadsheet className="h-5 w-5 mr-2" />
           Exportar Excel
+        </button>
+        <button
+          onClick={handleExportPDF}
+          disabled={movements.length === 0}
+          className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          title="Exportar lista de movimentações para PDF"
+        >
+          <FileText className="h-5 w-5 mr-2" />
+          Exportar PDF
         </button>
       </div>
 
