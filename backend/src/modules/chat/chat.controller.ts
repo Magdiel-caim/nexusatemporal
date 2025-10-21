@@ -209,6 +209,92 @@ export class ChatController {
     }
   };
 
+  // ===== CONVERSATION ACTIONS =====
+
+  archiveConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const conversation = await this.chatService.archiveConversation(id);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  unarchiveConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const conversation = await this.chatService.unarchiveConversation(id);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  resolveConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const conversation = await this.chatService.resolveConversation(id);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  reopenConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const conversation = await this.chatService.reopenConversation(id);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  setPriority = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { priority } = req.body;
+      const conversation = await this.chatService.setPriority(id, priority);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  setCustomAttribute = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { key, value } = req.body;
+      const conversation = await this.chatService.setCustomAttribute(id, key, value);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  removeCustomAttribute = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { key } = req.body;
+      const conversation = await this.chatService.removeCustomAttribute(id, key);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  getConversationHistory = async (req: Request, res: Response) => {
+    try {
+      const { phoneNumber } = req.params;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const conversations = await this.chatService.getConversationHistory(phoneNumber, limit);
+      res.json(conversations);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
   // ===== QUICK REPLY ENDPOINTS =====
 
   getQuickReplies = async (req: Request, res: Response) => {

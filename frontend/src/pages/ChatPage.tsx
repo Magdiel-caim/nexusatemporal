@@ -929,7 +929,15 @@ const ChatPage: React.FC = () => {
 
       {/* Right Panel - Conversation Details */}
       {selectedConversation && (
-        <ConversationDetailsPanel conversation={selectedConversation} />
+        <ConversationDetailsPanel
+          conversation={selectedConversation}
+          onUpdate={() => {
+            loadConversations();
+            if (selectedConversation) {
+              loadMessages(selectedConversation.id);
+            }
+          }}
+        />
       )}
       </div>
 

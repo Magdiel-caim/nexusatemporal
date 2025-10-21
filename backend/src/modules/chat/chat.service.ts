@@ -113,6 +113,73 @@ export class ChatService {
     return this.getConversationById(conversationId);
   }
 
+  async archiveConversation(conversationId: string) {
+    return this.updateConversation(conversationId, {
+      status: 'archived',
+    });
+  }
+
+  async unarchiveConversation(conversationId: string) {
+    return this.updateConversation(conversationId, {
+      status: 'active',
+    });
+  }
+
+  async resolveConversation(conversationId: string) {
+    return this.updateConversation(conversationId, {
+      status: 'closed',
+    });
+  }
+
+  async reopenConversation(conversationId: string) {
+    return this.updateConversation(conversationId, {
+      status: 'active',
+    });
+  }
+
+  async setPriority(conversationId: string, priority: 'low' | 'normal' | 'high' | 'urgent') {
+    const conversation = await this.getConversationById(conversationId);
+    if (!conversation) throw new Error('Conversation not found');
+
+    const metadata = conversation.metadata || {};
+    metadata.priority = priority;
+
+    return this.updateConversation(conversationId, { metadata });
+  }
+
+  async setCustomAttribute(conversationId: string, key: string, value: any) {
+    const conversation = await this.getConversationById(conversationId);
+    if (!conversation) throw new Error('Conversation not found');
+
+    const metadata = conversation.metadata || {};
+    if (!metadata.customAttributes) {
+      metadata.customAttributes = {};
+    }
+    metadata.customAttributes[key] = value;
+
+    return this.updateConversation(conversationId, { metadata });
+  }
+
+  async removeCustomAttribute(conversationId: string, key: string) {
+    const conversation = await this.getConversationById(conversationId);
+    if (!conversation) throw new Error('Conversation not found');
+
+    const metadata = conversation.metadata || {};
+    if (metadata.customAttributes) {
+      delete metadata.customAttributes[key];
+    }
+
+    return this.updateConversation(conversationId, { metadata });
+  }
+
+  async getConversationHistory(phoneNumber: string, limit: number = 10) {
+    return this.conversationRepository.find({
+      where: { phoneNumber },
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
+  }
+
   // ===== MESSAGE OPERATIONS =====
 
   async createMessage(data: {
