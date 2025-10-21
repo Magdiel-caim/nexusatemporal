@@ -111,6 +111,8 @@ let Lead = class Lead {
     updatedAt;
     createdById;
     createdBy;
+    // Integração com módulo de Vendas
+    vendedor_id;
 };
 exports.Lead = Lead;
 __decorate([
@@ -297,6 +299,10 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'createdById' }),
     __metadata("design:type", user_entity_1.User)
 ], Lead.prototype, "createdBy", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'uuid', nullable: true }),
+    __metadata("design:type", String)
+], Lead.prototype, "vendedor_id", void 0);
 exports.Lead = Lead = __decorate([
     (0, typeorm_1.Entity)('leads')
 ], Lead);

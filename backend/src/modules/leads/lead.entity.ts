@@ -215,4 +215,8 @@ export class Lead {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'createdById' })
   createdBy: User;
+
+  // Integração com módulo de Vendas
+  @Column({ type: 'uuid', nullable: true })
+  vendedor_id: string;
 }
