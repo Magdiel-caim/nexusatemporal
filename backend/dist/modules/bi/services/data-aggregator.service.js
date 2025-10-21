@@ -16,7 +16,7 @@ class DataAggregatorService {
                 : new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
             const [summary] = await queryRunner.query(`
         SELECT
-          (SELECT COUNT(*) FROM leads WHERE tenant_id = $1 AND created_at >= $2 AND created_at <= $3) as total_leads,
+          (SELECT COUNT(*) FROM leads WHERE "tenantId" = $1 AND "createdAt" >= $2 AND "createdAt" <= $3) as total_leads,
           (SELECT COUNT(*) FROM vendas WHERE tenant_id = $1 AND status = 'confirmada' AND data_venda >= $2 AND data_venda <= $3) as total_sales,
           (SELECT COALESCE(SUM(valor_liquido), 0) FROM vendas WHERE tenant_id = $1 AND status = 'confirmada' AND data_venda >= $2 AND data_venda <= $3) as total_revenue
       `, [tenantId, start, end]);

@@ -33,8 +33,8 @@ export class DashboardService {
       const [leadsResult] = await queryRunner.query(`
         SELECT COUNT(*) as total
         FROM leads
-        WHERE tenant_id = $1
-        AND created_at >= $2 AND created_at <= $3
+        WHERE "tenantId" = $1
+        AND "createdAt" >= $2 AND "createdAt" <= $3
       `, [tenantId, start, end]);
 
       const [conversionResult] = await queryRunner.query(`
@@ -42,8 +42,8 @@ export class DashboardService {
           COUNT(DISTINCT l.id) FILTER (WHERE l.status = 'won') as converted,
           COUNT(DISTINCT l.id) as total
         FROM leads l
-        WHERE l.tenant_id = $1
-        AND l.created_at >= $2 AND l.created_at <= $3
+        WHERE l."tenantId" = $1
+        AND l."createdAt" >= $2 AND l."createdAt" <= $3
       `, [tenantId, start, end]);
 
       const revenue = parseFloat(revenueResult?.total || 0);
@@ -106,8 +106,8 @@ export class DashboardService {
           COUNT(*) as value,
           COUNT(*) as count
         FROM leads
-        WHERE tenant_id = $1
-        AND created_at >= $2 AND created_at <= $3
+        WHERE "tenantId" = $1
+        AND "createdAt" >= $2 AND "createdAt" <= $3
         GROUP BY status
         ORDER BY
           CASE status
