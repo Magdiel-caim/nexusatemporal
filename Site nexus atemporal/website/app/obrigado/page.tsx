@@ -44,7 +44,7 @@ export default function ObrigadoPage() {
 
             {/* CTA Button */}
             <a
-              href="https://app.nexustemporal.com.br"
+              href="https://app.nexusatemporal.com"
               className="inline-flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-secondary-500 text-white px-10 py-5 rounded-lg font-semibold text-lg hover:shadow-2xl hover:scale-105 transition-all mb-16 animate-scale-in"
               style={{ animationDelay: '0.3s' }}
             >

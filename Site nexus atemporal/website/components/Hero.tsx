@@ -63,19 +63,6 @@ export function Hero() {
           </div>
         </div>
 
-        {/* Screenshot/Demo */}
-        <div className="mt-16 max-w-6xl mx-auto animate-scale-in" style={{ animationDelay: '0.4s' }}>
-          <div className="relative rounded-xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-800">
-            <div className="absolute inset-0 bg-gradient-to-tr from-primary-500/20 to-secondary-500/20" />
-            <div className="bg-white dark:bg-gray-900 p-8">
-              <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg flex items-center justify-center">
-                <p className="text-gray-500 dark:text-gray-400 text-xl">
-                  🎯 Screenshot do Dashboard Aqui
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
   );

@@ -60,7 +60,7 @@ export function Header() {
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
             <Link
-              href="https://app.nexustemporal.com.br"
+              href="https://app.nexusatemporal.com"
               className="text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium"
             >
               Entrar
@@ -102,7 +102,7 @@ export function Header() {
               ))}
               <div className="pt-4 border-t border-gray-200 dark:border-gray-800 space-y-3">
                 <Link
-                  href="https://app.nexustemporal.com.br"
+                  href="https://app.nexusatemporal.com"
                   className="block text-center text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors font-medium px-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

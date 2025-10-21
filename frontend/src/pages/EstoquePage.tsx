@@ -428,81 +428,43 @@ export default function EstoquePage() {
 
         {/* Content */}
         <div className="mt-6">
-          {loading && activeTab === 'dashboard' ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          ) : (
-            <>
-              {activeTab === 'dashboard' && renderDashboard()}
-              {activeTab === 'products' && (
-                <Suspense
-                  fallback={
-                    <div className="flex items-center justify-center h-64">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    </div>
-                  }
-                >
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            }
+          >
+            {loading && activeTab === 'dashboard' ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+              </div>
+            ) : (
+              <div>
+                <div style={{ display: activeTab === 'dashboard' ? 'block' : 'none' }}>
+                  {renderDashboard()}
+                </div>
+                <div style={{ display: activeTab === 'products' ? 'block' : 'none' }}>
                   <ProductList onEdit={handleEditProduct} refreshKey={refreshKey} />
-                </Suspense>
-              )}
-              {activeTab === 'movements' && (
-                <Suspense
-                  fallback={
-                    <div className="flex items-center justify-center h-64">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    </div>
-                  }
-                >
+                </div>
+                <div style={{ display: activeTab === 'movements' ? 'block' : 'none' }}>
                   <MovementList refreshKey={refreshKey} />
-                </Suspense>
-              )}
-              {activeTab === 'alerts' && (
-                <Suspense
-                  fallback={
-                    <div className="flex items-center justify-center h-64">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    </div>
-                  }
-                >
+                </div>
+                <div style={{ display: activeTab === 'alerts' ? 'block' : 'none' }}>
                   <AlertList refreshKey={refreshKey} onRefresh={() => setRefreshKey((prev) => prev + 1)} />
-                </Suspense>
-              )}
-              {activeTab === 'reports' && (
-                <Suspense
-                  fallback={
-                    <div className="flex items-center justify-center h-64">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    </div>
-                  }
-                >
+                </div>
+                <div style={{ display: activeTab === 'reports' ? 'block' : 'none' }}>
                   <ReportsView />
-                </Suspense>
-              )}
-              {activeTab === 'procedures' && (
-                <Suspense
-                  fallback={
-                    <div className="flex items-center justify-center h-64">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    </div>
-                  }
-                >
+                </div>
+                <div style={{ display: activeTab === 'procedures' ? 'block' : 'none' }}>
                   <ProcedureStockTab />
-                </Suspense>
-              )}
-              {activeTab === 'inventory' && (
-                <Suspense
-                  fallback={
-                    <div className="flex items-center justify-center h-64">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    </div>
-                  }
-                >
+                </div>
+                <div style={{ display: activeTab === 'inventory' ? 'block' : 'none' }}>
                   <InventoryCountTab />
-                </Suspense>
-              )}
-            </>
-          )}
+                </div>
+              </div>
+            )}
+          </Suspense>
         </div>
       </div>
 
