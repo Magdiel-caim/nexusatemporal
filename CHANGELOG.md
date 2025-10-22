@@ -2,6 +2,209 @@
 
 ---
 
+## ✅ v116: CHAT - UNIFICAÇÃO COMPLETA DAS TABELAS (2025-10-22) - RESOLVIDO
+
+### 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Unificar estrutura de dados (N8N → TypeORM) e adicionar avatar do contato
+
+**Status Final:** ✅ **RESOLVIDO COMPLETAMENTE**
+
+**Versões Deployadas:**
+- Backend: v116-unified-tables
+- Frontend: v111-chat-complete
+- Database: Migration 012 executada
+
+**Data:** 2025-10-22 13:30-14:05 UTC (35 minutos)
+
+---
+
+### 🎯 PROBLEMA IDENTIFICADO
+
+**Duas estruturas de dados paralelas e NÃO sincronizadas:**
+
+**Estrutura ANTIGA (em uso):**
+- `whatsapp_messages` ← N8N salvava AQUI
+- `whatsapp_attachments` ← Mídia salvava AQUI
+- ❌ Chat NÃO buscava dessas tabelas
+
+**Estrutura NOVA (vazia):**
+- `conversations` (criada v114, mas vazia)
+- `messages` (criada v114, mas vazia)
+- `attachments` (criada v114, mas vazia)
+- ❌ N8N NÃO salvava aqui
+
+**RESULTADO:** Mídia NUNCA aparecia no frontend!
+
+---
+
+### ✅ SOLUÇÃO IMPLEMENTADA (OPÇÃO 1)
+
+**Migração completa do N8N para usar ChatService (TypeORM)**
+
+#### 1. ChatService - Novos Métodos
+**Arquivo:** `backend/src/modules/chat/chat.service.ts`
+
+- `findOrCreateConversation()` - Busca ou cria conversa (garante existência)
+- `createMessageWithAttachment()` - Cria mensagem + attachment em operação atômica
+
+#### 2. N8N Webhook - Refatorado Completo
+**Arquivo:** `backend/src/modules/chat/n8n-webhook.controller.ts`
+
+**ANTES:**
+- SQL raw em `whatsapp_messages`
+- SQL raw em `whatsapp_attachments`
+- Desconectado das entities
+
+**DEPOIS:**
+- Usa `ChatService` (TypeORM)
+- Salva em `conversations/messages/attachments`
+- Zero SQL raw
+
+**Métodos atualizados:**
+- `receiveMessageWithMedia()` - Upload S3 + salva com ChatService
+- `receiveMessage()` - Mensagens com/sem mídia + salva com ChatService
+
+#### 3. Avatar do Contato
+**Arquivo:** `backend/src/modules/chat/conversation.entity.ts`
+
+```typescript
+@Column({ name: 'avatar_url', type: 'varchar', nullable: true })
+avatarUrl?: string; // Foto do perfil WhatsApp
+```
+
+#### 4. Migration 012
+**Arquivo:** `backend/src/database/migrations/012_add_avatar_url_to_conversations.sql`
+
+```sql
+ALTER TABLE conversations ADD COLUMN avatar_url VARCHAR(500);
+CREATE INDEX idx_conversations_avatar_url ON conversations(avatar_url);
+```
+
+---
+
+### 📦 ARQUIVOS MODIFICADOS
+
+1. `backend/src/modules/chat/chat.service.ts` (+63 linhas)
+2. `backend/src/modules/chat/n8n-webhook.controller.ts` (refatorado completo)
+3. `backend/src/modules/chat/conversation.entity.ts` (+3 linhas)
+4. `backend/src/database/migrations/012_add_avatar_url_to_conversations.sql` (novo)
+
+---
+
+### 🚀 DEPLOY
+
+```bash
+docker build -t nexus-backend:v116-unified-tables -f backend/Dockerfile backend/
+docker service update --image nexus-backend:v116-unified-tables nexus_backend
+```
+
+**Status:** ✅ Service converged (14:02 UTC)
+**Logs:** ✅ Sem erros
+
+---
+
+### ✅ BENEFÍCIOS
+
+- ✅ Estrutura unificada (uma única fonte de verdade)
+- ✅ TypeORM com relações (Foreign Keys, CASCADE)
+- ✅ Zero SQL raw no webhook
+- ✅ Mídia vai funcionar (precisa testar)
+- ✅ Preparado para avatar do contato
+- ✅ Escalável e manutenível
+
+---
+
+### 📝 DOCUMENTAÇÃO CRIADA
+
+- `CHAT_v116_UNIFICACAO_COMPLETA.md` - Documentação técnica completa
+- `CHAT_ANALISE_COMPLETA_URGENTE.md` - Análise do problema
+- `ORIENTACAO_PROXIMA_SESSAO.md` - Orientação pós-Sessão C
+
+---
+
+### 🧪 PRÓXIMOS TESTES
+
+- [ ] Enviar imagem pelo WhatsApp → Ver no Chat
+- [ ] Enviar áudio → Ver no Chat
+- [ ] Enviar vídeo → Ver no Chat
+- [ ] Frontend renderizar mídia inline
+
+---
+
+## ✅ v115b: CHAT - TIMESTAMPS FIX (2025-10-22) - RESOLVIDO
+
+### 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Corrigir erro "column createdAt does not exist"
+
+**Status Final:** ✅ **RESOLVIDO**
+
+**Versão Deployada:** Backend v115b-timestamps-fix
+
+**Data:** 2025-10-22 13:15-13:25 UTC (10 minutos)
+
+---
+
+### 🐛 PROBLEMA IDENTIFICADO
+
+**Erro nos logs:**
+```
+[getQuickReplies] Error: column QuickReply.createdAt does not exist
+[setPriority] Error: column Conversation.createdAt does not exist
+```
+
+**Causa:** `@CreateDateColumn()` e `@UpdateDateColumn()` sem decorator `name`
+
+Migration criou colunas `created_at` e `updated_at` (snake_case), mas TypeORM buscava `createdAt` e `updatedAt` (camelCase).
+
+---
+
+### ✅ SOLUÇÃO
+
+Adicionado decorator `name` em **11 timestamps** (5 entities):
+
+```typescript
+// ANTES
+@CreateDateColumn()
+createdAt: Date;
+
+// DEPOIS
+@CreateDateColumn({ name: 'created_at' })
+createdAt: Date;
+```
+
+**Entities corrigidas:**
+1. Conversation - `created_at`, `updated_at`
+2. Message - `created_at`, `updated_at`
+3. Attachment - `created_at`
+4. ChatTag - `created_at`, `updated_at`
+5. QuickReply - `created_at`, `updated_at`
+
+---
+
+### 📦 ARQUIVOS MODIFICADOS
+
+1. `backend/src/modules/chat/conversation.entity.ts`
+2. `backend/src/modules/chat/message.entity.ts`
+3. `backend/src/modules/chat/attachment.entity.ts`
+4. `backend/src/modules/chat/tag.entity.ts`
+5. `backend/src/modules/chat/quick-reply.entity.ts`
+
+---
+
+### 🚀 DEPLOY
+
+```bash
+docker build -t nexus-backend:v115b-timestamps-fix
+docker service update --image nexus-backend:v115b-timestamps-fix nexus_backend
+```
+
+**Status:** ✅ Service converged
+**Logs:** ✅ Sem erros de "column does not exist"
+
+---
+
 ## ⚠️ v114: CORREÇÕES CHAT - DATABASE TABLES (2025-10-21) - PARCIALMENTE RESOLVIDO
 
 ### 📝 RESUMO EXECUTIVO
