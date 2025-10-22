@@ -843,6 +843,172 @@ export class NotificaMeController {
       });
     }
   }
+
+  /**
+   * POST /api/notificame/instances/create
+   * Cria nova instância Instagram ou Messenger
+   */
+  async createInstance(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const { platform, name } = req.body;
+
+      if (!platform || !['instagram', 'messenger'].includes(platform)) {
+        res.status(400).json({ error: 'Platform deve ser "instagram" ou "messenger"' });
+        return;
+      }
+
+      if (!name) {
+        res.status(400).json({ error: 'Nome da instância é obrigatório' });
+        return;
+      }
+
+      const service = this.getServiceInstance();
+      const result = await service.createInstance(platform, name);
+
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      console.error('Error creating instance:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * POST /api/notificame/instances/:instanceId/authorize
+   * Obtém URL de autorização OAuth
+   */
+  async getAuthorizationUrl(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const { instanceId } = req.params;
+      if (!instanceId) {
+        res.status(400).json({ error: 'instanceId é obrigatório' });
+        return;
+      }
+
+      // URL de callback será o frontend
+      const callbackUrl = `${process.env.FRONTEND_URL || 'https://one.nexusatemporal.com.br'}/integracoes-sociais/callback`;
+
+      const service = this.getServiceInstance();
+      const authUrl = await service.getAuthorizationUrl(instanceId, callbackUrl);
+
+      res.json({ success: true, data: { authUrl } });
+    } catch (error: any) {
+      console.error('Error getting authorization URL:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * POST /api/notificame/instances/:instanceId/callback
+   * Processa callback OAuth
+   */
+  async processCallback(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const { instanceId } = req.params;
+      const { code, state } = req.body;
+
+      if (!instanceId || !code) {
+        res.status(400).json({ error: 'instanceId e code são obrigatórios' });
+        return;
+      }
+
+      const service = this.getServiceInstance();
+      const result = await service.processOAuthCallback(instanceId, code, state);
+
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      console.error('Error processing callback:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * GET /api/notificame/instances/:instanceId/sync
+   * Sincroniza status da instância
+   */
+  async syncInstance(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const { instanceId } = req.params;
+      if (!instanceId) {
+        res.status(400).json({ error: 'instanceId é obrigatório' });
+        return;
+      }
+
+      const service = this.getServiceInstance();
+      const instance = await service.syncInstanceStatus(instanceId);
+
+      res.json({ success: true, data: instance });
+    } catch (error: any) {
+      console.error('Error syncing instance:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
+
+  /**
+   * GET /api/notificame/instances/platform/:platform
+   * Lista instâncias por plataforma
+   */
+  async getInstancesByPlatform(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const { platform } = req.params;
+      if (!platform || !['instagram', 'messenger', 'whatsapp'].includes(platform)) {
+        res.status(400).json({ error: 'Platform inválida' });
+        return;
+      }
+
+      const service = this.getServiceInstance();
+      const instances = await service.getInstancesByPlatform(platform as 'instagram' | 'messenger' | 'whatsapp');
+
+      res.json({ success: true, data: instances });
+    } catch (error: any) {
+      console.error('Error getting instances by platform:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  }
 }
 
 export default new NotificaMeController();

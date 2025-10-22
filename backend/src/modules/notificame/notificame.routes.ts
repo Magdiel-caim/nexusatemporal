@@ -54,6 +54,18 @@ router.get(
 );
 
 router.get(
+  '/instances/platform/:platform',
+  authenticate,
+  (req, res) => notificaMeController.getInstancesByPlatform(req, res)
+);
+
+router.post(
+  '/instances/create',
+  authenticate,
+  (req, res) => notificaMeController.createInstance(req, res)
+);
+
+router.get(
   '/instances/:instanceId',
   authenticate,
   (req, res) => notificaMeController.getInstance(req, res)
@@ -63,6 +75,24 @@ router.get(
   '/instances/:instanceId/qrcode',
   authenticate,
   (req, res) => notificaMeController.getQRCode(req, res)
+);
+
+router.post(
+  '/instances/:instanceId/authorize',
+  authenticate,
+  (req, res) => notificaMeController.getAuthorizationUrl(req, res)
+);
+
+router.post(
+  '/instances/:instanceId/callback',
+  authenticate,
+  (req, res) => notificaMeController.processCallback(req, res)
+);
+
+router.get(
+  '/instances/:instanceId/sync',
+  authenticate,
+  (req, res) => notificaMeController.syncInstance(req, res)
 );
 
 router.post(

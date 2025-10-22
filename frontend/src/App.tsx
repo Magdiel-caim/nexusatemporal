@@ -16,6 +16,7 @@ import AutomationPage from './pages/AutomationPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
 import IntegracoesSociaisPage from './pages/IntegracoesSociaisPage';
+import NotificaMeCallbackPage from './pages/NotificaMeCallbackPage';
 import BIDashboard from './pages/BI/BIDashboard';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
@@ -196,6 +197,14 @@ function App() {
                 <MainLayout>
                   <IntegracoesSociaisPage />
                 </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/integracoes-sociais/callback"
+            element={
+              <ProtectedRoute>
+                <NotificaMeCallbackPage />
               </ProtectedRoute>
             }
           />

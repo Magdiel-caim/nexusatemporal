@@ -43,6 +43,6 @@ export class Attachment {
   @Column({ name: 'thumbnail_url', type: 'varchar', nullable: true })
   thumbnailUrl?: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

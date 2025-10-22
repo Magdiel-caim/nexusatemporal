@@ -52,10 +52,10 @@ export class Conversation {
   @Column({ type: 'jsonb', nullable: true })
   metadata?: Record<string, any>; // Dados adicionais flexíveis
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @OneToMany(() => Message, (message) => message.conversation)

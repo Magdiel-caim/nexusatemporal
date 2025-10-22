@@ -165,6 +165,46 @@ class NotificaMeService {
     const { data } = await api.post(`/notificame/messages/${messageId}/mark-read`, { instanceId });
     return data;
   }
+
+  /**
+   * Criar nova instância Instagram/Messenger
+   */
+  async createInstance(platform: 'instagram' | 'messenger', name: string): Promise<{ success: boolean; data: { instanceId: string; authUrl: string } }> {
+    const { data } = await api.post('/notificame/instances/create', { platform, name });
+    return data;
+  }
+
+  /**
+   * Obter URL de autorização OAuth
+   */
+  async getAuthorizationUrl(instanceId: string): Promise<{ success: boolean; data: { authUrl: string } }> {
+    const { data } = await api.post(`/notificame/instances/${instanceId}/authorize`);
+    return data;
+  }
+
+  /**
+   * Processar callback OAuth
+   */
+  async processCallback(instanceId: string, code: string, state?: string): Promise<{ success: boolean; data: any }> {
+    const { data } = await api.post(`/notificame/instances/${instanceId}/callback`, { code, state });
+    return data;
+  }
+
+  /**
+   * Sincronizar status da instância
+   */
+  async syncInstance(instanceId: string): Promise<{ success: boolean; data: NotificaMeInstance }> {
+    const { data } = await api.get(`/notificame/instances/${instanceId}/sync`);
+    return data;
+  }
+
+  /**
+   * Listar instâncias por plataforma
+   */
+  async getInstancesByPlatform(platform: 'instagram' | 'messenger' | 'whatsapp'): Promise<{ success: boolean; data: NotificaMeInstance[] }> {
+    const { data } = await api.get(`/notificame/instances/platform/${platform}`);
+    return data;
+  }
 }
 
 export default new NotificaMeService();

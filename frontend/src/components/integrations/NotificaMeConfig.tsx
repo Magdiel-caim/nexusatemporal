@@ -131,6 +131,85 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) =
   };
 
   /**
+   * Conectar Instagram/Messenger via OAuth
+   */
+  const handleConnectPlatform = async (platform: 'instagram' | 'messenger') => {
+    try {
+      setTesting(true);
+
+      // 1. Criar nova instância
+      const createResult = await notificaMeService.createInstance(
+        platform,
+        `${platform === 'instagram' ? 'Instagram' : 'Messenger'} - ${new Date().toLocaleDateString()}`
+      );
+
+      if (!createResult.success) {
+        throw new Error('Falha ao criar instância');
+      }
+
+      const { instanceId, authUrl } = createResult.data;
+
+      // 2. Se já retornou authUrl, usar ela. Senão, buscar
+      let oauthUrl = authUrl;
+
+      if (!oauthUrl) {
+        const authResult = await notificaMeService.getAuthorizationUrl(instanceId);
+        if (!authResult.success) {
+          throw new Error('Falha ao obter URL de autorização');
+        }
+        oauthUrl = authResult.data.authUrl;
+      }
+
+      // 3. Salvar instanceId no localStorage para usar no callback
+      localStorage.setItem('notificame_pending_instance', instanceId);
+      localStorage.setItem('notificame_pending_platform', platform);
+
+      // 4. Abrir popup OAuth
+      const width = 600;
+      const height = 700;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+
+      const popup = window.open(
+        oauthUrl,
+        'NotificaMeAuth',
+        `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
+      );
+
+      if (!popup) {
+        throw new Error('Popup bloqueado. Habilite popups para este site.');
+      }
+
+      // 5. Monitorar fechamento do popup
+      const checkPopup = setInterval(() => {
+        if (popup.closed) {
+          clearInterval(checkPopup);
+          setTesting(false);
+
+          // Verificar se conexão foi bem-sucedida
+          const wasSuccessful = localStorage.getItem('notificame_auth_success');
+          if (wasSuccessful === 'true') {
+            toast.success(`${platform === 'instagram' ? 'Instagram' : 'Messenger'} conectado com sucesso!`);
+            localStorage.removeItem('notificame_auth_success');
+            loadInstances();
+          }
+
+          // Limpar dados temporários
+          localStorage.removeItem('notificame_pending_instance');
+          localStorage.removeItem('notificame_pending_platform');
+        }
+      }, 500);
+
+      toast.info('Complete a autorização na janela que abriu');
+    } catch (error: any) {
+      toast.error(`Erro ao conectar ${platform === 'instagram' ? 'Instagram' : 'Messenger'}`, {
+        description: error.response?.data?.message || error.message,
+      });
+      setTesting(false);
+    }
+  };
+
+  /**
    * Obter QR Code para conectar
    */
   const handleGetQRCode = async (instanceId: string) => {
@@ -255,15 +334,8 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) =
                 <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                 <p className="font-medium mb-2">Nenhuma conta conectada ainda</p>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Conecte suas contas Meta (Facebook e Instagram) para começar a receber mensagens
+                  Conecte suas contas Instagram ou Messenger para começar a receber mensagens
                 </p>
-                <Button
-                  onClick={() => window.open('https://app.notificame.com.br/dashboard', '_blank')}
-                  className="gap-2"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Conectar no Painel NotificaMe
-                </Button>
               </div>
 
               <div className="grid gap-3 md:grid-cols-2">
@@ -280,9 +352,14 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) =
                       variant="outline"
                       size="sm"
                       className="w-full gap-2"
-                      onClick={() => window.open('https://app.notificame.com.br/dashboard', '_blank')}
+                      onClick={() => handleConnectPlatform('instagram')}
+                      disabled={testing}
                     >
-                      <ExternalLink className="h-3 w-3" />
+                      {testing ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Instagram className="h-3 w-3" />
+                      )}
                       Conectar Instagram
                     </Button>
                   </CardContent>
@@ -301,9 +378,14 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) =
                       variant="outline"
                       size="sm"
                       className="w-full gap-2"
-                      onClick={() => window.open('https://app.notificame.com.br/dashboard', '_blank')}
+                      onClick={() => handleConnectPlatform('messenger')}
+                      disabled={testing}
                     >
-                      <ExternalLink className="h-3 w-3" />
+                      {testing ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <MessageCircle className="h-3 w-3" />
+                      )}
                       Conectar Messenger
                     </Button>
                   </CardContent>

@@ -61,10 +61,10 @@ export class Message {
   @Column({ name: 'is_deleted', type: 'boolean', default: false })
   isDeleted: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @OneToMany(() => Attachment, (attachment) => attachment.message)
