@@ -25,6 +25,9 @@ export class Conversation {
   @Column({ name: 'phone_number', type: 'varchar' })
   phoneNumber: string;
 
+  @Column({ name: 'avatar_url', type: 'varchar', nullable: true })
+  avatarUrl?: string; // Foto do perfil do contato WhatsApp
+
   @Column({ name: 'whatsapp_instance_id', type: 'varchar', nullable: true })
   whatsappInstanceId?: string; // ID da instância do WhatsApp (para múltiplos números)
 

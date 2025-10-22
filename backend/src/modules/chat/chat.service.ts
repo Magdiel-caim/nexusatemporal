@@ -61,6 +61,37 @@ export class ChatService {
     });
   }
 
+  /**
+   * Busca ou cria conversa (útil para webhooks)
+   */
+  async findOrCreateConversation(data: {
+    phoneNumber: string;
+    contactName: string;
+    whatsappInstanceId?: string;
+    leadId?: string;
+  }) {
+    // Busca por phone + whatsappInstanceId (para múltiplas sessões)
+    let conversation = await this.conversationRepository.findOne({
+      where: {
+        phoneNumber: data.phoneNumber,
+        whatsappInstanceId: data.whatsappInstanceId || IsNull(),
+      },
+    });
+
+    if (!conversation) {
+      conversation = await this.createConversation(data);
+    } else {
+      // Atualiza nome do contato se mudou
+      if (conversation.contactName !== data.contactName) {
+        conversation = await this.updateConversation(conversation.id, {
+          contactName: data.contactName,
+        }) as Conversation;
+      }
+    }
+
+    return conversation;
+  }
+
   async updateConversation(id: string, data: Partial<Conversation>) {
     await this.conversationRepository.update({ id }, data);
     return this.getConversationById(id);
@@ -257,6 +288,43 @@ export class ChatService {
   }) {
     const attachment = this.attachmentRepository.create(data);
     return this.attachmentRepository.save(attachment);
+  }
+
+  /**
+   * Cria mensagem com attachment (helper para webhooks)
+   */
+  async createMessageWithAttachment(messageData: {
+    conversationId: string;
+    direction: 'incoming' | 'outgoing';
+    type: 'audio' | 'image' | 'video' | 'document';
+    content?: string;
+    whatsappMessageId?: string;
+    metadata?: Record<string, any>;
+  }, attachmentData?: {
+    fileName: string;
+    fileUrl: string;
+    mimeType?: string;
+    fileSize?: number;
+    duration?: number;
+    thumbnailUrl?: string;
+  }) {
+    // Cria mensagem
+    const message = await this.createMessage(messageData);
+
+    // Se tiver attachment, cria
+    if (attachmentData) {
+      await this.createAttachment({
+        messageId: message.id,
+        type: messageData.type as 'audio' | 'image' | 'video' | 'document',
+        ...attachmentData,
+      });
+    }
+
+    // Retorna mensagem com attachments
+    return this.messageRepository.findOne({
+      where: { id: message.id },
+      relations: ['attachments'],
+    });
   }
 
   // ===== TAG OPERATIONS =====

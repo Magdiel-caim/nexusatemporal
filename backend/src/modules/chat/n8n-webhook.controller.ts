@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AppDataSource } from '@/database/data-source';
 import { MediaUploadService } from '@/services/media-upload.service';
 import { logger } from '@/shared/utils/logger';
+import { ChatService } from './chat.service';
 
 interface N8NMessagePayload {
   sessionName: string;
@@ -57,6 +58,7 @@ interface WAHAResponse {
 
 export class N8NWebhookController {
   private mediaUploadService = new MediaUploadService();
+  private chatService = new ChatService();
   /**
    * Recebe mensagens do N8N com mídia em base64 e faz upload no S3
    * POST /api/chat/webhook/n8n/message-media
@@ -126,50 +128,53 @@ export class N8NWebhookController {
 
       console.log('✅ Upload S3 concluído:', s3Url);
 
-      // Salvar mensagem no banco com URL do S3
-      const result = await AppDataSource.query(
-        `INSERT INTO chat_messages (
-          session_name,
-          phone_number,
-          contact_name,
-          direction,
-          message_type,
-          content,
-          media_url,
-          waha_message_id,
-          status,
-          created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        RETURNING *`,
-        [
-          sessionName,
-          phoneNumber,
-          contactName || phoneNumber,
-          direction,
-          messageType,
-          content || '',
-          s3Url,
-          wahaMessageId || null,
-          'received',
-          timestamp ? new Date(timestamp) : new Date(),
-        ]
+      // 1. Buscar ou criar conversa
+      const conversation = await this.chatService.findOrCreateConversation({
+        phoneNumber: phoneNumber,
+        contactName: contactName || phoneNumber,
+        whatsappInstanceId: sessionName,
+      });
+
+      console.log('✅ Conversa encontrada/criada:', conversation.id);
+
+      // 2. Criar mensagem com attachment
+      const savedMessage = await this.chatService.createMessageWithAttachment(
+        {
+          conversationId: conversation.id,
+          direction: direction as 'incoming' | 'outgoing',
+          type: messageType as 'audio' | 'image' | 'video' | 'document',
+          content: content || '',
+          whatsappMessageId: wahaMessageId || undefined,
+          metadata: {
+            timestamp: timestamp,
+            uploadedToS3: true,
+          },
+        },
+        {
+          fileName: `${sessionName}_${Date.now()}.${extension}`,
+          fileUrl: s3Url,
+          mimeType: contentType,
+          fileSize: buffer.length,
+        }
       );
 
-      const savedMessage = result[0];
+      console.log('✅ Mensagem criada com attachment:', savedMessage?.id);
 
       // Emitir via WebSocket
       const io = req.app.get('io');
       if (io) {
         io.emit('chat:new-message', {
-          id: savedMessage.id,
-          sessionName: savedMessage.session_name,
-          phoneNumber: savedMessage.phone_number,
-          contactName: savedMessage.contact_name,
-          direction: savedMessage.direction,
-          messageType: savedMessage.message_type,
-          content: savedMessage.content,
-          mediaUrl: savedMessage.media_url,
-          createdAt: savedMessage.created_at,
+          id: savedMessage?.id,
+          conversationId: conversation.id,
+          sessionName: sessionName,
+          phoneNumber: phoneNumber,
+          contactName: contactName || phoneNumber,
+          direction: direction,
+          messageType: messageType,
+          content: content || '',
+          mediaUrl: s3Url,
+          attachments: savedMessage?.attachments || [],
+          createdAt: new Date(),
         });
 
         console.log('✅ Mensagem emitida via WebSocket');
@@ -179,9 +184,10 @@ export class N8NWebhookController {
         success: true,
         message: 'Media uploaded to S3 and message saved',
         data: {
-          id: savedMessage.id,
-          sessionName: savedMessage.session_name,
-          phoneNumber: savedMessage.phone_number,
+          id: savedMessage?.id,
+          conversationId: conversation.id,
+          sessionName: sessionName,
+          phoneNumber: phoneNumber,
           mediaUrl: s3Url,
         },
       });
@@ -243,79 +249,56 @@ export class N8NWebhookController {
         }
       }
 
-      // 2. Salvar mensagem no banco (usando tabela correta: whatsapp_messages)
-      const result = await AppDataSource.query(
-        `INSERT INTO whatsapp_messages (
-          chat_id,
-          direction,
-          from_number,
-          to_number,
-          content,
-          media_url,
-          media_type,
-          status,
-          created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING *`,
-        [
-          payload.phoneNumber, // chat_id
-          payload.direction,
-          payload.direction === 'incoming' ? payload.phoneNumber : payload.sessionName,
-          payload.direction === 'outgoing' ? payload.phoneNumber : payload.sessionName,
-          payload.content || '',
-          uploadedFileInfo ? uploadedFileInfo.fileUrl : payload.mediaUrl,
-          payload.messageType,
-          payload.status || 'delivered',
-          payload.timestamp ? new Date(payload.timestamp) : new Date(),
-        ]
+      // 2. Buscar ou criar conversa
+      const conversation = await this.chatService.findOrCreateConversation({
+        phoneNumber: payload.phoneNumber,
+        contactName: payload.contactName || payload.phoneNumber,
+        whatsappInstanceId: payload.sessionName,
+      });
+
+      logger.info('[Webhook] Conversa encontrada/criada:', conversation.id);
+
+      // 3. Salvar mensagem com attachment (se houver mídia)
+      const savedMessage = await this.chatService.createMessageWithAttachment(
+        {
+          conversationId: conversation.id,
+          direction: payload.direction as 'incoming' | 'outgoing',
+          type: payload.messageType as any,
+          content: payload.content || '',
+          whatsappMessageId: payload.wahaMessageId,
+          metadata: {
+            timestamp: payload.timestamp,
+            status: payload.status,
+            rawPayload: payload.rawPayload,
+          },
+        },
+        uploadedFileInfo
+          ? {
+              fileName: uploadedFileInfo.fileName,
+              fileUrl: uploadedFileInfo.fileUrl,
+              mimeType: uploadedFileInfo.mimeType,
+              fileSize: uploadedFileInfo.fileSize,
+            }
+          : undefined
       );
 
-      const savedMessage = result[0];
-
-      // 3. Se fez upload da mídia, criar registro em whatsapp_attachments
-      if (uploadedFileInfo) {
-        try {
-          const attachmentType = this.mediaUploadService.getAttachmentType(uploadedFileInfo.mimeType);
-
-          await AppDataSource.query(
-            `INSERT INTO whatsapp_attachments (
-              message_id,
-              type,
-              file_name,
-              file_url,
-              mime_type,
-              file_size
-            ) VALUES ($1, $2, $3, $4, $5, $6)`,
-            [
-              savedMessage.id,
-              attachmentType,
-              uploadedFileInfo.fileName,
-              uploadedFileInfo.fileUrl,
-              uploadedFileInfo.mimeType,
-              uploadedFileInfo.fileSize,
-            ]
-          );
-
-          logger.info('[Webhook] Attachment criado com sucesso para mensagem:', savedMessage.id);
-        } catch (error: any) {
-          logger.error('[Webhook] Erro ao criar attachment:', error.message);
-          // Não bloqueia - mensagem já foi salva
-        }
-      }
+      logger.info('[Webhook] Mensagem salva:', savedMessage?.id);
 
       // Emitir via WebSocket para frontend (se io estiver disponível)
       const io = req.app.get('io');
       if (io) {
         io.emit('chat:new-message', {
-          id: savedMessage.id,
+          id: savedMessage?.id,
+          conversationId: conversation.id,
           sessionName: payload.sessionName,
           phoneNumber: payload.phoneNumber,
           contactName: payload.contactName || payload.phoneNumber,
-          direction: savedMessage.direction,
-          messageType: savedMessage.media_type,
-          content: savedMessage.content,
-          mediaUrl: savedMessage.media_url,
-          createdAt: savedMessage.created_at,
+          direction: payload.direction,
+          messageType: payload.messageType,
+          content: payload.content || '',
+          mediaUrl: uploadedFileInfo?.fileUrl || payload.mediaUrl,
+          attachments: savedMessage?.attachments || [],
+          createdAt: new Date(),
         });
 
         console.log('✅ Mensagem com mídia emitida via WebSocket');
@@ -325,10 +308,11 @@ export class N8NWebhookController {
         success: true,
         message: 'Message with media received, uploaded to S3, and saved',
         data: {
-          id: savedMessage.id,
+          id: savedMessage?.id,
+          conversationId: conversation.id,
           sessionName: payload.sessionName,
           phoneNumber: payload.phoneNumber,
-          mediaUrl: savedMessage.media_url,
+          mediaUrl: uploadedFileInfo?.fileUrl || payload.mediaUrl,
           hasAttachment: !!uploadedFileInfo,
         },
       });
