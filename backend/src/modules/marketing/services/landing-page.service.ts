@@ -1,4 +1,4 @@
-import { AppDataSource } from '../../../config/database';
+import { AppDataSource } from '../../../database/data-source';
 import { LandingPage, LandingPageStatus, LandingPageEvent, LandingPageEventType } from '../entities';
 
 export class LandingPageService {

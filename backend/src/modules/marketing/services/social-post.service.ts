@@ -1,4 +1,4 @@
-import { AppDataSource } from '../../../config/database';
+import { AppDataSource } from '../../../database/data-source';
 import { SocialPost, SocialPostStatus, SocialPlatform } from '../entities';
 
 export class SocialPostService {

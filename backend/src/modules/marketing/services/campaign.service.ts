@@ -1,4 +1,4 @@
-import { AppDataSource } from '../../../config/database';
+import { AppDataSource } from '../../../database/data-source';
 import { Campaign, CampaignStatus } from '../entities';
 
 export class CampaignService {

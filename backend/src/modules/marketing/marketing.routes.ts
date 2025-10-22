@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { MarketingController } from './marketing.controller';
-import { authenticateToken } from '../../middleware/auth';
+import { authenticate } from '../../shared/middleware/auth.middleware';
 
 const router = Router();
 const controller = new MarketingController();
 
 // Apply authentication to all routes
-router.use(authenticateToken);
+router.use(authenticate);
 
 // ============================================
 // CAMPAIGNS

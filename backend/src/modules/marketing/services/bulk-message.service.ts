@@ -1,4 +1,4 @@
-import { AppDataSource } from '../../../config/database';
+import { AppDataSource } from '../../../database/data-source';
 import { BulkMessage, BulkMessageStatus, BulkMessagePlatform } from '../entities';
 import { BulkMessageRecipient, RecipientStatus } from '../entities';
 
