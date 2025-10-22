@@ -16,34 +16,34 @@ export class Conversation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'lead_id', type: 'varchar', nullable: true })
   leadId?: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ name: 'contact_name', type: 'varchar' })
   contactName: string;
 
-  @Column({ type: 'varchar', unique: true })
+  @Column({ name: 'phone_number', type: 'varchar' })
   phoneNumber: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'whatsapp_instance_id', type: 'varchar', nullable: true })
   whatsappInstanceId?: string; // ID da instância do WhatsApp (para múltiplos números)
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'assigned_user_id', type: 'varchar', nullable: true })
   assignedUserId?: string; // Vendedor atribuído
 
   @Column({ type: 'varchar', default: 'active' })
   status: 'active' | 'archived' | 'closed' | 'waiting';
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'is_unread', type: 'boolean', default: false })
   isUnread: boolean;
 
-  @Column({ type: 'int', default: 0 })
+  @Column({ name: 'unread_count', type: 'int', default: 0 })
   unreadCount: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'last_message_at', type: 'timestamp', nullable: true })
   lastMessageAt?: Date;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'last_message_preview', type: 'text', nullable: true })
   lastMessagePreview?: string;
 
   @Column({ type: 'simple-array', nullable: true })
