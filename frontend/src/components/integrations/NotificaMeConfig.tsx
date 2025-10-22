@@ -131,82 +131,19 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) =
   };
 
   /**
-   * Conectar Instagram/Messenger via OAuth
+   * Abrir painel NotificaMe para conectar Instagram/Messenger
+   * Como a API NotificaMe não tem endpoints para criar instâncias programaticamente,
+   * o usuário precisa fazer isso manualmente no painel deles
    */
-  const handleConnectPlatform = async (platform: 'instagram' | 'messenger') => {
-    try {
-      setTesting(true);
+  const handleConnectPlatform = (platform: 'instagram' | 'messenger') => {
+    // Abrir painel NotificaMe em nova aba
+    const dashboardUrl = 'https://app.notificame.com.br/dashboard';
+    window.open(dashboardUrl, '_blank');
 
-      // 1. Criar nova instância
-      const createResult = await notificaMeService.createInstance(
-        platform,
-        `${platform === 'instagram' ? 'Instagram' : 'Messenger'} - ${new Date().toLocaleDateString()}`
-      );
-
-      if (!createResult.success) {
-        throw new Error('Falha ao criar instância');
-      }
-
-      const { instanceId, authUrl } = createResult.data;
-
-      // 2. Se já retornou authUrl, usar ela. Senão, buscar
-      let oauthUrl = authUrl;
-
-      if (!oauthUrl) {
-        const authResult = await notificaMeService.getAuthorizationUrl(instanceId);
-        if (!authResult.success) {
-          throw new Error('Falha ao obter URL de autorização');
-        }
-        oauthUrl = authResult.data.authUrl;
-      }
-
-      // 3. Salvar instanceId no localStorage para usar no callback
-      localStorage.setItem('notificame_pending_instance', instanceId);
-      localStorage.setItem('notificame_pending_platform', platform);
-
-      // 4. Abrir popup OAuth
-      const width = 600;
-      const height = 700;
-      const left = (window.screen.width - width) / 2;
-      const top = (window.screen.height - height) / 2;
-
-      const popup = window.open(
-        oauthUrl,
-        'NotificaMeAuth',
-        `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes,resizable=yes`
-      );
-
-      if (!popup) {
-        throw new Error('Popup bloqueado. Habilite popups para este site.');
-      }
-
-      // 5. Monitorar fechamento do popup
-      const checkPopup = setInterval(() => {
-        if (popup.closed) {
-          clearInterval(checkPopup);
-          setTesting(false);
-
-          // Verificar se conexão foi bem-sucedida
-          const wasSuccessful = localStorage.getItem('notificame_auth_success');
-          if (wasSuccessful === 'true') {
-            toast.success(`${platform === 'instagram' ? 'Instagram' : 'Messenger'} conectado com sucesso!`);
-            localStorage.removeItem('notificame_auth_success');
-            loadInstances();
-          }
-
-          // Limpar dados temporários
-          localStorage.removeItem('notificame_pending_instance');
-          localStorage.removeItem('notificame_pending_platform');
-        }
-      }, 500);
-
-      toast.info('Complete a autorização na janela que abriu');
-    } catch (error: any) {
-      toast.error(`Erro ao conectar ${platform === 'instagram' ? 'Instagram' : 'Messenger'}`, {
-        description: error.response?.data?.message || error.message,
-      });
-      setTesting(false);
-    }
+    toast.info(
+      `Conecte seu ${platform === 'instagram' ? 'Instagram' : 'Messenger'} no painel NotificaMe que acabou de abrir. Depois volte aqui e clique em "Atualizar Status" para ver a conexão.`,
+      { duration: 8000 }
+    );
   };
 
   /**
@@ -330,64 +267,57 @@ const NotificaMeConfig: React.FC<NotificaMeConfigProps> = ({ onConfigChange }) =
         <CardContent className="space-y-4">
           {instances.length === 0 && (
             <div className="space-y-4">
-              <div className="text-center py-6 border-2 border-dashed rounded-lg bg-muted/30">
-                <MessageCircle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="font-medium mb-2">Nenhuma conta conectada ainda</p>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Conecte suas contas Instagram ou Messenger para começar a receber mensagens
-                </p>
+              {/* Instruções */}
+              <div className="rounded-lg border bg-blue-50/50 dark:bg-blue-950/20 p-4 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/50">
+                    <ExternalLink className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold text-sm mb-2">Como conectar Instagram ou Messenger:</p>
+                    <ol className="text-sm space-y-1 text-muted-foreground list-decimal list-inside">
+                      <li>Clique no botão "Abrir Painel NotificaMe" abaixo</li>
+                      <li>Faça login com suas credenciais NotificaMe</li>
+                      <li>No painel, conecte seu Instagram ou Messenger</li>
+                      <li>Volte aqui e clique em "Atualizar Status"</li>
+                    </ol>
+                  </div>
+                </div>
               </div>
 
+              {/* Botão para abrir painel */}
+              <Button
+                onClick={() => handleConnectPlatform('instagram')}
+                className="w-full gap-2"
+                size="lg"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Abrir Painel NotificaMe
+              </Button>
+
+              {/* Cards informativos */}
               <div className="grid gap-3 md:grid-cols-2">
                 <Card className="border-pink-200 bg-pink-50/50 dark:bg-pink-950/20 dark:border-pink-900">
                   <CardContent className="pt-6">
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-3">
                       <Instagram className="h-6 w-6 text-pink-600" />
                       <div>
                         <p className="font-medium">Instagram Direct</p>
-                        <p className="text-xs text-muted-foreground">Mensagens diretas</p>
+                        <p className="text-xs text-muted-foreground">Conecte no painel NotificaMe</p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full gap-2"
-                      onClick={() => handleConnectPlatform('instagram')}
-                      disabled={testing}
-                    >
-                      {testing ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <Instagram className="h-3 w-3" />
-                      )}
-                      Conectar Instagram
-                    </Button>
                   </CardContent>
                 </Card>
 
                 <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900">
                   <CardContent className="pt-6">
-                    <div className="flex items-center gap-3 mb-3">
+                    <div className="flex items-center gap-3">
                       <MessageCircle className="h-6 w-6 text-blue-600" />
                       <div>
                         <p className="font-medium">Facebook Messenger</p>
-                        <p className="text-xs text-muted-foreground">Mensagens Facebook</p>
+                        <p className="text-xs text-muted-foreground">Conecte no painel NotificaMe</p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full gap-2"
-                      onClick={() => handleConnectPlatform('messenger')}
-                      disabled={testing}
-                    >
-                      {testing ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <MessageCircle className="h-3 w-3" />
-                      )}
-                      Conectar Messenger
-                    </Button>
                   </CardContent>
                 </Card>
               </div>
