@@ -6,7 +6,6 @@ import {
   Phone,
   Video,
   MoreVertical,
-  Tag as TagIcon,
   User,
   X,
   Smartphone,
