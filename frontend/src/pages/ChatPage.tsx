@@ -631,9 +631,9 @@ const ChatPage: React.FC = () => {
 
       <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
       {/* Left Panel - Conversations List */}
-      <div className="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        {/* Header - STICKY */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
+      <div className="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative">
+        {/* Header - FIXED */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 fixed top-0 w-96 bg-white dark:bg-gray-800 z-50">
           <h1 className="text-xl font-bold text-gray-800 dark:text-white mb-3">Chat</h1>
 
           {/* Search */}
@@ -714,14 +714,16 @@ const ChatPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Channel Selector */}
-        <ChannelSelector
-          selectedChannel={selectedChannel}
-          onChannelSelect={setSelectedChannel}
-        />
+        {/* Content Area - with padding to account for fixed header */}
+        <div className="pt-[280px] flex-1 flex flex-col overflow-y-auto">
+          {/* Channel Selector */}
+          <ChannelSelector
+            selectedChannel={selectedChannel}
+            onChannelSelect={setSelectedChannel}
+          />
 
-        {/* Conversations List */}
-        <div className="flex-1 overflow-y-auto">
+          {/* Conversations List */}
+          <div className="flex-1">
           {filteredConversations.map((conversation) => (
             <div
               key={conversation.id}
@@ -778,6 +780,7 @@ const ChatPage: React.FC = () => {
               <p>Nenhuma conversa encontrada</p>
             </div>
           )}
+          </div>
         </div>
       </div>
 

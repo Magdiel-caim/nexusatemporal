@@ -69,7 +69,7 @@ export const NotificaMeChannels: React.FC = () => {
   /**
    * Testar envio de mensagem
    */
-  const handleTestSend = async (channel: Channel) => {
+  const handleTestSend = async (_channel: Channel) => {
     try {
       toast.info('Função de teste em desenvolvimento');
       // TODO: Implementar modal para testar envio
