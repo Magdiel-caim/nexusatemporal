@@ -421,7 +421,7 @@ verify: Service converged
    - Estrutura das tabelas
    - Debugging e troubleshooting
 
-5. **ORIENTACAO_SESSAO_C.md** (Sessão B)
+5. **ORIENTACAO_SESSAO_B.md** (Sessão B)
    - Guia de recuperação para próxima sessão
    - Sistema está fora do ar por erros da Sessão C
    - Instruções de rollback
@@ -456,7 +456,7 @@ git commit -m "feat(chat): v115b Timestamps + v116 Unificação Completa
 
 ## Documentação
 - CHAT_v116_UNIFICACAO_COMPLETA.md
-- ORIENTACAO_SESSAO_C.md
+- ORIENTACAO_SESSAO_B.md
 - CHANGELOG.md atualizado
 "
 
@@ -518,7 +518,7 @@ Atualizado com entradas completas para v115b e v116.
 
 **Sessão B deixou tudo funcionando** (v116 rodando às 14:02 UTC sem erros).
 
-**Orientação para recuperação**: Ver arquivo `ORIENTACAO_SESSAO_C.md`
+**Orientação para recuperação**: Ver arquivo `ORIENTACAO_SESSAO_B.md`
 
 ---
 
@@ -622,7 +622,7 @@ Atualizado com entradas completas para v115b e v116.
 ## 📞 CONTATO E SUPORTE
 
 ### Arquivos de Referência:
-- `/root/nexusatemporal/ORIENTACAO_SESSAO_C.md` - **LER PRIMEIRO!**
+- `/root/nexusatemporal/ORIENTACAO_SESSAO_B.md` - **LER PRIMEIRO!**
 - `/root/nexusatemporal/CHAT_v116_UNIFICACAO_COMPLETA.md`
 - `/root/nexusatemporal/CHANGELOG.md`
 
@@ -654,7 +654,7 @@ docker service ps nexus_backend
 **Horário**: 12:45 - 14:15 UTC
 **Status Final**: ✅ CONCLUÍDO COM SUCESSO
 
-**Próxima Sessão**: Ver `ORIENTACAO_SESSAO_C.md`
+**Próxima Sessão**: Ver `ORIENTACAO_SESSAO_B.md`
 
 ---
 

@@ -1,12 +1,12 @@
-# 🚨 ORIENTAÇÃO PARA SESSÃO C
+# 🚨 ORIENTAÇÃO PARA SESSÃO B
 
 **Data**: 2025-10-22 14:10 UTC
-**Sessão Anterior**: Sessão B (completada com sucesso)
+**Trabalho Anterior**: v115b e v116 (completados com sucesso)
 **Status do Sistema**: ⚠️ **FORA DO AR** (erros cometidos por uma sessão posterior)
 
 ---
 
-## 📋 O QUE A SESSÃO B FEZ (COMPLETADO)
+## 📋 O QUE FOI FEITO (COMPLETADO)
 
 ### ✅ v115b - Correção de Timestamps
 - Corrigido `@CreateDateColumn` e `@UpdateDateColumn` em todas 5 entities
@@ -28,7 +28,7 @@
 
 **Sistema está FORA DO AR** devido a erros cometidos por uma sessão posterior.
 
-**IMPORTANTE**: Sessão B deixou tudo funcionando (v116). Se está quebrado agora, foi por mudanças feitas após a Sessão B.
+**IMPORTANTE**: v116 estava funcionando perfeitamente. Se está quebrado agora, foi por mudanças feitas posteriormente.
 
 ---
 
@@ -106,7 +106,7 @@ PGPASSWORD=6uyJZdc0xsCe7ymief3x2Izi9QubcTYP docker exec f30b5d9f37ea psql -U nex
 **Provavelmente uma sessão posterior modificou entities sem atualizar migration!**
 
 Solução:
-1. Rollback para v116 (última versão estável da Sessão B)
+1. Rollback para v116 (última versão estável)
 2. Verificar quais mudanças foram feitas
 3. Corrigir column names nas entities
 4. Re-deploy
@@ -156,7 +156,7 @@ PGPASSWORD=6uyJZdc0xsCe7ymief3x2Izi9QubcTYP docker exec f30b5d9f37ea psql -U nex
 
 ## 🚀 PRÓXIMAS TAREFAS (APÓS ESTABILIZAR)
 
-### 🔴 URGENTE (Sessão C):
+### 🔴 URGENTE (Sessão B):
 1. Estabilizar sistema (rollback se necessário)
 2. Testar envio de mídia pelo WhatsApp
 3. Verificar se mídia aparece no Chat
@@ -278,10 +278,10 @@ docker service ps nexus_backend
 
 Se precisar, toda documentação está na pasta `/root/nexusatemporal/`.
 
-**Lembre-se**: Sessão B deixou tudo funcionando. Se está quebrado, foi depois.
+**Lembre-se**: v116 estava funcionando perfeitamente. Se está quebrado, foi depois.
 
 ---
 
-**Criado por**: Claude Code - Sessão B
+**Criado por**: Claude Code
 **Data**: 2025-10-22 14:10 UTC
-**Para**: Sessão C (Recuperação)
+**Para**: Sessão B (Recuperação e Continuidade)
