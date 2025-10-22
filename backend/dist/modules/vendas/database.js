@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getVendasDbPool = getVendasDbPool;
-const data_source_1 = require("../../database/data-source");
+const data_source_1 = require("@/database/data-source");
 let pool = null;
 /**
  * Obtém o pool de conexões do CrmDataSource

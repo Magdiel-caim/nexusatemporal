@@ -202,7 +202,32 @@ class NotificaMeService {
    * Listar instâncias por plataforma
    */
   async getInstancesByPlatform(platform: 'instagram' | 'messenger' | 'whatsapp'): Promise<{ success: boolean; data: NotificaMeInstance[] }> {
-    const { data } = await api.get(`/notificame/instances/platform/${platform}`);
+    const { data} = await api.get(`/notificame/instances/platform/${platform}`);
+    return data;
+  }
+
+  /**
+   * Listar canais conectados do NotificaMe Hub
+   * @param platform - Filtrar por plataforma (instagram, messenger, whatsapp)
+   */
+  async listChannels(platform?: string): Promise<{ success: boolean; data: any[] }> {
+    const params = platform ? { platform } : {};
+    const { data } = await api.get('/notificame/channels', { params });
+    return data;
+  }
+
+  /**
+   * Enviar mensagem Instagram via n8n
+   * @param channelId - ID do canal Instagram conectado
+   * @param recipientId - ID do destinatário no Instagram
+   * @param message - Mensagem a ser enviada
+   */
+  async sendInstagramMessage(channelId: string, recipientId: string, message: string): Promise<{ success: boolean; data: any }> {
+    const { data } = await api.post('/notificame/send-instagram-message', {
+      channelId,
+      recipientId,
+      message
+    });
     return data;
   }
 }

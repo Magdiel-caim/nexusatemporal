@@ -20,8 +20,13 @@ router.post('/send-buttons', auth_middleware_1.authenticate, (req, res) => notif
 router.post('/send-list', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.sendList(req, res));
 // Gerenciamento de instâncias
 router.get('/instances', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getInstances(req, res));
+router.get('/instances/platform/:platform', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getInstancesByPlatform(req, res));
+router.post('/instances/create', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.createInstance(req, res));
 router.get('/instances/:instanceId', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getInstance(req, res));
 router.get('/instances/:instanceId/qrcode', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getQRCode(req, res));
+router.post('/instances/:instanceId/authorize', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getAuthorizationUrl(req, res));
+router.post('/instances/:instanceId/callback', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.processCallback(req, res));
+router.get('/instances/:instanceId/sync', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.syncInstance(req, res));
 router.post('/instances/:instanceId/disconnect', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.disconnectInstance(req, res));
 // Histórico de mensagens
 router.get('/messages/history', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getMessageHistory(req, res));
@@ -30,6 +35,9 @@ router.post('/messages/:messageId/mark-read', auth_middleware_1.authenticate, (r
 router.get('/stats', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getStats(req, res));
 router.get('/stats/dashboard', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getDashboardStats(req, res));
 router.get('/stats/history', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.getMessageHistoryStats(req, res));
+// NotificaMe Hub - Canais e Mensagens Instagram
+router.get('/channels', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.listChannels(req, res));
+router.post('/send-instagram-message', auth_middleware_1.authenticate, (req, res) => notificame_controller_1.default.sendInstagramMessage(req, res));
 /**
  * Rota Pública (webhook - sem autenticação)
  * Notifica.me enviará eventos para esta rota

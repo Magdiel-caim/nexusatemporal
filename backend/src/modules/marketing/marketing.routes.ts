@@ -5,6 +5,9 @@ import { authenticate } from '../../shared/middleware/auth.middleware';
 const router = Router();
 const controller = new MarketingController();
 
+// WAHA Webhook (no auth required) - must be before authenticate middleware
+router.post('/waha/webhook', (req, res) => controller.wahaWebhook(req, res));
+
 // Apply authentication to all routes
 router.use(authenticate);
 
@@ -52,5 +55,27 @@ router.post('/ai/analyze', (req, res) => controller.analyzeWithAI(req, res));
 router.get('/ai/analyses', (req, res) => controller.getAIAnalyses(req, res));
 router.post('/ai/optimize-copy', (req, res) => controller.optimizeCopy(req, res));
 router.post('/ai/generate-image', (req, res) => controller.generateImage(req, res));
+
+// ============================================
+// INTEGRATIONS
+// ============================================
+router.post('/integrations', (req, res) => controller.upsertIntegration(req, res));
+router.get('/integrations', (req, res) => controller.getIntegrations(req, res));
+router.get('/integrations/ai-providers', (req, res) => controller.getAIProviders(req, res));
+router.get('/integrations/:platform', (req, res) => controller.getIntegrationByPlatform(req, res));
+router.post('/integrations/:id/test', (req, res) => controller.testIntegration(req, res));
+router.delete('/integrations/:id', (req, res) => controller.deleteIntegration(req, res));
+
+// ============================================
+// WAHA SESSIONS
+// ============================================
+router.post('/waha/sessions', (req, res) => controller.createWahaSession(req, res));
+router.get('/waha/sessions', (req, res) => controller.getWahaSessions(req, res));
+router.get('/waha/sessions/:id', (req, res) => controller.getWahaSession(req, res));
+router.post('/waha/sessions/:id/start', (req, res) => controller.startWahaSession(req, res));
+router.post('/waha/sessions/:id/stop', (req, res) => controller.stopWahaSession(req, res));
+router.get('/waha/sessions/:id/qr', (req, res) => controller.getWahaQRCode(req, res));
+router.delete('/waha/sessions/:id', (req, res) => controller.deleteWahaSession(req, res));
+router.post('/waha/sessions/:id/send', (req, res) => controller.sendWahaMessage(req, res));
 
 export default router;

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatService = void 0;
-const data_source_1 = require("../../database/data-source");
+const data_source_1 = require("@/database/data-source");
 const conversation_entity_1 = require("./conversation.entity");
 const message_entity_1 = require("./message.entity");
 const attachment_entity_1 = require("./attachment.entity");
@@ -44,6 +44,30 @@ class ChatService {
         return this.conversationRepository.findOne({
             where: { phoneNumber },
         });
+    }
+    /**
+     * Busca ou cria conversa (útil para webhooks)
+     */
+    async findOrCreateConversation(data) {
+        // Busca por phone + whatsappInstanceId (para múltiplas sessões)
+        let conversation = await this.conversationRepository.findOne({
+            where: {
+                phoneNumber: data.phoneNumber,
+                whatsappInstanceId: data.whatsappInstanceId || (0, typeorm_1.IsNull)(),
+            },
+        });
+        if (!conversation) {
+            conversation = await this.createConversation(data);
+        }
+        else {
+            // Atualiza nome do contato se mudou
+            if (conversation.contactName !== data.contactName) {
+                conversation = await this.updateConversation(conversation.id, {
+                    contactName: data.contactName,
+                });
+            }
+        }
+        return conversation;
     }
     async updateConversation(id, data) {
         await this.conversationRepository.update({ id }, data);
@@ -170,6 +194,12 @@ class ChatService {
             order: { createdAt: 'ASC' },
         });
     }
+    async getMessageByWhatsappId(whatsappMessageId) {
+        return this.messageRepository.findOne({
+            where: { whatsappMessageId, isDeleted: false },
+            relations: ['attachments'],
+        });
+    }
     async updateMessageStatus(messageId, status) {
         const updateData = { status };
         if (status === 'sent')
@@ -189,6 +219,26 @@ class ChatService {
     async createAttachment(data) {
         const attachment = this.attachmentRepository.create(data);
         return this.attachmentRepository.save(attachment);
+    }
+    /**
+     * Cria mensagem com attachment (helper para webhooks)
+     */
+    async createMessageWithAttachment(messageData, attachmentData) {
+        // Cria mensagem
+        const message = await this.createMessage(messageData);
+        // Se tiver attachment, cria
+        if (attachmentData) {
+            await this.createAttachment({
+                messageId: message.id,
+                type: messageData.type,
+                ...attachmentData,
+            });
+        }
+        // Retorna mensagem com attachments
+        return this.messageRepository.findOne({
+            where: { id: message.id },
+            relations: ['attachments'],
+        });
     }
     // ===== TAG OPERATIONS =====
     async createTag(data) {

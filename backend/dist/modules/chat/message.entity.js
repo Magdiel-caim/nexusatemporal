@@ -39,14 +39,14 @@ __decorate([
     __metadata("design:type", String)
 ], Message.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'uuid' }),
+    (0, typeorm_1.Column)({ name: 'conversation_id', type: 'uuid' }),
     __metadata("design:type", String)
 ], Message.prototype, "conversationId", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => conversation_entity_1.Conversation, (conversation) => conversation.messages, {
         onDelete: 'CASCADE',
     }),
-    (0, typeorm_1.JoinColumn)({ name: 'conversationId' }),
+    (0, typeorm_1.JoinColumn)({ name: 'conversation_id' }),
     __metadata("design:type", conversation_entity_1.Conversation)
 ], Message.prototype, "conversation", void 0);
 __decorate([
@@ -62,15 +62,15 @@ __decorate([
     __metadata("design:type", String)
 ], Message.prototype, "content", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'sender_id', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Message.prototype, "senderId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'sender_name', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Message.prototype, "senderName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'whatsapp_message_id', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Message.prototype, "whatsappMessageId", void 0);
 __decorate([
@@ -78,15 +78,15 @@ __decorate([
     __metadata("design:type", String)
 ], Message.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'sent_at', type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], Message.prototype, "sentAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'delivered_at', type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], Message.prototype, "deliveredAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'read_at', type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], Message.prototype, "readAt", void 0);
 __decorate([
@@ -94,15 +94,15 @@ __decorate([
     __metadata("design:type", Object)
 ], Message.prototype, "metadata", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    (0, typeorm_1.Column)({ name: 'is_deleted', type: 'boolean', default: false }),
     __metadata("design:type", Boolean)
 ], Message.prototype, "isDeleted", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)(),
+    (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)
 ], Message.prototype, "createdAt", void 0);
 __decorate([
-    (0, typeorm_1.UpdateDateColumn)(),
+    (0, typeorm_1.UpdateDateColumn)({ name: 'updated_at' }),
     __metadata("design:type", Date)
 ], Message.prototype, "updatedAt", void 0);
 __decorate([

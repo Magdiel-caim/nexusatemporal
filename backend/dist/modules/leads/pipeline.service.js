@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PipelineService = void 0;
-const data_source_1 = require("../../database/data-source");
+const data_source_1 = require("@/database/data-source");
 const pipeline_entity_1 = require("./pipeline.entity");
 const stage_entity_1 = require("./stage.entity");
 class PipelineService {

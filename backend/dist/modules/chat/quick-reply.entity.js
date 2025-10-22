@@ -45,23 +45,23 @@ __decorate([
     __metadata("design:type", String)
 ], QuickReply.prototype, "category", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'created_by', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], QuickReply.prototype, "createdBy", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'boolean', default: true }),
+    (0, typeorm_1.Column)({ name: 'is_active', type: 'boolean', default: true }),
     __metadata("design:type", Boolean)
 ], QuickReply.prototype, "isActive", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    (0, typeorm_1.Column)({ name: 'is_global', type: 'boolean', default: false }),
     __metadata("design:type", Boolean)
 ], QuickReply.prototype, "isGlobal", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)(),
+    (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)
 ], QuickReply.prototype, "createdAt", void 0);
 __decorate([
-    (0, typeorm_1.UpdateDateColumn)(),
+    (0, typeorm_1.UpdateDateColumn)({ name: 'updated_at' }),
     __metadata("design:type", Date)
 ], QuickReply.prototype, "updatedAt", void 0);
 exports.QuickReply = QuickReply = __decorate([

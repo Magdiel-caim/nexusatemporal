@@ -85,14 +85,16 @@ export default function MarketingPage() {
     }
   };
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value?: number) => {
+    if (value === undefined || value === null) return 'R$ 0,00';
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
   };
 
-  const formatNumber = (value: number) => {
+  const formatNumber = (value?: number) => {
+    if (value === undefined || value === null) return '0';
     if (value >= 1000000) {
       return `${(value / 1000000).toFixed(1)}M`;
     }
@@ -102,7 +104,8 @@ export default function MarketingPage() {
     return value.toString();
   };
 
-  const formatPercentage = (value: number) => {
+  const formatPercentage = (value?: number) => {
+    if (value === undefined || value === null) return '0%';
     return `${value.toFixed(2)}%`;
   };
 

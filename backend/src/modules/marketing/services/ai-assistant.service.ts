@@ -1,5 +1,5 @@
 import { AppDataSource } from '../../../database/data-source';
-import { AIAnalysis, AIProvider, AnalysisType } from '../entities';
+import { AIAnalysis, AIProvider, AnalysisType, RelatedType } from '../entities';
 import axios from 'axios';
 
 export class AIAssistantService {
@@ -178,7 +178,7 @@ export class AIAssistantService {
 
   async getAnalysisByRelated(
     tenantId: string,
-    relatedType: string,
+    relatedType: RelatedType,
     relatedId: string
   ): Promise<AIAnalysis[]> {
     return await this.analysisRepository.find({

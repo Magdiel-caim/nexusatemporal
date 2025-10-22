@@ -1009,6 +1009,91 @@ export class NotificaMeController {
       });
     }
   }
+
+  /**
+   * GET /api/notificame/channels
+   * Lista canais conectados do NotificaMe Hub (Instagram, Messenger, etc)
+   */
+  async listChannels(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const axios = require('axios');
+      const apiKey = process.env.NOTIFICAME_API_KEY || '0fb8e168-9331-11f0-88f5-0e386dc8b623';
+
+      const response = await axios.get('https://hub.notificame.com.br/v1/channels', {
+        headers: {
+          'X-Api-Token': apiKey
+        }
+      });
+
+      // Filtrar por plataforma se especificado
+      let channels = response.data;
+      const { platform } = req.query;
+
+      if (platform) {
+        channels = channels.filter((ch: any) => ch.channel === platform);
+      }
+
+      res.json({
+        success: true,
+        data: channels
+      });
+    } catch (error: any) {
+      console.error('[NotificaMe] Erro ao listar canais:', error);
+      res.status(500).json({
+        success: false,
+        error: error.response?.data?.message || error.message
+      });
+    }
+  }
+
+  /**
+   * POST /api/notificame/send-instagram-message
+   * Envia mensagem Instagram via n8n webhook
+   */
+  async sendInstagramMessage(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = (req as any).user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ error: 'Tenant não identificado' });
+        return;
+      }
+
+      const { channelId, recipientId, message } = req.body;
+
+      if (!channelId || !recipientId || !message) {
+        res.status(400).json({
+          error: 'channelId, recipientId e message são obrigatórios'
+        });
+        return;
+      }
+
+      const axios = require('axios');
+      const n8nUrl = 'https://webhook.nexusatemporal.com/webhook/notificame/send-instagram';
+
+      const response = await axios.post(n8nUrl, {
+        channelId,
+        recipientId,
+        message
+      });
+
+      res.json({
+        success: true,
+        data: response.data
+      });
+    } catch (error: any) {
+      console.error('[NotificaMe] Erro ao enviar mensagem Instagram:', error);
+      res.status(500).json({
+        success: false,
+        error: error.response?.data?.message || error.message
+      });
+    }
+  }
 }
 
 export default new NotificaMeController();

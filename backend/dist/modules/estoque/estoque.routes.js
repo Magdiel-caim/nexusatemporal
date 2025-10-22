@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
+const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
 const product_service_1 = require("./product.service");
 const stock_movement_service_1 = require("./stock-movement.service");
 const stock_alert_service_1 = require("./stock-alert.service");

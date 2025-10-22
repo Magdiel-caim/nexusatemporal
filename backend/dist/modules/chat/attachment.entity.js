@@ -31,14 +31,14 @@ __decorate([
     __metadata("design:type", String)
 ], Attachment.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'uuid' }),
+    (0, typeorm_1.Column)({ name: 'message_id', type: 'uuid' }),
     __metadata("design:type", String)
 ], Attachment.prototype, "messageId", void 0);
 __decorate([
     (0, typeorm_1.ManyToOne)(() => message_entity_1.Message, (message) => message.attachments, {
         onDelete: 'CASCADE',
     }),
-    (0, typeorm_1.JoinColumn)({ name: 'messageId' }),
+    (0, typeorm_1.JoinColumn)({ name: 'message_id' }),
     __metadata("design:type", message_entity_1.Message)
 ], Attachment.prototype, "message", void 0);
 __decorate([
@@ -46,19 +46,19 @@ __decorate([
     __metadata("design:type", String)
 ], Attachment.prototype, "type", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar' }),
+    (0, typeorm_1.Column)({ name: 'file_name', type: 'varchar' }),
     __metadata("design:type", String)
 ], Attachment.prototype, "fileName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar' }),
+    (0, typeorm_1.Column)({ name: 'file_url', type: 'varchar' }),
     __metadata("design:type", String)
 ], Attachment.prototype, "fileUrl", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'mime_type', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Attachment.prototype, "mimeType", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'bigint', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'file_size', type: 'bigint', nullable: true }),
     __metadata("design:type", Number)
 ], Attachment.prototype, "fileSize", void 0);
 __decorate([
@@ -66,11 +66,11 @@ __decorate([
     __metadata("design:type", Number)
 ], Attachment.prototype, "duration", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'thumbnail_url', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Attachment.prototype, "thumbnailUrl", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)(),
+    (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)
 ], Attachment.prototype, "createdAt", void 0);
 exports.Attachment = Attachment = __decorate([

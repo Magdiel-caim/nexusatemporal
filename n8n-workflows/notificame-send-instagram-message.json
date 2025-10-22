@@ -1,0 +1,62 @@
+{
+  "name": "NotificaMe - Enviar Mensagem Instagram",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "notificame/send-instagram",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-receive-message",
+      "name": "Webhook: Receber Mensagem",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "webhookId": "notificame-send-instagram"
+    },
+    {
+      "parameters": {
+        "url": "https://hub.notificame.com.br/v1/channels/instagram/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\n  \"from\": $json.body.channelId,\n  \"to\": $json.body.recipientId,\n  \"contents\": [\n    {\n      \"type\": \"text\",\n      \"text\": $json.body.message\n    }\n  ]\n} }}",
+        "options": {}
+      },
+      "id": "http-send-message",
+      "name": "NotificaMe: Enviar Mensagem",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"messageId\": $json.id || $json.message_id,\n  \"status\": \"sent\",\n  \"channelId\": $json.channelId,\n  \"recipientId\": $json.recipientId\n} }}"
+      },
+      "id": "respond-success",
+      "name": "Responder: Sucesso",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Receber Mensagem": {
+      "main": [[{"node": "NotificaMe: Enviar Mensagem", "type": "main", "index": 0}]]
+    },
+    "NotificaMe: Enviar Mensagem": {
+      "main": [[{"node": "Responder: Sucesso", "type": "main", "index": 0}]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 1,
+  "updatedAt": "2025-10-22T20:30:00.000Z",
+  "versionId": "1"
+}

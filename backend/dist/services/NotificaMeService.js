@@ -268,6 +268,103 @@ class NotificaMeService {
             throw new Error(error.response?.data?.message || 'Erro ao obter histórico de mensagens');
         }
     }
+    /**
+     * Cria uma nova instância para Instagram ou Messenger
+     */
+    async createInstance(platform, name) {
+        try {
+            const response = await this.client.post('/instances/create', {
+                platform,
+                name,
+            });
+            console.log('[NotificaMe] Instância criada:', {
+                platform,
+                instanceId: response.data?.instanceId,
+            });
+            return {
+                instanceId: response.data?.instanceId || response.data?.id,
+                authUrl: response.data?.authUrl || response.data?.authorization_url,
+            };
+        }
+        catch (error) {
+            console.error('[NotificaMe] Erro ao criar instância:', error);
+            throw new Error(error.response?.data?.message || 'Erro ao criar instância');
+        }
+    }
+    /**
+     * Obtém URL de autorização OAuth para Instagram/Messenger
+     */
+    async getAuthorizationUrl(instanceId, callbackUrl) {
+        try {
+            const response = await this.client.post(`/instances/${instanceId}/authorize`, {
+                callback_url: callbackUrl,
+                redirect_uri: callbackUrl,
+            });
+            const authUrl = response.data?.authUrl ||
+                response.data?.authorization_url ||
+                response.data?.url;
+            console.log('[NotificaMe] URL de autorização gerada:', {
+                instanceId,
+                authUrl,
+            });
+            return authUrl;
+        }
+        catch (error) {
+            console.error('[NotificaMe] Erro ao obter URL de autorização:', error);
+            throw new Error(error.response?.data?.message || 'Erro ao gerar URL de autorização');
+        }
+    }
+    /**
+     * Processa callback OAuth após autorização
+     */
+    async processOAuthCallback(instanceId, code, state) {
+        try {
+            const response = await this.client.post(`/instances/${instanceId}/callback`, {
+                code,
+                state,
+            });
+            console.log('[NotificaMe] Callback OAuth processado:', {
+                instanceId,
+                status: response.data?.status,
+            });
+            return response.data;
+        }
+        catch (error) {
+            console.error('[NotificaMe] Erro ao processar callback OAuth:', error);
+            throw new Error(error.response?.data?.message || 'Erro ao processar autorização');
+        }
+    }
+    /**
+     * Sincroniza status da instância
+     */
+    async syncInstanceStatus(instanceId) {
+        try {
+            const response = await this.client.get(`/instances/${instanceId}/sync`);
+            console.log('[NotificaMe] Status sincronizado:', {
+                instanceId,
+                status: response.data?.status,
+            });
+            return response.data;
+        }
+        catch (error) {
+            console.error('[NotificaMe] Erro ao sincronizar status:', error);
+            // Se endpoint não existir, fallback para getInstance
+            return this.getInstance(instanceId);
+        }
+    }
+    /**
+     * Lista instâncias filtradas por plataforma
+     */
+    async getInstancesByPlatform(platform) {
+        try {
+            const allInstances = await this.getInstances();
+            return allInstances.filter(instance => instance.platform === platform);
+        }
+        catch (error) {
+            console.error('[NotificaMe] Erro ao filtrar instâncias:', error);
+            throw new Error(error.response?.data?.message || 'Erro ao filtrar instâncias');
+        }
+    }
 }
 exports.NotificaMeService = NotificaMeService;
 exports.default = NotificaMeService;

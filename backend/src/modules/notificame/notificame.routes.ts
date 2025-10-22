@@ -133,6 +133,19 @@ router.get(
   (req, res) => notificaMeController.getMessageHistoryStats(req, res)
 );
 
+// NotificaMe Hub - Canais e Mensagens Instagram
+router.get(
+  '/channels',
+  authenticate,
+  (req, res) => notificaMeController.listChannels(req, res)
+);
+
+router.post(
+  '/send-instagram-message',
+  authenticate,
+  (req, res) => notificaMeController.sendInstagramMessage(req, res)
+);
+
 /**
  * Rota Pública (webhook - sem autenticação)
  * Notifica.me enviará eventos para esta rota

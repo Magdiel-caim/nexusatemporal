@@ -7,7 +7,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WebhookController = void 0;
 const payment_gateway_service_1 = require("./payment-gateway.service");
-const EventEmitterService_1 = require("../../services/EventEmitterService");
+const EventEmitterService_1 = require("@/services/EventEmitterService");
 class WebhookController {
     pool;
     service;

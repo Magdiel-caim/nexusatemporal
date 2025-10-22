@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvoiceService = void 0;
-const data_source_1 = require("../../database/data-source");
+const data_source_1 = require("@/database/data-source");
 const invoice_entity_1 = require("./invoice.entity");
 const transaction_entity_1 = require("./transaction.entity");
 const typeorm_1 = require("typeorm");

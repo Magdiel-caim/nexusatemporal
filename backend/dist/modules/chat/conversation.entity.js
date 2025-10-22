@@ -16,6 +16,7 @@ let Conversation = class Conversation {
     leadId;
     contactName;
     phoneNumber;
+    avatarUrl; // Foto do perfil do contato WhatsApp
     whatsappInstanceId; // ID da instância do WhatsApp (para múltiplos números)
     assignedUserId; // Vendedor atribuído
     status;
@@ -35,23 +36,27 @@ __decorate([
     __metadata("design:type", String)
 ], Conversation.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'lead_id', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Conversation.prototype, "leadId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar' }),
+    (0, typeorm_1.Column)({ name: 'contact_name', type: 'varchar' }),
     __metadata("design:type", String)
 ], Conversation.prototype, "contactName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', unique: true }),
+    (0, typeorm_1.Column)({ name: 'phone_number', type: 'varchar' }),
     __metadata("design:type", String)
 ], Conversation.prototype, "phoneNumber", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'avatar_url', type: 'varchar', nullable: true }),
+    __metadata("design:type", String)
+], Conversation.prototype, "avatarUrl", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ name: 'whatsapp_instance_id', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Conversation.prototype, "whatsappInstanceId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'assigned_user_id', type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], Conversation.prototype, "assignedUserId", void 0);
 __decorate([
@@ -59,19 +64,19 @@ __decorate([
     __metadata("design:type", String)
 ], Conversation.prototype, "status", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'boolean', default: false }),
+    (0, typeorm_1.Column)({ name: 'is_unread', type: 'boolean', default: false }),
     __metadata("design:type", Boolean)
 ], Conversation.prototype, "isUnread", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'int', default: 0 }),
+    (0, typeorm_1.Column)({ name: 'unread_count', type: 'int', default: 0 }),
     __metadata("design:type", Number)
 ], Conversation.prototype, "unreadCount", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'timestamp', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'last_message_at', type: 'timestamp', nullable: true }),
     __metadata("design:type", Date)
 ], Conversation.prototype, "lastMessageAt", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
+    (0, typeorm_1.Column)({ name: 'last_message_preview', type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], Conversation.prototype, "lastMessagePreview", void 0);
 __decorate([
@@ -83,11 +88,11 @@ __decorate([
     __metadata("design:type", Object)
 ], Conversation.prototype, "metadata", void 0);
 __decorate([
-    (0, typeorm_1.CreateDateColumn)(),
+    (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)
 ], Conversation.prototype, "createdAt", void 0);
 __decorate([
-    (0, typeorm_1.UpdateDateColumn)(),
+    (0, typeorm_1.UpdateDateColumn)({ name: 'updated_at' }),
     __metadata("design:type", Date)
 ], Conversation.prototype, "updatedAt", void 0);
 __decorate([

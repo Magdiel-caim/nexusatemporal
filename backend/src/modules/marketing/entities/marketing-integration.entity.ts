@@ -7,15 +7,31 @@ import {
 } from 'typeorm';
 
 export enum IntegrationPlatform {
+  // Social Media
   FACEBOOK = 'facebook',
   INSTAGRAM = 'instagram',
-  GOOGLE_ADS = 'google_ads',
-  GOOGLE_ANALYTICS = 'google_analytics',
   TIKTOK = 'tiktok',
   LINKEDIN = 'linkedin',
+
+  // Analytics
+  GOOGLE_ADS = 'google_ads',
+  GOOGLE_ANALYTICS = 'google_analytics',
+
+  // Email
   SENDGRID = 'sendgrid',
   RESEND = 'resend',
+
+  // Messaging
   WHATSAPP = 'whatsapp',
+  WAHA = 'waha',
+
+  // AI Providers
+  GROQ = 'groq',
+  OPENROUTER = 'openrouter',
+  DEEPSEEK = 'deepseek',
+  MISTRAL = 'mistral',
+  QWEN = 'qwen',
+  OLLAMA = 'ollama',
 }
 
 export enum IntegrationStatus {
