@@ -6,12 +6,14 @@ import {
   Phone,
   Video,
   MoreVertical,
-  Tag as 
+  Tag as TagIcon,
   User,
   X,
   Smartphone,
   Zap,
   Settings,
+  PanelRightClose,
+  PanelRightOpen,
 } from 'lucide-react';
 import chatService, { Conversation, Message, QuickReply } from '../services/chatService';
 import toast from 'react-hot-toast';
@@ -51,6 +53,7 @@ const ChatPage: React.FC = () => {
   const [quotedMessage, setQuotedMessage] = useState<Message | null>(null);
   const [isTyping, setIsTyping] = useState(false);
   const [typingUser, setTypingUser] = useState<string>('');
+  const [showRightPanel, setShowRightPanel] = useState(true); // Toggle painel direito
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const selectedConversationRef = useRef<Conversation | null>(null);
 
@@ -630,8 +633,8 @@ const ChatPage: React.FC = () => {
       <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
       {/* Left Panel - Conversations List */}
       <div className="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+        {/* Header - STICKY */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
           <h1 className="text-xl font-bold text-gray-800 dark:text-white mb-3">Chat</h1>
 
           {/* Search */}
@@ -800,6 +803,17 @@ const ChatPage: React.FC = () => {
               </button>
               <button className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg">
                 <Video className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
+              </button>
+              <button
+                onClick={() => setShowRightPanel(!showRightPanel)}
+                className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg"
+                title={showRightPanel ? 'Ocultar painel lateral' : 'Mostrar painel lateral'}
+              >
+                {showRightPanel ? (
+                  <PanelRightClose className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                ) : (
+                  <PanelRightOpen className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                )}
               </button>
               <button className="p-2 hover:bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-700 rounded-lg">
                 <MoreVertical className="h-5 w-5 text-gray-600 dark:text-gray-400 dark:text-gray-500" />
@@ -1005,7 +1019,7 @@ const ChatPage: React.FC = () => {
       )}
 
       {/* Right Panel - Conversation Details */}
-      {selectedConversation && (
+      {selectedConversation && showRightPanel && (
         <ConversationDetailsPanel
           conversation={selectedConversation}
           onUpdate={() => {
