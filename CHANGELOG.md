@@ -2,6 +2,403 @@
 
 ---
 
+## 🔄 v116-v118: OAUTH NOTIFICAME - INSTAGRAM/MESSENGER (2025-10-22) - EM PROGRESSO
+
+### 📝 RESUMO EXECUTIVO
+
+**Objetivo:** Implementar fluxo OAuth para permitir clientes conectarem suas próprias contas Instagram/Messenger através do modelo de revenda NotificaMe.
+
+**Status Final:** ⚠️ **DOCUMENTADO MAS NÃO TESTADO** (sistema offline devido a erros da Sessão C)
+
+**Versões:**
+- v116: Implementação OAuth direta (API endpoints não existem)
+- v117: Simplificação para painel NotificaMe
+- v118: Workflow n8n completo com documentação
+
+**Data:** 2025-10-22 10:00-14:30 UTC (4h30min)
+
+---
+
+### 🎯 PROBLEMA IDENTIFICADO
+
+**Situação Atual:**
+- Cliente clica "Conectar Instagram/Messenger" no Nexus CRM
+- Sistema redireciona para painel NotificaMe (app.notificame.com.br)
+- ❌ Cliente NÃO consegue autorizar sua própria conta
+- ❌ Não há popup OAuth do Instagram/Facebook
+
+**Modelo de Negócio (Revenda):**
+- Usuário é REVENDEDOR NotificaMe (API Key: 0fb8e168-9331-11f0-88f5-0e386dc8b623)
+- Cliente final NÃO tem conta NotificaMe
+- Cliente precisa conectar SUA conta Instagram/Messenger
+- NotificaMe gerencia a conexão através da conta do revendedor
+
+**Descoberta Crítica:**
+- ❌ API NotificaMe não tem endpoints OAuth públicos documentados
+- ❌ `/api/instances` → 404 Hub404
+- ❌ `/api/instances/create` → 404 Hub404
+- ❌ `/api/oauth/authorize` → 404 Hub404 (presumido)
+- ❌ Node n8n `n8n-nodes-notificame-hub` NÃO tem actions para OAuth/conectar
+
+---
+
+### ✅ SOLUÇÃO IMPLEMENTADA
+
+#### **Versão 116: OAuth Direto (FALHOU)**
+
+**Tentativa:** Implementar OAuth usando API NotificaMe diretamente
+
+**Implementação:**
+1. **Backend**: 5 novos métodos no NotificaMeService
+   - `createInstance()` - Criar instância Instagram/Messenger
+   - `getAuthorizationUrl()` - Obter URL OAuth
+   - `processOAuthCallback()` - Processar callback
+   - `getInstanceStatus()` - Verificar status
+   - `deleteInstance()` - Remover instância
+
+2. **Backend**: 5 novos endpoints no Controller
+   - `POST /api/notificame/instances/create`
+   - `POST /api/notificame/instances/:id/authorize`
+   - `POST /api/notificame/instances/:id/callback`
+   - `GET /api/notificame/instances/:id/status`
+   - `DELETE /api/notificame/instances/:id`
+
+3. **Frontend**: Popup OAuth com postMessage
+   - `NotificaMeConfig.tsx` - handleConnectPlatform() com popup
+   - `NotificaMeCallbackPage.tsx` - Página callback OAuth (NOVO)
+   - `notificaMeService.ts` - Métodos API OAuth
+
+**Resultado:** ❌ FALHOU - Endpoints não existem na API
+
+**Commits:**
+- `85e15a6` - feat(notificame): Implementa fluxo OAuth Instagram/Messenger - v116
+
+---
+
+#### **Versão 117: Painel NotificaMe (WORKAROUND)**
+
+**Tentativa:** Simplificar abrindo painel NotificaMe com instruções
+
+**Implementação:**
+- Removido código OAuth complexo
+- Abrir `https://app.notificame.com.br` em nova aba
+- Instruções para usuário conectar manualmente
+
+**Resultado:** ✅ FUNCIONA mas não é ideal (requer ação manual)
+
+**Commits:**
+- `16bb202` - fix(notificame): Ajusta fluxo para usar painel NotificaMe - v117
+
+---
+
+#### **Versão 118: Workflow n8n (DOCUMENTADO)**
+
+**Tentativa:** Usar n8n como middleware/proxy para OAuth
+
+**Arquitetura:**
+```
+Cliente → Nexus CRM → n8n Workflow → NotificaMe API → Instagram OAuth
+                         ↓
+                    2 Webhooks
+                    9 Nodes HTTP
+```
+
+**Workflow n8n (9 nodes):**
+
+**Fluxo 1 - Iniciar OAuth (4 nodes):**
+1. Webhook Start (POST) - Recebe platform/tenantId/userId
+2. Code - Prepara dados + cria state (base64)
+3. HTTP Request - GET /api/oauth/authorize (NotificaMe)
+4. Respond to Webhook - Retorna authUrl (JSON)
+
+**Fluxo 2 - Callback OAuth (5 nodes):**
+5. Webhook Callback (GET) - Recebe code/state do Instagram
+6. Code - Processa callback + decodifica state
+7. HTTP Request - POST /api/oauth/token (trocar code por token)
+8. HTTP Request - POST Nexus /oauth/complete (notificar CRM)
+9. Respond to Webhook - Página sucesso (HTML)
+
+**Documentação Criada (8000+ linhas):**
+
+1. **`NOTIFICAME_N8N_OAUTH_GUIA_COMPLETO.md`** (2800+ linhas)
+   - Instalação n8n
+   - Configuração credenciais
+   - Código backend completo
+   - Código frontend completo
+   - Testes e troubleshooting
+
+2. **`n8n-workflows/GUIA_VISUAL_MONTAR_WORKFLOW.md`** (3500+ linhas)
+   - 9 nodes explicados passo a passo
+   - Código JavaScript/JSON/HTML de cada node
+   - Configuração autenticação Header Auth (apikey)
+   - Diagramas visuais do fluxo
+   - FAQ completo
+
+3. **`n8n-workflows/notificame-oauth-instagram.json`**
+   - Workflow completo pronto para importar no n8n
+
+4. **`SESSAO_A_v116_OAUTH_INSTAGRAM_MESSENGER.md`** (6000+ linhas)
+   - Arquitetura detalhada
+   - Fluxos completos com código
+   - Testes com cURL
+   - Troubleshooting extensivo
+
+5. **`ORIENTACAO_SESSAO_B_PROXIMA.md`** (463 linhas)
+   - Orientações para próxima sessão
+   - Prioridade: Restaurar sistema PRIMEIRO
+   - Checklist completo
+   - Comandos úteis
+   - Alertas importantes
+
+**Backend Preparado:**
+- `notificame.controller.ts` - startOAuth() e completeOAuth()
+- `notificame.routes.ts` - Rotas POST /oauth/start e /oauth/complete
+- Integração com n8n via env vars (N8N_BASE_URL, N8N_WEBHOOK_*)
+
+**Frontend Preparado:**
+- `notificaMeService.ts` - startOAuth()
+- `NotificaMeConfig.tsx` - handleConnectPlatform() chama n8n
+- `NotificaMeCallbackPage.tsx` - Callback OAuth (já criado v116)
+- `App.tsx` - Rota /integracoes-sociais/callback
+
+**Resultado:** 📋 DOCUMENTADO mas NÃO TESTADO (sistema offline)
+
+**Commits:**
+- `4aaa8be` - docs(notificame): Adiciona workflow n8n e guia completo - v118
+- `b698264` - docs(n8n): Adiciona guia visual completo workflow - v118
+
+---
+
+### 📦 ARQUIVOS CRIADOS/MODIFICADOS
+
+#### Documentação (6 arquivos, 15000+ linhas)
+1. `NOTIFICAME_N8N_OAUTH_GUIA_COMPLETO.md` (NOVO, 2800+ linhas)
+2. `n8n-workflows/GUIA_VISUAL_MONTAR_WORKFLOW.md` (NOVO, 3500+ linhas)
+3. `n8n-workflows/notificame-oauth-instagram.json` (NOVO, 450 linhas)
+4. `SESSAO_A_v116_OAUTH_INSTAGRAM_MESSENGER.md` (NOVO, 6000+ linhas)
+5. `ORIENTACAO_SESSAO_B_PROXIMA.md` (NOVO, 463 linhas)
+6. `CHANGELOG.md` (ATUALIZADO)
+
+#### Backend (3 arquivos)
+1. `backend/src/services/NotificaMeService.ts`
+   - +150 linhas: 5 métodos OAuth (não funcionais)
+
+2. `backend/src/modules/notificame/notificame.controller.ts`
+   - +120 linhas: startOAuth(), completeOAuth() (para n8n)
+
+3. `backend/src/modules/notificame/notificame.routes.ts`
+   - +7 linhas: 7 rotas OAuth
+
+#### Frontend (4 arquivos)
+1. `frontend/src/services/notificaMeService.ts`
+   - +45 linhas: Métodos OAuth
+
+2. `frontend/src/components/integrations/NotificaMeConfig.tsx`
+   - Refatorado 3x (v116, v117, v118)
+
+3. `frontend/src/pages/NotificaMeCallbackPage.tsx` (NOVO)
+   - 150 linhas: Callback OAuth + UI sucesso
+
+4. `frontend/src/App.tsx`
+   - +8 linhas: Rota callback
+
+---
+
+### 🔍 DESCOBERTAS TÉCNICAS
+
+#### API NotificaMe - Limitações
+```bash
+# Testado com API Key: 0fb8e168-9331-11f0-88f5-0e386dc8b623
+curl "https://app.notificame.com.br/api/instances"
+# {"error":{"message":"Unknown path components: ","type":"OAuthException","code":"Hub404"}}
+
+curl "https://app.notificame.com.br/api/me"
+# {"error":{"message":"Unknown path components: ","type":"OAuthException","code":"Hub404"}}
+```
+
+**Endpoints NÃO existem:**
+- `/api/instances` ❌
+- `/api/instances/create` ❌
+- `/api/oauth/authorize` ❌ (presumido)
+- `/api/oauth/token` ❌ (presumido)
+
+**Possíveis endpoints alternativos (NÃO TESTADOS):**
+- `/api/connect/instagram`
+- `/api/channels/instagram/authorize`
+- `/api/auth/instagram`
+- `/api/oauth/url?platform=instagram`
+
+#### Node n8n NotificaMe Hub - Limitações
+
+**Package:** `n8n-nodes-notificame-hub`
+**GitHub:** https://github.com/oriondesign2015/n8n-nodes-notificame-hub
+
+**Actions Disponíveis:**
+
+**Instagram:**
+- ✅ Enviar Texto
+- ✅ Enviar Audio
+- ✅ Enviar Arquivo
+- ✅ Enviar Botões
+- ✅ Enviar Posts
+- ❌ NÃO tem: Conectar conta, Autorizar, OAuth
+
+**Messenger:**
+- ✅ Enviar Texto
+- ✅ Enviar Audio
+- ✅ Enviar Arquivo
+- ✅ Enviar Botões
+- ❌ NÃO tem: Conectar conta, Autorizar, OAuth
+
+**Revenda:**
+- ✅ Listar Subcontas
+- ✅ Definir Webhook
+- ⚠️ Custom API Call → Redireciona para HTTP Request
+
+**Conclusão:** Node APENAS para enviar mensagens, NÃO para conectar contas!
+
+**Solução:** Usar HTTP Request nativo do n8n com Header Auth (apikey)
+
+---
+
+### 🚀 DEPLOY
+
+**⚠️ NÃO DEPLOYADO** - Sistema offline devido a erros da Sessão C
+
+**Versões buildadas mas não ativas:**
+```bash
+# v116 (OAuth direto - não funciona)
+docker build -t nexus-backend:v116-oauth-direct -f backend/Dockerfile backend/
+docker build -t nexus-frontend:v116-oauth-direct -f frontend/Dockerfile frontend/
+
+# v117 (Painel NotificaMe - funciona)
+docker build -t nexus-backend:v117-notificame-panel -f backend/Dockerfile backend/
+docker build -t nexus-frontend:v117-notificame-panel -f frontend/Dockerfile frontend/
+
+# v118 (n8n workflow - documentado)
+# NÃO buildado (código preparado mas não testado)
+```
+
+**Cache Fix Aplicado (v117):**
+```bash
+docker build --no-cache -t nexus-frontend:v117-notificame-panel -f frontend/Dockerfile frontend/
+docker service update --force --image nexus-frontend:v117-notificame-panel nexus_frontend
+```
+
+---
+
+### 📊 ESTATÍSTICAS
+
+**Tempo Total:** 4h30min
+- v116: 1h30min (implementação + testes)
+- v117: 30min (simplificação)
+- v118: 2h30min (documentação + workflow)
+
+**Linhas de Código:**
+- Backend: +320 linhas
+- Frontend: +200 linhas
+- Documentação: +15000 linhas
+
+**Arquivos:**
+- Criados: 10 arquivos
+- Modificados: 7 arquivos
+
+**Commits:**
+- 85e15a6 - v116 OAuth direto
+- 16bb202 - v117 Painel NotificaMe
+- 4aaa8be - v118 Workflow n8n (parte 1)
+- b698264 - v118 Guia visual (parte 2)
+
+---
+
+### ⚠️ STATUS E LIMITAÇÕES
+
+#### Bloqueadores
+
+1. **Sistema Offline** ⛔
+   - Sessão C cometeu erros
+   - Backend/Frontend inoperantes
+   - Precisa restaurar ANTES de testar OAuth
+
+2. **API NotificaMe Desconhecida** ❓
+   - Endpoints OAuth não documentados
+   - Não sabemos se revenda tem acesso especial
+   - Pode não suportar OAuth programático
+
+3. **Código Não Testado** ⚠️
+   - Backend OAuth (v116-v118) não testado
+   - Frontend OAuth não testado
+   - Workflow n8n não montado/testado
+   - Possível ter bugs
+
+#### Próximos Passos (Sessão B)
+
+**PRIORIDADE #1: RESTAURAR SISTEMA** 🚨
+1. Investigar erros da Sessão C
+2. Ver logs: `docker service logs nexus_backend --tail 100`
+3. Reverter se necessário: `git checkout e8e9fdc`
+4. Rebuild e redeploy
+5. Testar sistema funcionando
+
+**PRIORIDADE #2: TESTAR API NOTIFICAME** 🔍
+1. Testar endpoints OAuth:
+   - `/api/oauth/authorize`
+   - `/api/connect/instagram`
+   - `/api/channels/instagram/authorize`
+2. Se não existirem, contatar suporte NotificaMe
+3. Verificar se revenda tem acesso especial
+4. Obter documentação de API para revendedores
+
+**PRIORIDADE #3: MONTAR WORKFLOW N8N** 🔧
+1. Seguir guia: `n8n-workflows/GUIA_VISUAL_MONTAR_WORKFLOW.md`
+2. Criar 9 nodes conforme documentado
+3. Ativar workflow
+4. Testar com cURL: `curl -X POST https://n8n.com/webhook/notificame-oauth-start`
+
+**PRIORIDADE #4: TESTAR FLUXO COMPLETO** ✅
+1. Testar backend → n8n
+2. Testar n8n → NotificaMe
+3. Testar OAuth Instagram
+4. Validar callback
+5. Verificar conexão salva
+
+**PRIORIDADE #5: DEPLOY SE FUNCIONAR** 🚀
+1. Build v119 (se tudo OK)
+2. Deploy backend/frontend
+3. Testar em produção
+4. Monitorar logs
+
+---
+
+### 📚 REFERÊNCIAS
+
+**Documentação Criada:**
+- `NOTIFICAME_N8N_OAUTH_GUIA_COMPLETO.md` - Guia completo instalação/config
+- `n8n-workflows/GUIA_VISUAL_MONTAR_WORKFLOW.md` - Guia visual 9 nodes
+- `n8n-workflows/notificame-oauth-instagram.json` - Workflow pronto
+- `SESSAO_A_v116_OAUTH_INSTAGRAM_MESSENGER.md` - Documentação técnica v116
+- `ORIENTACAO_SESSAO_B_PROXIMA.md` - Orientações próxima sessão
+
+**Links:**
+- NotificaMe API: https://app.notificame.com.br/api
+- Node n8n: https://github.com/oriondesign2015/n8n-nodes-notificame-hub
+- Instagram OAuth: https://developers.facebook.com/docs/instagram-basic-display-api/getting-started
+
+**Branch:** `feature/automation-backend`
+**Commits:** 85e15a6, 16bb202, 4aaa8be, b698264
+
+---
+
+### 💡 APRENDIZADOS
+
+1. **Validar API Primeiro:** Sempre testar endpoints antes de implementar código completo
+2. **Documentação é Crítica:** n8n workflow complexo precisa guia passo a passo
+3. **Modelo de Revenda:** Entender fluxo OAuth em contexto de white-label/revenda
+4. **Community Nodes Limitados:** Nem sempre têm todas as features necessárias
+5. **Middleware Útil:** n8n pode servir como proxy quando API não tem endpoints públicos
+
+---
+
 ## ✅ v116: CHAT - UNIFICAÇÃO COMPLETA DAS TABELAS (2025-10-22) - RESOLVIDO
 
 ### 📝 RESUMO EXECUTIVO
