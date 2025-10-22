@@ -192,7 +192,7 @@ export default function MarketingPage() {
           <Chip label="Mensagens em Massa CRUD" color="success" size="small" />
           <Chip label="Landing Pages CRUD" color="success" size="small" />
           <Chip label="IA Assistant API" color="success" size="small" />
-        </Typography>
+        </Box>
         <Typography variant="body2" paragraph>
           <strong>Próximas Sessões:</strong>
         </Typography>
