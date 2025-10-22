@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { marketingService, Campaign, CampaignStats } from '@/services/marketingService';
+import { marketingService, Campaign, CampaignStats, SocialPost, BulkMessage } from '@/services/marketingService';
 import {
   Target,
   DollarSign,
@@ -11,15 +11,44 @@ import {
   FileText,
   Sparkles,
   BarChart3,
+  Plus,
+  Calendar as CalendarIcon,
+  List,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as Tabs from '@radix-ui/react-tabs';
+import SocialPostForm from '@/components/marketing/social/SocialPostForm';
+import SocialPostList from '@/components/marketing/social/SocialPostList';
+import SocialPostCalendar from '@/components/marketing/social/SocialPostCalendar';
+import AICopyOptimizer from '@/components/marketing/ai-assistant/AICopyOptimizer';
+import AIAnalysisHistory from '@/components/marketing/ai-assistant/AIAnalysisHistory';
+import BulkMessageForm from '@/components/marketing/bulk-messaging/BulkMessageForm';
+import BulkMessageList from '@/components/marketing/bulk-messaging/BulkMessageList';
+import LandingPageList from '@/components/marketing/landing-pages/LandingPageList';
 
 type ActiveTab = 'dashboard' | 'campaigns' | 'social' | 'bulk-messaging' | 'landing-pages' | 'ai-assistant';
+type SocialView = 'list' | 'calendar';
 
 export default function MarketingPage() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+
+  // Social Media States
+  const [socialView, setSocialView] = useState<SocialView>('list');
+  const [showSocialPostForm, setShowSocialPostForm] = useState(false);
+  const [selectedSocialPost, setSelectedSocialPost] = useState<SocialPost | undefined>();
+  const [socialRefreshTrigger, setSocialRefreshTrigger] = useState(0);
+
+  // AI Assistant States
+  const [aiRefreshTrigger] = useState(0);
+
+  // Bulk Messaging States
+  const [showBulkMessageForm, setShowBulkMessageForm] = useState(false);
+  const [selectedBulkMessage, setSelectedBulkMessage] = useState<BulkMessage | undefined>();
+  const [bulkRefreshTrigger, setBulkRefreshTrigger] = useState(0);
+
+  // Landing Pages States
+  const [landingRefreshTrigger] = useState(0);
   const [stats, setStats] = useState<CampaignStats>({
     totalCampaigns: 0,
     activeCampaigns: 0,
@@ -297,134 +326,325 @@ export default function MarketingPage() {
 
           {/* Campaigns Tab */}
           <Tabs.Content value="campaigns">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="text-center py-12">
-                <Target className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Gerenciamento de Campanhas
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Interface completa em desenvolvimento
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Campanhas de Marketing</h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Gerencie e acompanhe todas as suas campanhas de marketing
                 </p>
-                <div className="text-left max-w-2xl mx-auto bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
-                    Funcionalidades disponíveis via API:
-                  </h4>
-                  <ul className="list-disc list-inside text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                    <li>POST/GET/PUT/DELETE /api/marketing/campaigns</li>
-                    <li>GET /api/marketing/campaigns/stats</li>
-                    <li>Filtros por tipo, status e período</li>
-                    <li>Métricas de performance</li>
-                  </ul>
+              </div>
+
+              {/* Campaigns List */}
+              {campaigns.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {campaigns.map((campaign) => (
+                    <div
+                      key={campaign.id}
+                      className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1">
+                            {campaign.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                            {campaign.description || 'Sem descrição'}
+                          </p>
+                        </div>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            campaign.status === 'active'
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                              : campaign.status === 'paused'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                              : campaign.status === 'draft'
+                              ? 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                          }`}
+                        >
+                          {campaign.status === 'active'
+                            ? 'Ativa'
+                            : campaign.status === 'paused'
+                            ? 'Pausada'
+                            : campaign.status === 'draft'
+                            ? 'Rascunho'
+                            : campaign.status === 'completed'
+                            ? 'Concluída'
+                            : 'Cancelada'}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Target size={14} className="text-gray-500" />
+                          <span className="text-gray-600 dark:text-gray-400">
+                            Tipo:{' '}
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {campaign.type === 'email'
+                                ? 'Email'
+                                : campaign.type === 'social'
+                                ? 'Social'
+                                : campaign.type === 'whatsapp'
+                                ? 'WhatsApp'
+                                : 'Mista'}
+                            </span>
+                          </span>
+                        </div>
+                        {campaign.budget && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <DollarSign size={14} className="text-gray-500" />
+                            <span className="text-gray-600 dark:text-gray-400">
+                              Orçamento:{' '}
+                              <span className="font-medium text-gray-900 dark:text-white">
+                                {formatCurrency(campaign.budget)}
+                              </span>
+                            </span>
+                          </div>
+                        )}
+                        {campaign.spent !== undefined && (
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
+                            <div
+                              className="bg-primary-600 h-2 rounded-full"
+                              style={{
+                                width: `${Math.min(
+                                  ((campaign.spent || 0) / (campaign.budget || 1)) * 100,
+                                  100
+                                )}%`,
+                              }}
+                            ></div>
+                          </div>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => toast.success('Edição de campanhas disponível em breve')}
+                        className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
+                      >
+                        Ver Detalhes
+                      </button>
+                    </div>
+                  ))}
                 </div>
+              ) : (
+                <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <Target className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Nenhuma campanha criada
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4">
+                    Crie sua primeira campanha para começar a gerenciar seu marketing
+                  </p>
+                </div>
+              )}
+
+              {/* Info Box */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-3">
+                  API de Campanhas Disponível
+                </h4>
+                <p className="text-sm text-blue-800 dark:text-blue-300 mb-3">
+                  O CRUD completo de campanhas está disponível via API. Interface de edição será implementada em breve.
+                </p>
+                <ul className="list-disc list-inside text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                  <li>Criar, editar e excluir campanhas</li>
+                  <li>Métricas de performance em tempo real</li>
+                  <li>Filtros por tipo, status e período</li>
+                  <li>Orçamento e controle de gastos</li>
+                </ul>
               </div>
             </div>
           </Tabs.Content>
 
           {/* Social Posts Tab */}
           <Tabs.Content value="social">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="text-center py-12">
-                <Share2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Gerenciamento de Redes Sociais
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Interface completa em desenvolvimento
-                </p>
-                <div className="text-left max-w-2xl mx-auto bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
-                    Funcionalidades disponíveis via API:
-                  </h4>
-                  <ul className="list-disc list-inside text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                    <li>POST/GET/PUT/DELETE /api/marketing/social-posts</li>
-                    <li>POST /api/marketing/social-posts/:id/schedule</li>
-                    <li>Suporte: Instagram, Facebook, LinkedIn, TikTok</li>
-                    <li>Tipos: Feed, Story, Reel, Carousel</li>
-                    <li>Agendamento e métricas</li>
-                  </ul>
+            <div className="space-y-6">
+              {/* Header with Actions */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Redes Sociais</h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Gerencie posts para Instagram, Facebook, LinkedIn e TikTok
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {/* View Toggle */}
+                  <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                    <button
+                      onClick={() => setSocialView('list')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                        socialView === 'list'
+                          ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                      }`}
+                    >
+                      <List size={18} />
+                      Lista
+                    </button>
+                    <button
+                      onClick={() => setSocialView('calendar')}
+                      className={`px-4 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2 ${
+                        socialView === 'calendar'
+                          ? 'bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                      }`}
+                    >
+                      <CalendarIcon size={18} />
+                      Calendário
+                    </button>
+                  </div>
+
+                  {/* New Post Button */}
+                  <button
+                    onClick={() => {
+                      setSelectedSocialPost(undefined);
+                      setShowSocialPostForm(true);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                  >
+                    <Plus size={20} />
+                    Novo Post
+                  </button>
                 </div>
               </div>
+
+              {/* Content based on view */}
+              {socialView === 'list' ? (
+                <SocialPostList
+                  onEdit={(post) => {
+                    setSelectedSocialPost(post);
+                    setShowSocialPostForm(true);
+                  }}
+                  refreshTrigger={socialRefreshTrigger}
+                />
+              ) : (
+                <SocialPostCalendar
+                  onSelectPost={(post) => {
+                    setSelectedSocialPost(post);
+                    setShowSocialPostForm(true);
+                  }}
+                  refreshTrigger={socialRefreshTrigger}
+                />
+              )}
+
+              {/* Social Post Form Modal */}
+              <SocialPostForm
+                post={selectedSocialPost}
+                isOpen={showSocialPostForm}
+                onClose={() => {
+                  setShowSocialPostForm(false);
+                  setSelectedSocialPost(undefined);
+                }}
+                onSuccess={() => {
+                  setSocialRefreshTrigger((prev) => prev + 1);
+                }}
+              />
             </div>
           </Tabs.Content>
 
           {/* Bulk Messaging Tab */}
           <Tabs.Content value="bulk-messaging">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="text-center py-12">
-                <Mail className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Mensagens em Massa
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Interface completa em desenvolvimento
-                </p>
-                <div className="text-left max-w-2xl mx-auto bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
-                    Funcionalidades disponíveis via API:
-                  </h4>
-                  <ul className="list-disc list-inside text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                    <li>POST/GET /api/marketing/bulk-messages</li>
-                    <li>Plataformas: WhatsApp, Instagram DM, Email</li>
-                    <li>Controle de destinatários e status</li>
-                    <li>Métricas de entrega e abertura</li>
-                  </ul>
+            <div className="space-y-6">
+              {/* Header with Actions */}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Mensagens em Massa</h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    Envie mensagens para múltiplos leads via WhatsApp, Instagram ou Email
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setSelectedBulkMessage(undefined);
+                      setShowBulkMessageForm(true);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors"
+                  >
+                    <Plus size={20} />
+                    Nova Mensagem
+                  </button>
                 </div>
               </div>
+
+              {/* Bulk Message List */}
+              <BulkMessageList
+                onEdit={(message) => {
+                  setSelectedBulkMessage(message);
+                  setShowBulkMessageForm(true);
+                }}
+                refreshTrigger={bulkRefreshTrigger}
+              />
+
+              {/* Bulk Message Form Modal */}
+              <BulkMessageForm
+                message={selectedBulkMessage}
+                isOpen={showBulkMessageForm}
+                onClose={() => {
+                  setShowBulkMessageForm(false);
+                  setSelectedBulkMessage(undefined);
+                }}
+                onSuccess={() => {
+                  setBulkRefreshTrigger((prev) => prev + 1);
+                }}
+              />
             </div>
           </Tabs.Content>
 
           {/* Landing Pages Tab */}
           <Tabs.Content value="landing-pages">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="text-center py-12">
-                <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  Landing Pages
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Interface completa em desenvolvimento
+            <div className="space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Landing Pages</h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Gerencie landing pages para captura de leads
                 </p>
-                <div className="text-left max-w-2xl mx-auto bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
-                    Funcionalidades disponíveis via API:
-                  </h4>
-                  <ul className="list-disc list-inside text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                    <li>POST/GET/PUT /api/marketing/landing-pages</li>
-                    <li>POST /api/marketing/landing-pages/:id/publish</li>
-                    <li>GET /api/marketing/landing-pages/:id/analytics</li>
-                    <li>Editor GrapesJS integrado</li>
-                    <li>SEO e analytics completos</li>
-                  </ul>
-                </div>
+              </div>
+
+              <LandingPageList
+                onEdit={() => {
+                  toast.success('Editor visual de Landing Pages será implementado em breve');
+                }}
+                refreshTrigger={landingRefreshTrigger}
+              />
+
+              {/* Info Box */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-6">
+                <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-3 flex items-center gap-2">
+                  <FileText size={20} />
+                  Editor Visual (Em Desenvolvimento)
+                </h4>
+                <p className="text-sm text-blue-800 dark:text-blue-300 mb-3">
+                  O editor visual GrapesJS será integrado em breve para criar landing pages profissionais com arrastar e soltar.
+                </p>
+                <ul className="list-disc list-inside text-sm text-blue-800 dark:text-blue-300 space-y-1">
+                  <li>API completa já disponível</li>
+                  <li>Publicação e analytics funcionais</li>
+                  <li>SEO metadata configurável</li>
+                  <li>Tracking de conversões</li>
+                </ul>
               </div>
             </div>
           </Tabs.Content>
 
           {/* AI Assistant Tab */}
           <Tabs.Content value="ai-assistant">
-            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm border border-gray-200 dark:border-gray-700">
-              <div className="text-center py-12">
-                <Sparkles className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            <div className="space-y-6">
+              {/* Header */}
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Sparkles className="text-primary-600" />
                   Assistente de IA
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Interface completa em desenvolvimento
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Otimize seus conteúdos com múltiplos provedores de IA
                 </p>
-                <div className="text-left max-w-2xl mx-auto bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
-                    Funcionalidades disponíveis via API:
-                  </h4>
-                  <ul className="list-disc list-inside text-sm text-blue-800 dark:text-blue-300 space-y-1">
-                    <li>POST /api/marketing/ai/analyze</li>
-                    <li>POST /api/marketing/ai/optimize-copy</li>
-                    <li>POST /api/marketing/ai/generate-image</li>
-                    <li>Providers: Groq, OpenRouter, DeepSeek, Mistral, Qwen, Ollama</li>
-                    <li>Análises: Sentimento, Otimização, Predição, Copywriting</li>
-                  </ul>
-                </div>
               </div>
+
+              {/* AI Copy Optimizer */}
+              <AICopyOptimizer />
+
+              {/* AI Analysis History */}
+              <AIAnalysisHistory refreshTrigger={aiRefreshTrigger} />
             </div>
           </Tabs.Content>
         </Tabs.Root>
