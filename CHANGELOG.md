@@ -2,6 +2,160 @@
 
 ---
 
+## ✅ v120.1: NOTIFICAME HUB - UI CANAIS INSTAGRAM (2025-10-22)
+
+### 📝 RESUMO
+**Versão**: Frontend v120.1-channels-ui | Backend v120-notificame-hub
+**Data**: 2025-10-22 22:15 UTC
+**Status**: ✅ **DEPLOYADO E FUNCIONANDO**
+
+### 🎯 OBJETIVO
+Adicionar componente visual no frontend para exibir os 4 canais Instagram conectados via NotificaMe Hub.
+
+### ✅ MUDANÇAS
+
+**Frontend:**
+- `frontend/src/pages/IntegracoesSociaisPage.tsx`:
+  - Import de `NotificaMeChannels` component
+  - Adicionado componente na aba Instagram & Messenger
+  - UI visível em `/integracoes-sociais`
+
+**Componente NotificaMeChannels (já criado em v120):**
+- Lista 4 canais Instagram conectados
+- Filtros: Todos / Instagram / Messenger
+- Botão refresh e link para painel NotificaMe
+- Botão "Testar Envio" (placeholder)
+
+### 🌐 ONDE ACESSAR
+```
+URL: https://one.nexusatemporal.com.br/integracoes-sociais
+Aba: Instagram & Messenger
+Componente: "Canais Conectados"
+```
+
+### 📦 CANAIS EXIBIDOS
+1. **Nexus Atemporal** (@nexusatemporal)
+2. **Estética Prime Moema** (@clinicaprimemoema_)
+3. **Estética Premium** (@esteticapremium__)
+4. **Estética Fit Global** (@esteticafitglobal)
+
+### 📁 ARQUIVOS MODIFICADOS
+```
+frontend/src/pages/IntegracoesSociaisPage.tsx (1 arquivo)
+```
+
+### 🚀 DEPLOY
+- Build: nexus-frontend:v120.1-channels-ui
+- Status: ✅ CONVERGED
+- Commit: `389b659`
+
+---
+
+## ✅ v120: NOTIFICAME HUB - INTEGRAÇÃO COMPLETA (2025-10-22)
+
+### 📝 RESUMO
+**Versão**: Backend v120-notificame-hub | Frontend v120-notificame-hub
+**Data**: 2025-10-22 20:37 UTC
+**Status**: ✅ **IMPLEMENTAÇÃO COMPLETA E FUNCIONAL**
+
+### 🎯 OBJETIVO
+Implementar integração completa com NotificaMe Hub para:
+- Listar canais Instagram/Messenger conectados
+- Enviar mensagens Instagram via n8n
+- Descobrir API correta e canais disponíveis
+
+### 🔍 DESCOBERTAS
+
+**API NotificaMe Hub:**
+- Base URL: `https://hub.notificame.com.br/v1`
+- Autenticação: Header `X-Api-Token`
+- API Key: `0fb8e168-9331-11f0-88f5-0e386dc8b623`
+
+**4 Canais Instagram Conectados:**
+1. Nexus Atemporal - `fca71b50-bde5-49f1-aa73-dbb18edabe72`
+2. Estética Prime Moema - `c318bc40-66f0-4e17-9908-db8538f9d8f5`
+3. Estética Premium - `a877416d-f4ce-4b11-bd54-dc44afcbff5b`
+4. Estética Fit Global - `6af362c1-dda7-4fd3-8e37-0050edfb03fe`
+
+### ✅ IMPLEMENTAÇÃO
+
+**1. n8n Workflow Criado:**
+- Arquivo: `n8n-workflows/notificame-send-instagram-message.json`
+- 3 nodes: Webhook → HTTP Request → Response
+- Webhook URL: `https://webhook.nexusatemporal.com/webhook/notificame/send-instagram`
+- Status: ✅ IMPORTADO E ATIVO (nome: "Notificame_nexus")
+
+**2. Backend:**
+- `backend/src/modules/notificame/notificame.controller.ts`:
+  - `listChannels()` - Lista canais do Hub (linha 1013-1051)
+  - `sendInstagramMessage()` - Envia via n8n (linha 1053-1096)
+
+- `backend/src/modules/notificame/notificame.routes.ts`:
+  - `GET /api/notificame/channels` - Listar canais
+  - `POST /api/notificame/send-instagram-message` - Enviar mensagem
+
+**3. Frontend:**
+- `frontend/src/services/notificaMeService.ts`:
+  - `listChannels(platform?)` - Lista canais (linha 210-217)
+  - `sendInstagramMessage(channelId, recipientId, message)` - Envia (linha 219-233)
+
+- `frontend/src/components/integrations/NotificaMeChannels.tsx`:
+  - **NOVO COMPONENTE COMPLETO**
+  - Lista canais com avatares e badges
+  - Filtros por plataforma
+  - Botões refresh e link painel NotificaMe
+
+**4. Documentação:**
+- `IMPLEMENTACAO_NOTIFICAME_HUB_v120.md` - Guia completo
+- `SOLUCAO_NOTIFICAME_FUNCIONAL.md` - API descoberta
+- `DIAGNOSTICO_TESTE_N8N_OAUTH.md` - Testes OAuth
+
+### 📦 ENDPOINTS FUNCIONAIS
+
+**Backend Nexus:**
+```
+GET  /api/notificame/channels
+POST /api/notificame/send-instagram-message
+```
+
+**NotificaMe Hub API:**
+```
+GET  /v1/channels
+POST /v1/channels/instagram/messages
+```
+
+### 🧪 TESTES REALIZADOS
+- ✅ Health check backend: OK
+- ✅ Listar canais: 4 canais retornados
+- ✅ Deploy backend: CONVERGED
+- ✅ Deploy frontend: CONVERGED
+- ✅ Workflow n8n: IMPORTADO
+
+### 🚀 DEPLOY
+- Backend: nexus-backend:v120-notificame-hub
+- Frontend: nexus-frontend:v120-notificame-hub
+- n8n Workflow: Notificame_nexus (ATIVO)
+
+### ⏳ PRÓXIMOS PASSOS
+1. Implementar modal "Testar Envio" no componente
+2. Criar webhook receiver para mensagens recebidas
+3. Adicionar histórico de conversas Instagram
+4. Dashboard de métricas
+
+### 📁 ARQUIVOS CRIADOS/MODIFICADOS
+```
+n8n-workflows/notificame-send-instagram-message.json (NOVO)
+backend/src/modules/notificame/notificame.controller.ts (MODIFICADO)
+backend/src/modules/notificame/notificame.routes.ts (MODIFICADO)
+frontend/src/services/notificaMeService.ts (MODIFICADO)
+frontend/src/components/integrations/NotificaMeChannels.tsx (NOVO)
+IMPLEMENTACAO_NOTIFICAME_HUB_v120.md (NOVO)
+SOLUCAO_NOTIFICAME_FUNCIONAL.md (NOVO)
+DIAGNOSTICO_TESTE_N8N_OAUTH.md (NOVO)
+```
+
+---
+
 ## ✅ v121: CORREÇÃO UX CHAT - SCROLL FIX (2025-10-22)
 
 ### 📝 RESUMO
