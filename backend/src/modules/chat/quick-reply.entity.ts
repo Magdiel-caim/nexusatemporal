@@ -23,18 +23,18 @@ export class QuickReply {
   @Column({ type: 'varchar', nullable: true })
   category?: string; // Categoria (ex: "Saudações", "Agendamento")
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'created_by', type: 'varchar', nullable: true })
   createdBy?: string; // ID do usuário que criou
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'is_global', type: 'boolean', default: false })
   isGlobal: boolean; // Se é global ou específico do usuário
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 }

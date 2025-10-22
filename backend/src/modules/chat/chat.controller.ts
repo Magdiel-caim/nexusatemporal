@@ -6,6 +6,51 @@ export class ChatController {
   private chatService = new ChatService();
   private whatsappService = new WhatsAppService();
 
+  /**
+   * Helper: Garante que uma conversa existe no banco para conversas WhatsApp
+   * Se o ID começar com "whatsapp-", extrai sessionName e phoneNumber e cria/busca conversa
+   */
+  private async ensureConversationExists(conversationId: string): Promise<string> {
+    // Se não for conversa WhatsApp, retorna o ID como está
+    if (!conversationId.startsWith('whatsapp-')) {
+      return conversationId;
+    }
+
+    // Parse: whatsapp-sessionName-phoneNumber
+    const parts = conversationId.split('-');
+    if (parts.length < 3) {
+      throw new Error('Invalid WhatsApp conversation ID format');
+    }
+
+    const sessionName = parts[1];
+    const phoneNumber = parts.slice(2).join('-'); // Reconstrói phoneNumber (pode conter hífens)
+
+    // Buscar conversa existente por whatsappInstanceId + phoneNumber
+    const existingConversation = await this.chatService.getConversations({
+      search: phoneNumber,
+    });
+
+    const found = existingConversation.find(
+      (c) => c.whatsappInstanceId === sessionName && c.phoneNumber === phoneNumber
+    );
+
+    if (found) {
+      console.log(`✅ Conversa WhatsApp encontrada no banco:`, found.id);
+      return found.id;
+    }
+
+    // Não existe - criar nova conversa
+    console.log(`➕ Criando nova conversa WhatsApp:`, { sessionName, phoneNumber });
+    const newConversation = await this.chatService.createConversation({
+      contactName: phoneNumber, // Será atualizado depois com nome real
+      phoneNumber: phoneNumber,
+      whatsappInstanceId: sessionName,
+    });
+
+    console.log(`✅ Conversa WhatsApp criada:`, newConversation.id);
+    return newConversation.id;
+  }
+
   // ===== CONVERSATION ENDPOINTS =====
 
   getConversations = async (req: Request, res: Response) => {
@@ -76,9 +121,11 @@ export class ChatController {
     try {
       const { id } = req.params;
       const { userId } = req.body;
-      const conversation = await this.chatService.assignConversation(id, userId);
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.assignConversation(conversationId, userId);
       res.json(conversation);
     } catch (error: any) {
+      console.error('[assignConversation] Error:', error.message);
       res.status(400).json({ error: error.message });
     }
   };
@@ -87,9 +134,11 @@ export class ChatController {
     try {
       const { id } = req.params;
       const { tagName } = req.body;
-      const conversation = await this.chatService.addTagToConversation(id, tagName);
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.addTagToConversation(conversationId, tagName);
       res.json(conversation);
     } catch (error: any) {
+      console.error('[addTag] Error:', error.message);
       res.status(400).json({ error: error.message });
     }
   };
@@ -98,9 +147,11 @@ export class ChatController {
     try {
       const { id } = req.params;
       const { tagName } = req.body;
-      const conversation = await this.chatService.removeTagFromConversation(id, tagName);
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.removeTagFromConversation(conversationId, tagName);
       res.json(conversation);
     } catch (error: any) {
+      console.error('[removeTag] Error:', error.message);
       res.status(400).json({ error: error.message });
     }
   };
@@ -121,7 +172,7 @@ export class ChatController {
     try {
       const { conversationId } = req.params;
       const { type, content, senderId, senderName } = req.body;
-      const { id: userId } = req.user as any;
+      const userId = (req.user as any)?.userId;
 
       // Create message in database
       const message = await this.chatService.createMessage({
@@ -209,27 +260,138 @@ export class ChatController {
     }
   };
 
+  // ===== CONVERSATION ACTIONS =====
+
+  archiveConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.archiveConversation(conversationId);
+      res.json(conversation);
+    } catch (error: any) {
+      console.error('[archiveConversation] Error:', error.message);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  unarchiveConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.unarchiveConversation(conversationId);
+      res.json(conversation);
+    } catch (error: any) {
+      console.error('[unarchiveConversation] Error:', error.message);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  resolveConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.resolveConversation(conversationId);
+      res.json(conversation);
+    } catch (error: any) {
+      console.error('[resolveConversation] Error:', error.message);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  reopenConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.reopenConversation(conversationId);
+      res.json(conversation);
+    } catch (error: any) {
+      console.error('[reopenConversation] Error:', error.message);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  setPriority = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { priority } = req.body;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.setPriority(conversationId, priority);
+      res.json(conversation);
+    } catch (error: any) {
+      console.error('[setPriority] Error:', error.message);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  setCustomAttribute = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { key, value } = req.body;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.setCustomAttribute(conversationId, key, value);
+      res.json(conversation);
+    } catch (error: any) {
+      console.error('[setCustomAttribute] Error:', error.message);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  removeCustomAttribute = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { key } = req.body;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.removeCustomAttribute(conversationId, key);
+      res.json(conversation);
+    } catch (error: any) {
+      console.error('[removeCustomAttribute] Error:', error.message);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  getConversationHistory = async (req: Request, res: Response) => {
+    try {
+      const { phoneNumber } = req.params;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
+      const conversations = await this.chatService.getConversationHistory(phoneNumber, limit);
+      res.json(conversations);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
   // ===== QUICK REPLY ENDPOINTS =====
 
   getQuickReplies = async (req: Request, res: Response) => {
     try {
-      // TODO: Implement quick replies when needed
-      // For now, return empty array
-      res.json([]);
+      const { category, search } = req.query;
+
+      // req.user pode ser undefined se autenticação falhou, mas quick replies são globais
+      const userId = (req.user as any)?.id || undefined;
+
+      const quickReplies = await this.chatService.getQuickReplies({
+        category: category as string,
+        userId,
+        search: search as string,
+      });
+
+      res.json(quickReplies);
     } catch (error: any) {
+      console.error('[getQuickReplies] Error:', error.message);
       res.status(400).json({ error: error.message });
     }
   };
 
   createQuickReply = async (req: Request, res: Response) => {
     try {
-      const { id: userId } = req.user as any;
+      const userId = (req.user as any)?.userId;
       const quickReply = await this.chatService.createQuickReply({
         ...req.body,
         createdBy: userId,
       });
       res.status(201).json(quickReply);
     } catch (error: any) {
+      console.error('[createQuickReply] Error:', error.message);
       res.status(400).json({ error: error.message });
     }
   };
@@ -339,6 +501,97 @@ export class ChatController {
 
     } catch (error: any) {
       console.error('[QR Proxy] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  // ===== CHANNELS ENDPOINT =====
+
+  /**
+   * Lista todos os canais (sessões WhatsApp) com contadores
+   * GET /api/chat/channels
+   */
+  getChannels = async (req: Request, res: Response) => {
+    try {
+      console.log('[Channels] Buscando canais disponíveis...');
+
+      // 1. Buscar sessões ativas do WAHA
+      const wahaUrl = process.env.WAHA_URL || 'https://apiwts.nexusatemporal.com.br';
+      const wahaApiKey = process.env.WAHA_API_KEY || 'bd0c416348b2f04d198ff8971b608a87';
+
+      const response = await fetch(`${wahaUrl}/api/sessions`, {
+        headers: { 'X-Api-Key': wahaApiKey },
+      });
+
+      if (!response.ok) {
+        throw new Error(`WAHA API error: ${response.status}`);
+      }
+
+      const sessions = await response.json() as any[];
+      console.log(`[Channels] ${sessions.length} sessões encontradas no WAHA`);
+
+      // Importar AppDataSource para queries
+      const { AppDataSource } = await import('@/database/data-source');
+
+      // 2. Para cada sessão, contar conversas
+      const channels = await Promise.all(
+        sessions.map(async (session: any) => {
+          try {
+            // Contar conversas únicas (chat_id) desta sessão em whatsapp_messages
+            const countResult = await AppDataSource.query(
+              `SELECT COUNT(DISTINCT chat_id) as count
+               FROM whatsapp_messages
+               WHERE session_id = (
+                 SELECT id FROM whatsapp_sessions
+                 WHERE session_name = $1
+                 LIMIT 1
+               )`,
+              [session.name]
+            );
+
+            const conversationCount = parseInt(countResult[0]?.count || '0');
+
+            // Contar não lidas
+            const unreadResult = await AppDataSource.query(
+              `SELECT COUNT(DISTINCT chat_id) as count
+               FROM whatsapp_messages wm
+               WHERE wm.session_id = (
+                 SELECT id FROM whatsapp_sessions
+                 WHERE session_name = $1
+                 LIMIT 1
+               )
+               AND wm.direction = 'incoming'
+               AND wm.read_at IS NULL`,
+              [session.name]
+            );
+
+            const unreadCount = parseInt(unreadResult[0]?.count || '0');
+
+            return {
+              sessionName: session.name,
+              phoneNumber: session.config?.phoneNumber || session.me?.id || 'N/A',
+              status: session.status, // WORKING, FAILED, STARTING, STOPPED, etc.
+              conversationCount,
+              unreadCount,
+            };
+          } catch (error: any) {
+            console.error(`[Channels] Erro ao processar sessão ${session.name}:`, error.message);
+            return {
+              sessionName: session.name,
+              phoneNumber: session.config?.phoneNumber || 'N/A',
+              status: session.status,
+              conversationCount: 0,
+              unreadCount: 0,
+            };
+          }
+        })
+      );
+
+      console.log(`[Channels] ${channels.length} canais processados`);
+
+      res.json(channels);
+    } catch (error: any) {
+      console.error('[Channels] Erro ao buscar canais:', error);
       res.status(500).json({ error: error.message });
     }
   };

@@ -18,6 +18,7 @@ import {
   Menu,
   X,
   TrendingUp,
+  Instagram,
 } from 'lucide-react';
 import logoFull from '@/assets/images/logo-full.png';
 import logoIcon from '@/assets/images/logo-icon.png';
@@ -66,6 +67,11 @@ const allMenuItems: MenuItem[] = [
     label: 'Automações',
     path: '/automation',
     roles: ['superadmin', 'owner', 'admin'] // Apenas administradores
+  },
+  {
+    icon: Instagram,
+    label: 'Redes Sociais',
+    path: '/integracoes-sociais',
   },
   { icon: Users2, label: 'Colaboração', path: '/colaboracao' },
   {

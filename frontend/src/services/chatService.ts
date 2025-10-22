@@ -13,6 +13,11 @@ export interface Conversation {
   lastMessageAt?: string;
   lastMessagePreview?: string;
   tags?: string[];
+  metadata?: {
+    priority?: 'low' | 'normal' | 'high' | 'urgent';
+    customAttributes?: Record<string, any>;
+    [key: string]: any;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -137,6 +142,49 @@ class ChatService {
     return data;
   }
 
+  async archiveConversation(conversationId: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/archive`);
+    return data;
+  }
+
+  async unarchiveConversation(conversationId: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/unarchive`);
+    return data;
+  }
+
+  async resolveConversation(conversationId: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/resolve`);
+    return data;
+  }
+
+  async reopenConversation(conversationId: string): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/reopen`);
+    return data;
+  }
+
+  async setPriority(conversationId: string, priority: 'low' | 'normal' | 'high' | 'urgent'): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/priority`, { priority });
+    return data;
+  }
+
+  async setCustomAttribute(conversationId: string, key: string, value: any): Promise<Conversation> {
+    const { data } = await api.post(`/chat/conversations/${conversationId}/attributes`, { key, value });
+    return data;
+  }
+
+  async removeCustomAttribute(conversationId: string, key: string): Promise<Conversation> {
+    const { data } = await api.delete(`/chat/conversations/${conversationId}/attributes`, {
+      data: { key }
+    });
+    return data;
+  }
+
+  async getConversationHistory(phoneNumber: string, limit?: number): Promise<Conversation[]> {
+    const params = limit ? `?limit=${limit}` : '';
+    const { data } = await api.get(`/chat/conversations/history/${phoneNumber}${params}`);
+    return data;
+  }
+
   // ===== MESSAGES =====
 
   async getMessages(conversationId: string): Promise<Message[]> {
@@ -212,6 +260,21 @@ class ChatService {
   }
 
   // ===== WHATSAPP =====
+
+  /**
+   * Busca canais (sessões WhatsApp) com contadores de conversas
+   */
+  async getChannels(): Promise<Array<{
+    sessionName: string;
+    phoneNumber: string;
+    status: string;
+    conversationCount: number;
+    unreadCount: number;
+  }>> {
+    const { data } = await api.get('/chat/channels');
+    const result = data.data || data;
+    return Array.isArray(result) ? result : [];
+  }
 
   async getWhatsAppSessions(): Promise<Array<{
     sessionName: string;

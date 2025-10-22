@@ -1,0 +1,6 @@
+website/node_modules
+website/.next
+website/.git
+website/.gitignore
+website/README.md
+website/.env*.local

@@ -15,6 +15,10 @@ import EstoquePage from './pages/EstoquePage';
 import AutomationPage from './pages/AutomationPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
+import IntegracoesSociaisPage from './pages/IntegracoesSociaisPage';
+import NotificaMeCallbackPage from './pages/NotificaMeCallbackPage';
+import BIDashboard from './pages/BI/BIDashboard';
+import MarketingPage from './pages/MarketingPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 
@@ -139,6 +143,16 @@ function App() {
             }
           />
           <Route
+            path="/bi"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <BIDashboard />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/colaboracao"
             element={
               <ProtectedRoute>
@@ -169,11 +183,26 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">Marketing</h2>
-                    <p className="text-gray-600">Em desenvolvimento...</p>
-                  </div>
+                  <MarketingPage />
                 </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/integracoes-sociais"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <IntegracoesSociaisPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/integracoes-sociais/callback"
+            element={
+              <ProtectedRoute>
+                <NotificaMeCallbackPage />
               </ProtectedRoute>
             }
           />

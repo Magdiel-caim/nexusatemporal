@@ -42,6 +42,20 @@ router.post('/conversations/:id/assign', chatController.assignConversation);
 router.post('/conversations/:id/tags', chatController.addTag);
 router.delete('/conversations/:id/tags', chatController.removeTag);
 
+// Conversation actions (FASE 2)
+router.post('/conversations/:id/archive', chatController.archiveConversation);
+router.post('/conversations/:id/unarchive', chatController.unarchiveConversation);
+router.post('/conversations/:id/resolve', chatController.resolveConversation);
+router.post('/conversations/:id/reopen', chatController.reopenConversation);
+router.post('/conversations/:id/priority', chatController.setPriority);
+
+// Custom attributes (FASE 3)
+router.post('/conversations/:id/attributes', chatController.setCustomAttribute);
+router.delete('/conversations/:id/attributes', chatController.removeCustomAttribute);
+
+// Conversation history (FASE 3)
+router.get('/conversations/history/:phoneNumber', chatController.getConversationHistory);
+
 // Message routes
 router.get('/conversations/:conversationId/messages', chatController.getMessages);
 router.post('/conversations/:conversationId/messages', chatController.sendMessage);
@@ -61,6 +75,9 @@ router.delete('/quick-replies/:id', chatController.deleteQuickReply);
 
 // Statistics
 router.get('/stats', chatController.getStats);
+
+// Channels endpoint (list WhatsApp sessions with conversation counts)
+router.get('/channels', chatController.getChannels);
 
 // QR Code Proxy (authenticated)
 router.get('/whatsapp/qrcode-proxy', chatController.getQRCodeProxy);

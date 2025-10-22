@@ -16,13 +16,13 @@ export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'conversation_id', type: 'uuid' })
   conversationId: string;
 
   @ManyToOne(() => Conversation, (conversation) => conversation.messages, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'conversationId' })
+  @JoinColumn({ name: 'conversation_id' })
   conversation: Conversation;
 
   @Column({ type: 'varchar' })
@@ -34,37 +34,37 @@ export class Message {
   @Column({ type: 'text', nullable: true })
   content?: string; // Conteúdo da mensagem (texto)
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'sender_id', type: 'varchar', nullable: true })
   senderId?: string; // ID do usuário que enviou (se outgoing)
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'sender_name', type: 'varchar', nullable: true })
   senderName?: string;
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'whatsapp_message_id', type: 'varchar', nullable: true })
   whatsappMessageId?: string; // ID da mensagem no WhatsApp
 
   @Column({ type: 'varchar', default: 'pending' })
   status: 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'sent_at', type: 'timestamp', nullable: true })
   sentAt?: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'delivered_at', type: 'timestamp', nullable: true })
   deliveredAt?: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ name: 'read_at', type: 'timestamp', nullable: true })
   readAt?: Date;
 
   @Column({ type: 'jsonb', nullable: true })
   metadata?: Record<string, any>; // Dados extras (localização, contato, etc)
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'is_deleted', type: 'boolean', default: false })
   isDeleted: boolean;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
   @OneToMany(() => Attachment, (attachment) => attachment.message)

@@ -13,36 +13,36 @@ export class Attachment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'message_id', type: 'uuid' })
   messageId: string;
 
   @ManyToOne(() => Message, (message) => message.attachments, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'messageId' })
+  @JoinColumn({ name: 'message_id' })
   message: Message;
 
   @Column({ type: 'varchar' })
   type: 'audio' | 'image' | 'video' | 'document';
 
-  @Column({ type: 'varchar' })
+  @Column({ name: 'file_name', type: 'varchar' })
   fileName: string;
 
-  @Column({ type: 'varchar' })
+  @Column({ name: 'file_url', type: 'varchar' })
   fileUrl: string; // URL do arquivo (S3/iDrive)
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'mime_type', type: 'varchar', nullable: true })
   mimeType?: string;
 
-  @Column({ type: 'bigint', nullable: true })
+  @Column({ name: 'file_size', type: 'bigint', nullable: true })
   fileSize?: number; // Tamanho em bytes
 
   @Column({ type: 'int', nullable: true })
   duration?: number; // Duração em segundos (para áudio/vídeo)
 
-  @Column({ type: 'varchar', nullable: true })
+  @Column({ name: 'thumbnail_url', type: 'varchar', nullable: true })
   thumbnailUrl?: string;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 }

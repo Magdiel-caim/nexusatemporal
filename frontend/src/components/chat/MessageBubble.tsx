@@ -11,6 +11,9 @@ interface MessageBubbleProps {
     type: string;
     status: string;
     createdAt: string;
+    sentAt?: string;
+    deliveredAt?: string;
+    readAt?: string;
     mediaUrl?: string;
     quotedMsg?: {
       content: string;
@@ -29,15 +32,28 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
   };
 
   const getStatusIcon = (status: string) => {
+    const getTooltip = () => {
+      if (message.readAt) {
+        return `Lido em ${format(new Date(message.readAt), 'dd/MM HH:mm', { locale: ptBR })}`;
+      }
+      if (message.deliveredAt) {
+        return `Entregue em ${format(new Date(message.deliveredAt), 'dd/MM HH:mm', { locale: ptBR })}`;
+      }
+      if (message.sentAt) {
+        return `Enviado em ${format(new Date(message.sentAt), 'dd/MM HH:mm', { locale: ptBR })}`;
+      }
+      return undefined;
+    };
+
     switch (status) {
       case 'sent':
-        return <Check className="h-3 w-3 text-gray-400" />;
+        return <span title={getTooltip()}><Check className="h-3 w-3 text-gray-400" /></span>;
       case 'delivered':
-        return <CheckCheck className="h-3 w-3 text-gray-400" />;
+        return <span title={getTooltip()}><CheckCheck className="h-3 w-3 text-gray-400" /></span>;
       case 'read':
-        return <CheckCheck className="h-3 w-3 text-blue-500" />;
+        return <span title={getTooltip()}><CheckCheck className="h-3 w-3 text-blue-500" /></span>;
       case 'pending':
-        return <Clock className="h-3 w-3 text-gray-400" />;
+        return <span title="Enviando..."><Clock className="h-3 w-3 text-gray-400" /></span>;
       default:
         return null;
     }

@@ -92,6 +92,8 @@ services:
       - S3_BUCKET=backupsistemaonenexus
       - BACKEND_URL=https://api.nexusatemporal.com.br
       - FRONTEND_URL=https://one.nexusatemporal.com.br
+      - NOTIFICAME_API_KEY=0fb8e168-9331-11f0-88f5-0e386dc8b623
+      - NOTIFICAME_BASE_URL=https://app.notificame.com.br/api
     networks:
       - nexusatnet
     deploy:

@@ -35,7 +35,10 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.N8NWebhookController = void 0;
 const data_source_1 = require("../../database/data-source");
+const media_upload_service_1 = require("../../services/media-upload.service");
+const logger_1 = require("../../shared/utils/logger");
 class N8NWebhookController {
+    mediaUploadService = new media_upload_service_1.MediaUploadService();
     /**
      * Recebe mensagens do N8N com mídia em base64 e faz upload no S3
      * POST /api/chat/webhook/n8n/message-media
@@ -180,57 +183,95 @@ class N8NWebhookController {
                 });
             }
             console.log('📷 Mensagem com mídia - processando e salvando com URL S3');
-            // Salvar mensagem no banco
-            const result = await data_source_1.AppDataSource.query(`INSERT INTO chat_messages (
-          session_name,
-          phone_number,
-          contact_name,
+            // 1. Download e Upload de mídia para S3 (se tiver mediaUrl)
+            let uploadedFileInfo = null;
+            if (payload.mediaUrl) {
+                try {
+                    logger_1.logger.info('[Webhook] Iniciando processamento de mídia:', payload.mediaUrl);
+                    uploadedFileInfo = await this.mediaUploadService.uploadMediaFromUrl(payload.mediaUrl, undefined // mimeType será detectado automaticamente
+                    );
+                    logger_1.logger.info('[Webhook] Mídia uploadada com sucesso:', uploadedFileInfo.fileUrl);
+                }
+                catch (error) {
+                    logger_1.logger.error('[Webhook] Erro ao processar mídia:', error.message);
+                    // Continua sem bloquear a mensagem
+                }
+            }
+            // 2. Salvar mensagem no banco (usando tabela correta: whatsapp_messages)
+            const result = await data_source_1.AppDataSource.query(`INSERT INTO whatsapp_messages (
+          chat_id,
           direction,
-          message_type,
+          from_number,
+          to_number,
           content,
           media_url,
-          waha_message_id,
+          media_type,
           status,
-          metadata,
           created_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
         RETURNING *`, [
-                payload.sessionName,
-                payload.phoneNumber,
-                payload.contactName || payload.phoneNumber,
+                payload.phoneNumber, // chat_id
                 payload.direction,
+                payload.direction === 'incoming' ? payload.phoneNumber : payload.sessionName,
+                payload.direction === 'outgoing' ? payload.phoneNumber : payload.sessionName,
+                payload.content || '',
+                uploadedFileInfo ? uploadedFileInfo.fileUrl : payload.mediaUrl,
                 payload.messageType,
-                payload.content,
-                payload.mediaUrl || null,
-                payload.wahaMessageId || null,
-                payload.status || 'received',
-                JSON.stringify(payload.rawPayload || {}),
+                payload.status || 'delivered',
                 payload.timestamp ? new Date(payload.timestamp) : new Date(),
             ]);
             const savedMessage = result[0];
+            // 3. Se fez upload da mídia, criar registro em whatsapp_attachments
+            if (uploadedFileInfo) {
+                try {
+                    const attachmentType = this.mediaUploadService.getAttachmentType(uploadedFileInfo.mimeType);
+                    await data_source_1.AppDataSource.query(`INSERT INTO whatsapp_attachments (
+              message_id,
+              type,
+              file_name,
+              file_url,
+              mime_type,
+              file_size
+            ) VALUES ($1, $2, $3, $4, $5, $6)`, [
+                        savedMessage.id,
+                        attachmentType,
+                        uploadedFileInfo.fileName,
+                        uploadedFileInfo.fileUrl,
+                        uploadedFileInfo.mimeType,
+                        uploadedFileInfo.fileSize,
+                    ]);
+                    logger_1.logger.info('[Webhook] Attachment criado com sucesso para mensagem:', savedMessage.id);
+                }
+                catch (error) {
+                    logger_1.logger.error('[Webhook] Erro ao criar attachment:', error.message);
+                    // Não bloqueia - mensagem já foi salva
+                }
+            }
             // Emitir via WebSocket para frontend (se io estiver disponível)
             const io = req.app.get('io');
             if (io) {
                 io.emit('chat:new-message', {
                     id: savedMessage.id,
-                    sessionName: savedMessage.session_name,
-                    phoneNumber: savedMessage.phone_number,
-                    contactName: savedMessage.contact_name,
+                    sessionName: payload.sessionName,
+                    phoneNumber: payload.phoneNumber,
+                    contactName: payload.contactName || payload.phoneNumber,
                     direction: savedMessage.direction,
-                    messageType: savedMessage.message_type,
+                    messageType: savedMessage.media_type,
                     content: savedMessage.content,
                     mediaUrl: savedMessage.media_url,
                     createdAt: savedMessage.created_at,
                 });
-                console.log('✅ Mensagem emitida via WebSocket');
+                console.log('✅ Mensagem com mídia emitida via WebSocket');
             }
             res.json({
                 success: true,
-                message: 'Message received and saved',
+                message: 'Message with media received, uploaded to S3, and saved',
                 data: {
                     id: savedMessage.id,
-                    sessionName: savedMessage.session_name,
-                    phoneNumber: savedMessage.phone_number,
+                    sessionName: payload.sessionName,
+                    phoneNumber: payload.phoneNumber,
+                    mediaUrl: savedMessage.media_url,
+                    hasAttachment: !!uploadedFileInfo,
                 },
             });
         }

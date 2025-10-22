@@ -17,9 +17,10 @@ const users_routes_1 = __importDefault(require("../modules/users/users.routes"))
 const automation_routes_1 = __importDefault(require("../modules/automation/automation.routes"));
 const estoque_routes_1 = __importDefault(require("../modules/estoque/estoque.routes"));
 const vendas_routes_1 = __importDefault(require("../modules/vendas/vendas.routes"));
+const bi_routes_1 = __importDefault(require("../modules/bi/bi.routes")); // BI Module - Business Intelligence
+const notificame_routes_1 = __importDefault(require("../modules/notificame/notificame.routes")); // Notifica.me integration (WhatsApp/Instagram)
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
-// import biRoutes from '@/modules/bi/bi.routes';
 // import marketingRoutes from '@/modules/marketing/marketing.routes';
 // import configRoutes from '@/modules/config/config.routes';
 const router = (0, express_1.Router)();
@@ -45,9 +46,10 @@ router.use('/users', users_routes_1.default); // User management and permissions
 router.use('/automation', automation_routes_1.default); // Automation system (triggers, workflows, integrations)
 router.use('/stock', estoque_routes_1.default); // Stock/Inventory management
 router.use('/vendas', vendas_routes_1.default); // Sales and commissions management
+router.use('/bi', bi_routes_1.default); // Business Intelligence - Dashboards, KPIs, Analytics, Reports
+router.use('/notificame', notificame_routes_1.default); // Notifica.me integration (WhatsApp/Instagram messaging)
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);
-// router.use('/bi', biRoutes);
 // router.use('/marketing', marketingRoutes);
 // router.use('/config', configRoutes);
 exports.default = router;
