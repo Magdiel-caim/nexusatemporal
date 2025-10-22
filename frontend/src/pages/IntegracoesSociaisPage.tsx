@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import NotificaMeConfig from '@/components/integrations/NotificaMeConfig';
+import { NotificaMeChannels } from '@/components/integrations/NotificaMeChannels';
 import { Instagram, MessageCircle, Bot, ExternalLink } from 'lucide-react';
 
 const IntegracoesSociaisPage: React.FC = () => {
@@ -53,7 +54,10 @@ const IntegracoesSociaisPage: React.FC = () => {
 
         {/* Instagram & Messenger */}
         <TabsContent value="notificame" className="mt-6">
-          <NotificaMeConfig />
+          <div className="space-y-6">
+            <NotificaMeConfig />
+            <NotificaMeChannels />
+          </div>
         </TabsContent>
 
         {/* WhatsApp */}
