@@ -331,7 +331,7 @@ docker service update --force --image nexus-frontend:v117-notificame-panel nexus
    - Workflow n8n não montado/testado
    - Possível ter bugs
 
-#### Próximos Passos (Sessão B)
+#### Próximos Passos (Continuar Sessão A)
 
 **PRIORIDADE #1: RESTAURAR SISTEMA** 🚨
 1. Investigar erros da Sessão C
@@ -377,7 +377,8 @@ docker service update --force --image nexus-frontend:v117-notificame-panel nexus
 - `n8n-workflows/GUIA_VISUAL_MONTAR_WORKFLOW.md` - Guia visual 9 nodes
 - `n8n-workflows/notificame-oauth-instagram.json` - Workflow pronto
 - `SESSAO_A_v116_OAUTH_INSTAGRAM_MESSENGER.md` - Documentação técnica v116
-- `ORIENTACAO_SESSAO_B_PROXIMA.md` - Orientações próxima sessão
+- `ORIENTACAO_SESSAO_A_CONTINUAR.md` - Orientações para continuar
+- `RELEASE_NOTES_v116-v118.md` - Release notes completo
 
 **Links:**
 - NotificaMe API: https://app.notificame.com.br/api

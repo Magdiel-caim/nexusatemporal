@@ -1,8 +1,8 @@
-# 🚨 ORIENTAÇÃO PARA PRÓXIMA SESSÃO
+# 🚨 ORIENTAÇÃO PARA SESSÃO C
 
 **Data**: 2025-10-22 14:10 UTC
 **Sessão Anterior**: Sessão B (completada com sucesso)
-**Status do Sistema**: ⚠️ **FORA DO AR** (erros cometidos pela Sessão C)
+**Status do Sistema**: ⚠️ **FORA DO AR** (erros cometidos por uma sessão posterior)
 
 ---
 
@@ -26,9 +26,9 @@
 
 ## ⚠️ PROBLEMA ATUAL
 
-**Sistema está FORA DO AR** devido a erros cometidos pela **Sessão C**.
+**Sistema está FORA DO AR** devido a erros cometidos por uma sessão posterior.
 
-**IMPORTANTE**: Sessão B deixou tudo funcionando (v116). Se está quebrado agora, foi por mudanças posteriores.
+**IMPORTANTE**: Sessão B deixou tudo funcionando (v116). Se está quebrado agora, foi por mudanças feitas após a Sessão B.
 
 ---
 
@@ -56,7 +56,7 @@ docker service ps nexus_backend --no-trunc
 
 ### 3. ROLLBACK SE NECESSÁRIO
 
-Se Sessão C quebrou, fazer rollback para v116:
+Se sistema está quebrado, fazer rollback para v116:
 ```bash
 docker service update --image nexus-backend:v116-unified-tables nexus_backend
 ```
@@ -103,11 +103,11 @@ PGPASSWORD=6uyJZdc0xsCe7ymief3x2Izi9QubcTYP docker exec f30b5d9f37ea psql -U nex
 
 ### Se "Column Does Not Exist":
 
-**Provavelmente Sessão C modificou entities sem atualizar migration!**
+**Provavelmente uma sessão posterior modificou entities sem atualizar migration!**
 
 Solução:
 1. Rollback para v116 (última versão estável da Sessão B)
-2. Verificar quais mudanças Sessão C fez
+2. Verificar quais mudanças foram feitas
 3. Corrigir column names nas entities
 4. Re-deploy
 
@@ -156,7 +156,7 @@ PGPASSWORD=6uyJZdc0xsCe7ymief3x2Izi9QubcTYP docker exec f30b5d9f37ea psql -U nex
 
 ## 🚀 PRÓXIMAS TAREFAS (APÓS ESTABILIZAR)
 
-### 🔴 URGENTE:
+### 🔴 URGENTE (Sessão C):
 1. Estabilizar sistema (rollback se necessário)
 2. Testar envio de mídia pelo WhatsApp
 3. Verificar se mídia aparece no Chat
@@ -284,4 +284,4 @@ Se precisar, toda documentação está na pasta `/root/nexusatemporal/`.
 
 **Criado por**: Claude Code - Sessão B
 **Data**: 2025-10-22 14:10 UTC
-**Para**: Próxima Sessão (Recuperação)
+**Para**: Sessão C (Recuperação)
