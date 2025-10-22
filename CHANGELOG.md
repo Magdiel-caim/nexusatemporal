@@ -2,6 +2,135 @@
 
 ---
 
+## ✅ v121: CORREÇÃO UX CHAT - SCROLL FIX (2025-10-22)
+
+### 📝 RESUMO
+**Versão**: Frontend v121-scroll-fix
+**Data**: 2025-10-22 20:35 UTC
+**Status**: ✅ **DEPLOYADO E FUNCIONANDO**
+
+### 🎯 PROBLEMA
+- Filtros do Chat tinham `position: sticky`
+- Funcionavam apenas com rolagem interna da lista
+- Ao usar barra de rolagem externa (sistema), filtros não ficavam fixos
+
+### ✅ SOLUÇÃO
+- Mudado para `position: fixed top-0 w-96 z-50`
+- Adicionado `padding-top: 280px` no content
+- Filtros agora fixos independente de qual barra de rolagem usar
+
+### 📦 MUDANÇAS
+**Frontend:**
+- `ChatPage.tsx`: Header fixo em viewport
+- `NotificaMeChannels.tsx`: Fix TypeScript (_channel)
+
+**Deploy:**
+- Build hash: `index-BrxPy8R0.js`
+- Commit: `9451bf6`
+
+---
+
+## ✅ v117-v120: RECUPERAÇÃO SISTEMA + UX CHAT (2025-10-22)
+
+### 📝 RESUMO
+**Versões**: Backend v117 | Frontend v120
+**Data**: 2025-10-22 18:00-20:30 UTC
+**Status**: ✅ **SISTEMA ESTÁVEL**
+
+### 🚨 INCIDENTE
+Sistema fora do ar após queda do Portainer e conflitos de versão.
+
+### 🔧 RECUPERAÇÃO
+1. **Backend v117-marketing-fixed** (estável)
+   - Marketing Module funcionando
+   - 14 tabelas criadas (migration 013)
+   - Endpoints retornando 401 (auth correto)
+
+2. **Frontend v120-chat-ux-fixed** → v121-scroll-fix
+   - Filtros fixos (sticky → fixed)
+   - Toggle painel lateral direito
+   - Label Traefik corrigido (porta 80)
+
+### 📦 FUNCIONALIDADES
+**Chat UX:**
+- ✅ Filtros fixos no topo (position fixed)
+- ✅ Botão toggle painel direito (PanelRightClose/Open)
+- ✅ Scroll funcionando com ambas barras
+
+**Marketing Module:**
+- ✅ 14 tabelas: campaigns, social_posts, bulk_messages, landing_pages, etc
+- ✅ Endpoints funcionando: `/api/marketing/*`
+- ✅ Migration 013 renumerada e executada
+
+### 🐛 PROBLEMAS RESOLVIDOS
+- ❌ v119-integrations crashando (TypeORM error) → Rollback v117
+- ❌ v118 sem Marketing (erro 500) → Rollback v117
+- ❌ Frontend porta 3000 → Corrigido para 80
+- ❌ Filtros não fixos com scroll externo → Fixed position
+
+### 📁 DOCUMENTAÇÃO
+- `SESSAO_B_v118_CHAT_ATTACHMENTS_FIX.md`
+- `SESSAO_B_v117_RECUPERACAO_E_MARKETING.md`
+- `INCIDENTE_PORTAINER_20251022.md`
+- `PROXIMA_SESSAO_B.md`
+
+### ⏳ PENDÊNCIAS
+**🔴 URGENTE:**
+1. Testar recebimento de mídia WhatsApp (código pronto em v118)
+2. Renderizar imagens/vídeos/áudios no frontend
+
+**🟡 IMPORTANTE:**
+3. Buscar avatar via WAHA API
+4. Buscar nome real do contato
+5. Players de áudio/vídeo
+
+---
+
+## ⚠️ v118: CHAT ATTACHMENTS FIX (2025-10-22) - CÓDIGO PRONTO
+
+### 📝 RESUMO
+**Versão**: Backend v118-chat-attachments-fix
+**Data**: 2025-10-22 18:56 UTC
+**Status**: ⚠️ **CÓDIGO PRONTO, NÃO TESTADO**
+
+### 🎯 PROBLEMA
+- Webhook WAHA usava SQL raw (tabela `chat_messages`)
+- Attachments NÃO eram criados
+- Tabelas `messages` e `attachments` vazias
+
+### ✅ SOLUÇÃO
+**n8n-webhook.controller.ts:**
+- `receiveWAHAWebhook()` usa ChatService TypeORM
+- `createMessageWithAttachment()` para mídias
+- `createMessage()` para texto
+- `message.revoked` usa TypeORM (CASCADE delete)
+
+**chat.service.ts:**
+- Adicionado `getMessageByWhatsappId()`
+
+**Suporte:**
+- ✅ image, video, audio, document, ptt, sticker
+
+### 📦 MIGRATION
+**013_create_marketing_tables.sql:**
+- Renumerado de 012 → 013
+- 14 tabelas criadas no banco
+- Resolvido conflito com `012_add_avatar_url`
+
+### ⏳ TESTE NECESSÁRIO
+```bash
+# 1. Enviar mídia via WhatsApp
+# 2. Verificar logs
+docker service logs nexus_backend --follow | grep "📷"
+
+# 3. Consultar banco
+SELECT COUNT(*) FROM attachments;
+```
+
+**Documentação:** `SESSAO_B_v118_CHAT_ATTACHMENTS_FIX.md`
+
+---
+
 ## 🔄 v116-v118: OAUTH NOTIFICAME - INSTAGRAM/MESSENGER (2025-10-22) - EM PROGRESSO
 
 ### 📝 RESUMO EXECUTIVO
