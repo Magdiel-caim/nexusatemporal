@@ -840,34 +840,35 @@ export class N8NWebhookController {
         const revokedMessageId = wahaPayload.payload?.revokedMessageId;
 
         if (revokedMessageId) {
-          // Deletar a mensagem do banco usando o waha_message_id
-          const deletedResult = await AppDataSource.query(
-            `DELETE FROM chat_messages WHERE waha_message_id = $1 RETURNING id, session_name, phone_number`,
-            [revokedMessageId]
-          );
+          // Buscar mensagem usando TypeORM
+          const messageToDelete = await this.chatService.getMessageByWhatsappId(revokedMessageId);
 
-          if (deletedResult.length > 0) {
-            const deletedMessage = deletedResult[0];
-            console.log('✅ Mensagem deletada do banco:', deletedMessage.id);
+          if (messageToDelete) {
+            console.log('🗑️ Deletando mensagem TypeORM:', messageToDelete.id);
+
+            // Deletar mensagem (cascade deleta attachments automaticamente)
+            await this.chatService.deleteMessage(messageToDelete.id);
+
+            console.log('✅ Mensagem deletada do banco:', messageToDelete.id);
 
             // Emitir via WebSocket para o frontend remover da UI
             const io = req.app.get('io');
             if (io) {
               io.emit('chat:message-deleted', {
-                messageId: deletedMessage.id,
-                sessionName: deletedMessage.session_name,
-                phoneNumber: deletedMessage.phone_number,
+                messageId: messageToDelete.id,
+                conversationId: messageToDelete.conversationId,
+                whatsappMessageId: revokedMessageId,
               });
               console.log('🔊 Evento de exclusão emitido via WebSocket');
             }
 
             return res.json({
               success: true,
-              message: 'Message revoked and deleted',
-              deletedMessageId: deletedMessage.id,
+              message: 'Message revoked and deleted with TypeORM',
+              deletedMessageId: messageToDelete.id,
             });
           } else {
-            console.log('⚠️ Mensagem não encontrada no banco:', revokedMessageId);
+            console.log('⚠️ Mensagem não encontrada no banco (TypeORM):', revokedMessageId);
           }
         }
 
@@ -946,75 +947,113 @@ export class N8NWebhookController {
         isGroup,
       });
 
-      // Salvar mensagem no banco
-      // Mensagens incoming = não lidas (false), outgoing = lidas (true)
-      const isRead = direction === 'outgoing';
+      // Salvar mensagem usando ChatService (TypeORM) para criar attachments
+      // 1. Buscar ou criar conversa
+      const conversation = await this.chatService.findOrCreateConversation({
+        phoneNumber: phoneNumber,
+        contactName: contactName,
+        whatsappInstanceId: session,
+      });
 
-      const result = await AppDataSource.query(
-        `INSERT INTO chat_messages (
-          session_name,
-          phone_number,
-          contact_name,
-          direction,
-          message_type,
-          content,
-          media_url,
-          waha_message_id,
-          status,
-          metadata,
-          created_at,
-          is_read
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-        RETURNING *`,
-        [
-          session,
-          phoneNumber,
-          contactName,
-          direction,
-          messageType,
-          content,
-          mediaUrl,
-          payload.id,
-          'received',
-          JSON.stringify(wahaPayload),
-          new Date(timestamp),
-          isRead,
-        ]
-      );
+      logger.info('[WAHA Webhook] Conversa encontrada/criada:', conversation.id);
 
-      const savedMessage = result[0];
+      // 2. Determinar se tem mídia para criar attachment
+      const hasMedia = mediaUrl && mediaUrl.trim() !== '' && !mediaUrl.startsWith('data:');
+      const isMediaType = ['audio', 'image', 'video', 'document', 'ptt', 'sticker'].includes(messageType);
 
-      console.log('✅ Mensagem salva no banco:', {
-        id: savedMessage.id,
-        session: savedMessage.session_name,
-        phone: savedMessage.phone_number,
+      let savedMessage: any = null;
+
+      if (hasMedia && isMediaType) {
+        // Mensagem com mídia: criar com attachment
+        console.log('📷 Mensagem com mídia - criando attachment');
+
+        const actualMediaType = messageType === 'ptt' || messageType === 'sticker'
+          ? (messageType === 'ptt' ? 'audio' : 'image')
+          : messageType;
+
+        savedMessage = await this.chatService.createMessageWithAttachment(
+          {
+            conversationId: conversation.id,
+            direction: direction as 'incoming' | 'outgoing',
+            type: actualMediaType as 'audio' | 'image' | 'video' | 'document',
+            content: content || '',
+            whatsappMessageId: payload.id,
+            metadata: {
+              timestamp: timestamp,
+              status: 'received',
+              rawPayload: wahaPayload,
+              isGroup: isGroup,
+            },
+          },
+          {
+            fileName: `${session}_${Date.now()}.${messageType}`,
+            fileUrl: mediaUrl,
+            mimeType: payload._data?.mimetype || undefined,
+            fileSize: payload._data?.size || undefined,
+          }
+        );
+      } else {
+        // Mensagem de texto ou sem mídia processável
+        savedMessage = await this.chatService.createMessage({
+          conversationId: conversation.id,
+          direction: direction as 'incoming' | 'outgoing',
+          type: 'text',
+          content: content || '',
+          whatsappMessageId: payload.id,
+          metadata: {
+            timestamp: timestamp,
+            status: 'received',
+            rawPayload: wahaPayload,
+            isGroup: isGroup,
+            messageType: messageType, // preservar tipo original
+          },
+        });
+      }
+
+      // 3. Atualizar conversation (última mensagem, unread)
+      await this.chatService.updateConversation(conversation.id, {
+        lastMessage: content || `[${messageType}]`,
+        lastMessageAt: new Date(timestamp),
+        isUnread: direction === 'incoming',
+        unreadCount: direction === 'incoming' ? (conversation.unreadCount || 0) + 1 : conversation.unreadCount || 0,
+      });
+
+      console.log('✅ Mensagem salva com TypeORM:', {
+        id: savedMessage?.id,
+        conversationId: conversation.id,
+        hasAttachments: savedMessage?.attachments?.length > 0,
       });
 
       // Emitir via WebSocket para frontend
       const io = req.app.get('io');
       if (io) {
         io.emit('chat:new-message', {
-          id: savedMessage.id,
-          sessionName: savedMessage.session_name,
-          phoneNumber: savedMessage.phone_number,
-          contactName: savedMessage.contact_name,
-          direction: savedMessage.direction,
-          messageType: savedMessage.message_type,
-          content: savedMessage.content,
-          mediaUrl: savedMessage.media_url,
-          createdAt: savedMessage.created_at,
+          id: savedMessage?.id,
+          conversationId: conversation.id,
+          sessionName: session,
+          phoneNumber: phoneNumber,
+          contactName: contactName,
+          direction: direction,
+          messageType: messageType,
+          content: content || '',
+          mediaUrl: hasMedia ? mediaUrl : null,
+          attachments: savedMessage?.attachments || [],
+          createdAt: new Date(timestamp),
         });
 
-        console.log('🔊 Mensagem emitida via WebSocket');
+        console.log('🔊 Mensagem emitida via WebSocket com attachments:', savedMessage?.attachments?.length || 0);
       }
 
       res.json({
         success: true,
-        message: 'WAHA webhook received and processed',
+        message: 'WAHA webhook received and processed with TypeORM',
         data: {
-          id: savedMessage.id,
-          sessionName: savedMessage.session_name,
-          phoneNumber: savedMessage.phone_number,
+          id: savedMessage?.id,
+          conversationId: conversation.id,
+          sessionName: session,
+          phoneNumber: phoneNumber,
+          hasAttachments: savedMessage?.attachments?.length > 0,
+          attachmentsCount: savedMessage?.attachments?.length || 0,
         },
       });
     } catch (error: any) {

@@ -255,6 +255,13 @@ export class ChatService {
     });
   }
 
+  async getMessageByWhatsappId(whatsappMessageId: string) {
+    return this.messageRepository.findOne({
+      where: { whatsappMessageId, isDeleted: false },
+      relations: ['attachments'],
+    });
+  }
+
   async updateMessageStatus(
     messageId: string,
     status: 'sent' | 'delivered' | 'read' | 'failed'
