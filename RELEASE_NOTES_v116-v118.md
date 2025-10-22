@@ -631,9 +631,9 @@ curl -X POST https://api.nexusatemporal.com.br/api/notificame/oauth/start \
 
 ## 🎯 Próximos Passos
 
-### Para Sessão B (Próxima)
+### Para Continuar Sessão A
 
-**LEIA PRIMEIRO**: `ORIENTACAO_SESSAO_B_PROXIMA.md`
+**LEIA PRIMEIRO**: `ORIENTACAO_SESSAO_A_CONTINUAR.md`
 
 #### Fase 1: Restaurar Sistema ⛔ URGENTE!
 - [ ] Investigar erros da Sessão C
@@ -681,7 +681,7 @@ curl -X POST https://api.nexusatemporal.com.br/api/notificame/oauth/start \
 - `NOTIFICAME_N8N_OAUTH_GUIA_COMPLETO.md` - Guia completo (2800+ linhas)
 - `n8n-workflows/GUIA_VISUAL_MONTAR_WORKFLOW.md` - Guia visual (3500+ linhas)
 - `SESSAO_A_v116_OAUTH_INSTAGRAM_MESSENGER.md` - Docs técnica (6000+ linhas)
-- `ORIENTACAO_SESSAO_B_PROXIMA.md` - Orientações próxima sessão (463 linhas)
+- `ORIENTACAO_SESSAO_A_CONTINUAR.md` - Orientações para continuar (463 linhas)
 
 ### Links Úteis
 - NotificaMe: https://app.notificame.com.br
@@ -709,10 +709,10 @@ curl -X POST https://api.nexusatemporal.com.br/api/notificame/oauth/start \
 ---
 
 **Criado por**: Claude Code - Sessão A
-**Para**: Sessão B (próxima)
+**Para**: Continuar Sessão A
 **Data**: 2025-10-22 14:45 UTC
 **Branch**: `feature/automation-backend`
-**Commits**: 85e15a6, 16bb202, 4aaa8be, b698264
+**Commits**: 85e15a6, 16bb202, 4aaa8be, b698264, 41e990c
 
 ---
 
