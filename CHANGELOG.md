@@ -2,6 +2,162 @@
 
 ---
 
+## 📚 v121: DOCUMENTAÇÃO - INTEGRAÇÃO META API (2025-10-22)
+
+### 📝 RESUMO
+**Versão**: v121-docs-meta-integration
+**Data**: 2025-10-22
+**Status**: 📘 **DOCUMENTAÇÃO COMPLETA - PRONTO PARA IMPLEMENTAR**
+
+### 🎯 OBJETIVO
+Pesquisar e documentar solução completa para conectar novos canais Instagram/Messenger diretamente pelo Nexus CRM, sem dependência de painel externo.
+
+### 🔍 PROBLEMA IDENTIFICADO
+- API NotificaMe Hub **NÃO possui endpoints OAuth** para conectar canais programaticamente
+- Conexão de novos canais só é possível manualmente pelo painel NotificaMe
+- Usuários não conseguem conectar suas próprias contas Instagram pelo Nexus
+
+### 💡 SOLUÇÕES PESQUISADAS
+
+**SOLUÇÃO 1: iFrame NotificaMe** (curto prazo)
+- Incorporar painel NotificaMe no Nexus via iframe
+- Implementação: 30 minutos
+- Documentado em: `SOLUCAO_CONECTAR_NOVOS_CANAIS.md`
+
+**SOLUÇÃO 2: Fluxo Manual** (intermediário)
+- Sistema de solicitação + aprovação admin
+- Implementação: 2 horas
+- Documentado em: `SOLUCAO_CONECTAR_NOVOS_CANAIS.md`
+
+**SOLUÇÃO 3: Integração Direta Meta API** ⭐ **RECOMENDADA**
+- OAuth 2.0 completo com Meta/Facebook
+- Controle total, sem dependência de terceiros
+- Implementação: 4-5 horas
+- Documentado em: `INTEGRACAO_META_INSTAGRAM_MESSENGER.md`
+
+### 📄 DOCUMENTOS CRIADOS
+
+1. **SOLUCAO_CONECTAR_NOVOS_CANAIS.md** (254 linhas)
+   - Análise completa da situação atual
+   - 3 soluções detalhadas com código pronto
+   - Comparação de vantagens/desvantagens
+   - Tempo estimado de implementação
+
+2. **INTEGRACAO_META_INSTAGRAM_MESSENGER.md** (1.150+ linhas) ⭐
+   - Guia COMPLETO de integração Meta API
+   - 5 partes: Facebook App, OAuth, Webhooks, Messaging, Frontend
+   - Código TypeScript completo (backend)
+   - Código React completo (frontend)
+   - Migrations SQL prontas
+   - Troubleshooting detalhado
+   - Checklist de implementação
+
+3. **RESUMO_INTEGRACAO_META.md** (155 linhas)
+   - Resumo executivo da integração Meta
+   - Checklist rápido
+   - Comparação NotificaMe vs Meta Direta
+   - Próximos passos práticos
+
+### 🔑 DESCOBERTAS IMPORTANTES
+
+**Meta API (Atualização Jul/2024):**
+- Novo fluxo OAuth simplificado: "Instagram API with Instagram Login"
+- Não requer mais conexão obrigatória com Facebook Page
+- Suporta Instagram Professional (Business/Creator)
+- Permissões: `instagram_basic`, `instagram_manage_messages`
+
+**Node n8n NotificaMe Hub:**
+- Operações disponíveis: Enviar texto, áudio, arquivo, botões, posts
+- **NÃO TEM** operação para conectar canais
+- Autenticação: Header `X-Api-Token`
+- Base URL: `https://api.notificame.com.br/v1`
+
+**Endpoints NotificaMe Testados:**
+- ✅ `GET /channels` - Funciona
+- ✅ `POST /channels/instagram/messages` - Funciona
+- ❌ `/oauth/authorize` - 404
+- ❌ `/connect/instagram` - 404
+- ❌ `/channels/create` - 404
+
+### 📋 CÓDIGO PRONTO PARA IMPLEMENTAR
+
+**Backend (TypeScript):**
+```
+✅ MetaOAuthService (OAuth + criptografia AES-256)
+✅ MetaOAuthController (start, callback, list, disconnect)
+✅ MetaWebhookController (verify, receive, process)
+✅ MetaMessagingService (send text/image/buttons, conversations)
+✅ MetaMessagingController (send, list conversations/messages)
+✅ Rotas completas (/oauth/start, /oauth/callback, /webhook, etc.)
+```
+
+**Frontend (React):**
+```
+✅ metaInstagramService (API client)
+✅ MetaInstagramConnect (componente OAuth)
+✅ Integração na página de integrações
+```
+
+**Banco de Dados:**
+```sql
+✅ oauth_states (CSRF protection)
+✅ meta_instagram_accounts (contas conectadas, tokens criptografados)
+✅ instagram_messages (histórico completo de mensagens)
+✅ Índices otimizados
+```
+
+### 🎁 VANTAGENS DA INTEGRAÇÃO META
+
+| Recurso | NotificaMe Hub | Meta API Direta |
+|---------|----------------|-----------------|
+| Conexão canais | ❌ Manual (painel) | ✅ Automática (OAuth) |
+| Controle | ❌ Dependente | ✅ Total |
+| Custo | 💰 Assinatura | ✅ Grátis |
+| Escalabilidade | ⚠️ Limitada | ✅ Ilimitada |
+| Customização | ⚠️ Limitada | ✅ Total |
+| Webhooks | Via NotificaMe | ✅ Direto da Meta |
+
+### ⏱️ TEMPO ESTIMADO DE IMPLEMENTAÇÃO
+
+**Integração Meta Completa:**
+- Configurar Facebook App: 30 min
+- Backend (migrations + código): 3h
+- Frontend (componente): 1h
+- Testes: 30 min
+- **TOTAL: 4-5 horas**
+
+### 📦 O QUE NÃO FOI FEITO (Próxima Sessão)
+
+- [ ] Implementação do código backend
+- [ ] Implementação do código frontend
+- [ ] Criação do Facebook App
+- [ ] Migrations do banco de dados
+- [ ] Testes de OAuth
+- [ ] Deploy
+
+### 🎯 RECOMENDAÇÃO
+
+**Próxima Sessão A deve:**
+1. Criar Facebook App no Meta for Developers
+2. Implementar código backend (copiar de `INTEGRACAO_META_INSTAGRAM_MESSENGER.md`)
+3. Implementar código frontend (copiar de `INTEGRACAO_META_INSTAGRAM_MESSENGER.md`)
+4. Testar fluxo OAuth completo
+5. Deploy e validação
+
+### 📁 ARQUIVOS CRIADOS
+```
+SOLUCAO_CONECTAR_NOVOS_CANAIS.md (254 linhas)
+INTEGRACAO_META_INSTAGRAM_MESSENGER.md (1.150+ linhas)
+RESUMO_INTEGRACAO_META.md (155 linhas)
+```
+
+### 🔗 REFERÊNCIAS
+- Meta for Developers: https://developers.facebook.com
+- Instagram Platform API: https://developers.facebook.com/docs/instagram-platform
+- Node n8n NotificaMe Hub: https://github.com/oriondesign2015/n8n-nodes-notificame-hub
+
+---
+
 ## ✅ v120.1: NOTIFICAME HUB - UI CANAIS INSTAGRAM (2025-10-22)
 
 ### 📝 RESUMO
