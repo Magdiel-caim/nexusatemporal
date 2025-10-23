@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificaMeController = void 0;
 const NotificaMeService_1 = require("../../services/NotificaMeService");
-const database_1 = require("../automation/database");
+const database_1 = require("../../modules/marketing/automation/database");
 const notificame_stats_service_1 = __importDefault(require("./notificame-stats.service"));
 /**
  * Controller para Notifica.me (WhatsApp e Instagram)

@@ -3,7 +3,7 @@ import { Lead, LeadStatus, LeadPriority, LeadSource } from './lead.entity';
 import { Activity, ActivityType } from './activity.entity';
 import { Between, Like, In } from 'typeorm';
 import { getEventEmitterService } from '@/services/EventEmitterService';
-import { getAutomationDbPool } from '@/modules/automation/database';
+import { getAutomationDbPool } from '@/modules/marketing/automation/database';
 
 export class LeadService {
   private leadRepository = CrmDataSource.getRepository(Lead);

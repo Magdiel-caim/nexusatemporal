@@ -8,7 +8,7 @@ const appointment_return_entity_1 = require("./appointment-return.entity");
 const appointment_notification_entity_1 = require("./appointment-notification.entity");
 const lead_entity_1 = require("../leads/lead.entity");
 const EventEmitterService_1 = require("../../services/EventEmitterService");
-const database_1 = require("../../modules/automation/database");
+const database_1 = require("../../modules/marketing/automation/database");
 class AppointmentService {
     appointmentRepo;
     returnRepo;

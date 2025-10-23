@@ -9,7 +9,7 @@ import medicalRecordRoutes from '@/modules/medical-records/medical-record.routes
 import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
 import paymentGatewayRoutes from '@/modules/payment-gateway/payment-gateway.routes';
 import usersRoutes from '@/modules/users/users.routes';
-import automationRoutes from '@/modules/automation/automation.routes';
+import automationRoutes from '@/modules/marketing/automation/automation.routes'; // Moved to Marketing module
 import estoqueRoutes from '@/modules/estoque/estoque.routes';
 import vendasRoutes from '@/modules/vendas/vendas.routes';
 import biRoutes from '@/modules/bi/bi.routes'; // BI Module - Business Intelligence
@@ -41,7 +41,7 @@ router.use('/medical-records', medicalRecordRoutes);
 router.use('/financial', financeiroRoutes);
 router.use('/payment-gateway', paymentGatewayRoutes); // Payment gateway integration (Asaas, PagBank)
 router.use('/users', usersRoutes); // User management and permissions
-router.use('/automation', automationRoutes); // Automation system (triggers, workflows, integrations)
+router.use('/marketing/automation', automationRoutes); // Automation system (triggers, workflows, integrations) - Now part of Marketing
 router.use('/stock', estoqueRoutes); // Stock/Inventory management
 router.use('/vendas', vendasRoutes); // Sales and commissions management
 router.use('/bi', biRoutes); // Business Intelligence - Dashboards, KPIs, Analytics, Reports

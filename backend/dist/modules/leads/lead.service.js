@@ -6,7 +6,7 @@ const lead_entity_1 = require("./lead.entity");
 const activity_entity_1 = require("./activity.entity");
 const typeorm_1 = require("typeorm");
 const EventEmitterService_1 = require("../../services/EventEmitterService");
-const database_1 = require("../../modules/automation/database");
+const database_1 = require("../../modules/marketing/automation/database");
 class LeadService {
     leadRepository = data_source_1.CrmDataSource.getRepository(lead_entity_1.Lead);
     activityRepository = data_source_1.CrmDataSource.getRepository(activity_entity_1.Activity);

@@ -15,7 +15,7 @@ import {
 } from './appointment-notification.entity';
 import { Lead, ClientStatus } from '../leads/lead.entity';
 import { getEventEmitterService } from '@/services/EventEmitterService';
-import { getAutomationDbPool } from '@/modules/automation/database';
+import { getAutomationDbPool } from '@/modules/marketing/automation/database';
 
 export interface CreateAppointmentDto {
   leadId: string;

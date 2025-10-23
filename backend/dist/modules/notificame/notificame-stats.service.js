@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificaMeStatsService = void 0;
-const database_1 = require("../automation/database");
+const database_1 = require("../../modules/marketing/automation/database");
 class NotificaMeStatsService {
     /**
      * Obtém estatísticas completas do Notifica.me para um tenant

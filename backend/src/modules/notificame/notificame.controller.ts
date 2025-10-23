@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { NotificaMeService } from '../../services/NotificaMeService';
-import { getAutomationDbPool } from '../automation/database';
+import { getAutomationDbPool } from '@/modules/marketing/automation/database';
 import NotificaMeStatsService from './notificame-stats.service';
 
 /**

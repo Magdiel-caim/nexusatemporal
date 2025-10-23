@@ -1,4 +1,4 @@
-import { getAutomationDbPool } from '../automation/database';
+import { getAutomationDbPool } from '@/modules/marketing/automation/database';
 
 export interface NotificaMeStats {
   totalChannels: number;

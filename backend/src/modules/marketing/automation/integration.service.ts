@@ -5,10 +5,10 @@ import {
   UpdateIntegrationDTO,
   TestIntegrationResult
 } from './integration.entity';
-import { WahaService } from '../../services/WahaService';
-import { OpenAIService } from '../../services/OpenAIService';
-import { N8nService } from '../../services/N8nService';
-import { NotificaMeService } from '../../services/NotificaMeService';
+import { WahaService } from '@/services/WahaService';
+import { OpenAIService } from '@/services/OpenAIService';
+import { N8nService } from '@/services/N8nService';
+import { NotificaMeService } from '@/services/NotificaMeService';
 
 export class IntegrationService {
   constructor(private db: Pool) {}

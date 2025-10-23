@@ -14,7 +14,7 @@ const medical_record_routes_1 = __importDefault(require("../modules/medical-reco
 const financeiro_routes_1 = __importDefault(require("../modules/financeiro/financeiro.routes"));
 const payment_gateway_routes_1 = __importDefault(require("../modules/payment-gateway/payment-gateway.routes"));
 const users_routes_1 = __importDefault(require("../modules/users/users.routes"));
-const automation_routes_1 = __importDefault(require("../modules/automation/automation.routes"));
+const automation_routes_1 = __importDefault(require("../modules/marketing/automation/automation.routes")); // Moved to Marketing module
 const estoque_routes_1 = __importDefault(require("../modules/estoque/estoque.routes"));
 const vendas_routes_1 = __importDefault(require("../modules/vendas/vendas.routes"));
 const bi_routes_1 = __importDefault(require("../modules/bi/bi.routes")); // BI Module - Business Intelligence
@@ -43,7 +43,7 @@ router.use('/medical-records', medical_record_routes_1.default);
 router.use('/financial', financeiro_routes_1.default);
 router.use('/payment-gateway', payment_gateway_routes_1.default); // Payment gateway integration (Asaas, PagBank)
 router.use('/users', users_routes_1.default); // User management and permissions
-router.use('/automation', automation_routes_1.default); // Automation system (triggers, workflows, integrations)
+router.use('/marketing/automation', automation_routes_1.default); // Automation system (triggers, workflows, integrations) - Now part of Marketing
 router.use('/stock', estoque_routes_1.default); // Stock/Inventory management
 router.use('/vendas', vendas_routes_1.default); // Sales and commissions management
 router.use('/bi', bi_routes_1.default); // Business Intelligence - Dashboards, KPIs, Analytics, Reports
