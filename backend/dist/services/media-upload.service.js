@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MediaUploadService = void 0;
 const axios_1 = __importDefault(require("axios"));
 const uuid_1 = require("uuid");
-const s3_client_1 = require("@/integrations/idrive/s3-client");
-const logger_1 = require("@/shared/utils/logger");
+const s3_client_1 = require("../integrations/idrive/s3-client");
+const logger_1 = require("../shared/utils/logger");
 /**
  * MediaUploadService
  *

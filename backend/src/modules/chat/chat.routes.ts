@@ -3,6 +3,7 @@ import { ChatController } from './chat.controller';
 import { WhatsAppController } from './whatsapp.controller';
 import { WAHASessionController } from './waha-session.controller';
 import { N8NWebhookController } from './n8n-webhook.controller';
+import { MediaProxyController } from './media-proxy.controller';
 import { authenticate } from '@/shared/middleware/auth.middleware';
 
 const router = Router();
@@ -10,6 +11,7 @@ const chatController = new ChatController();
 const whatsappController = new WhatsAppController();
 const wahaSessionController = new WAHASessionController();
 const n8nWebhookController = new N8NWebhookController();
+const mediaProxyController = new MediaProxyController();
 
 // WhatsApp webhooks (no authentication required)
 router.post('/webhook/whatsapp', whatsappController.handleWebhook);
@@ -24,9 +26,9 @@ router.post('/webhook/n8n/message', (req, res) => n8nWebhookController.receiveMe
 // N8N webhook com mídia em base64 (no authentication required)
 router.post('/webhook/n8n/message-media', (req, res) => n8nWebhookController.receiveMessageWithMedia(req, res));
 
-// Media download (no authentication - public endpoint for HTML tags)
-// TODO: Implementar método downloadMedia no controller
-// router.get('/n8n/media/:sessionName/:messageId', (req, res) => n8nWebhookController.downloadMedia(req, res));
+// Media Proxy (no authentication - public endpoint for HTML tags to load images)
+router.get('/media/:messageId', (req, res) => mediaProxyController.getMediaUrl(req, res));
+router.get('/media/:messageId/stream', (req, res) => mediaProxyController.streamMedia(req, res));
 
 // All other routes require authentication
 router.use(authenticate);

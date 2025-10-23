@@ -5,12 +5,14 @@ const chat_controller_1 = require("./chat.controller");
 const whatsapp_controller_1 = require("./whatsapp.controller");
 const waha_session_controller_1 = require("./waha-session.controller");
 const n8n_webhook_controller_1 = require("./n8n-webhook.controller");
-const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
+const media_proxy_controller_1 = require("./media-proxy.controller");
+const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const router = (0, express_1.Router)();
 const chatController = new chat_controller_1.ChatController();
 const whatsappController = new whatsapp_controller_1.WhatsAppController();
 const wahaSessionController = new waha_session_controller_1.WAHASessionController();
 const n8nWebhookController = new n8n_webhook_controller_1.N8NWebhookController();
+const mediaProxyController = new media_proxy_controller_1.MediaProxyController();
 // WhatsApp webhooks (no authentication required)
 router.post('/webhook/whatsapp', whatsappController.handleWebhook);
 router.post('/webhook/waha/status', wahaSessionController.handleStatusWebhook);
@@ -20,9 +22,9 @@ router.post('/webhook/waha/message', (req, res) => n8nWebhookController.receiveW
 router.post('/webhook/n8n/message', (req, res) => n8nWebhookController.receiveMessage(req, res));
 // N8N webhook com mídia em base64 (no authentication required)
 router.post('/webhook/n8n/message-media', (req, res) => n8nWebhookController.receiveMessageWithMedia(req, res));
-// Media download (no authentication - public endpoint for HTML tags)
-// TODO: Implementar método downloadMedia no controller
-// router.get('/n8n/media/:sessionName/:messageId', (req, res) => n8nWebhookController.downloadMedia(req, res));
+// Media Proxy (no authentication - public endpoint for HTML tags to load images)
+router.get('/media/:messageId', (req, res) => mediaProxyController.getMediaUrl(req, res));
+router.get('/media/:messageId/stream', (req, res) => mediaProxyController.streamMedia(req, res));
 // All other routes require authentication
 router.use(auth_middleware_1.authenticate);
 // Conversation routes

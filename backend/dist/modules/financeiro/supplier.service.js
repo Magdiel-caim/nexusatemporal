@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SupplierService = void 0;
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../../database/data-source");
 const supplier_entity_1 = require("./supplier.entity");
 class SupplierService {
     supplierRepository = data_source_1.CrmDataSource.getRepository(supplier_entity_1.Supplier);

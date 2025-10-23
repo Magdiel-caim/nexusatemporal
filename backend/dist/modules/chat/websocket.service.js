@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getWebSocketService = exports.initializeWebSocketService = exports.WebSocketService = void 0;
-const logger_1 = require("@/shared/utils/logger");
+const logger_1 = require("../../shared/utils/logger");
 class WebSocketService {
     io;
     userSockets = new Map(); // userId -> Set of socketIds

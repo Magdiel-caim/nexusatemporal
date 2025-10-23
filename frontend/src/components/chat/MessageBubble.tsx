@@ -1,7 +1,8 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Check, CheckCheck, Clock, Download, Play, FileText, Reply } from 'lucide-react';
+import { Check, CheckCheck, Clock, Download, Play, FileText, Reply, Loader2 } from 'lucide-react';
+import { useMediaUrl } from '../hooks/useMediaUrl';
 
 interface MessageBubbleProps {
   message: {
@@ -26,6 +27,12 @@ interface MessageBubbleProps {
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelete }) => {
   const isOutgoing = message.direction === 'outgoing';
+
+  // Buscar signed URL para mídias (se necessário)
+  const { url: signedMediaUrl, loading: loadingMedia, error: mediaError } = useMediaUrl(
+    message.id,
+    message.mediaUrl
+  );
 
   const formatTime = (date: string) => {
     return format(new Date(date), 'HH:mm', { locale: ptBR });
@@ -62,15 +69,39 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
   const renderMedia = () => {
     if (!message.mediaUrl) return null;
 
+    // Mostrar loader enquanto busca signed URL
+    if (loadingMedia) {
+      return (
+        <div className="mb-2 flex items-center gap-2 p-4 bg-white/10 rounded-lg">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span className="text-sm opacity-75">Carregando mídia...</span>
+        </div>
+      );
+    }
+
+    // Mostrar erro se houver problema ao carregar
+    if (mediaError || !signedMediaUrl) {
+      return (
+        <div className="mb-2 p-3 bg-red-100 dark:bg-red-900/30 rounded-lg">
+          <p className="text-sm text-red-700 dark:text-red-300">⚠️ Erro ao carregar mídia</p>
+        </div>
+      );
+    }
+
     switch (message.type) {
       case 'image':
         return (
           <div className="mb-2">
             <img
-              src={message.mediaUrl}
+              src={signedMediaUrl}
               alt="Imagem"
               className="rounded-lg max-w-sm max-h-96 object-contain cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => window.open(message.mediaUrl, '_blank')}
+              onClick={() => window.open(signedMediaUrl, '_blank')}
+              onError={(e) => {
+                console.error('Erro ao carregar imagem:', signedMediaUrl);
+                e.currentTarget.style.display = 'none';
+                e.currentTarget.parentElement!.innerHTML = '<div class="p-3 bg-red-100 dark:bg-red-900/30 rounded-lg text-sm text-red-700 dark:text-red-300">⚠️ Imagem não disponível</div>';
+              }}
             />
           </div>
         );
@@ -79,13 +110,13 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
         return (
           <div className="mb-2 relative group">
             <video
-              src={message.mediaUrl}
+              src={signedMediaUrl}
               controls
               className="rounded-lg max-w-sm max-h-96 object-contain"
               controlsList="nodownload"
             />
             <a
-              href={message.mediaUrl}
+              href={signedMediaUrl}
               download
               className="absolute top-2 right-2 p-2 bg-black/50 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
               title="Download"
@@ -100,14 +131,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
         return (
           <div className="flex items-center gap-2 p-2 bg-white/10 rounded-lg">
             <Play className="h-5 w-5" />
-            <audio src={message.mediaUrl} controls className="flex-1" />
+            <audio src={signedMediaUrl} controls className="flex-1" />
           </div>
         );
 
       case 'document':
         return (
           <a
-            href={message.mediaUrl}
+            href={signedMediaUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 p-3 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"

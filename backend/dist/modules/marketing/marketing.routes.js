@@ -1,10 +1,42 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const multer_1 = __importDefault(require("multer"));
+const path_1 = __importDefault(require("path"));
+const fs_1 = __importDefault(require("fs"));
 const marketing_controller_1 = require("./marketing.controller");
 const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const router = (0, express_1.Router)();
 const controller = new marketing_controller_1.MarketingController();
+// Configurar storage do multer
+const storage = multer_1.default.diskStorage({
+    destination: (req, file, cb) => {
+        const uploadDir = path_1.default.join(__dirname, '../../../uploads/marketing');
+        if (!fs_1.default.existsSync(uploadDir)) {
+            fs_1.default.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path_1.default.extname(file.originalname)}`;
+        cb(null, uniqueName);
+    }
+});
+const upload = (0, multer_1.default)({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        }
+        else {
+            cb(new Error('Only images are allowed'));
+        }
+    }
+});
 // WAHA Webhook (no auth required) - must be before authenticate middleware
 router.post('/waha/webhook', (req, res) => controller.wahaWebhook(req, res));
 // Apply authentication to all routes
@@ -69,5 +101,13 @@ router.post('/waha/sessions/:id/stop', (req, res) => controller.stopWahaSession(
 router.get('/waha/sessions/:id/qr', (req, res) => controller.getWahaQRCode(req, res));
 router.delete('/waha/sessions/:id', (req, res) => controller.deleteWahaSession(req, res));
 router.post('/waha/sessions/:id/send', (req, res) => controller.sendWahaMessage(req, res));
+// ============================================
+// IMAGE UPLOAD
+// ============================================
+router.post('/upload-image', upload.single('image'), (req, res) => controller.uploadImage(req, res));
+// ============================================
+// AI ASSISTANT - GENERATE COPY
+// ============================================
+router.post('/ai-assistant/generate-copy', (req, res) => controller.generateAICopy(req, res));
 exports.default = router;
 //# sourceMappingURL=marketing.routes.js.map

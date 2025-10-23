@@ -1,9 +1,39 @@
 import { Router } from 'express';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 import { MarketingController } from './marketing.controller';
 import { authenticate } from '../../shared/middleware/auth.middleware';
 
 const router = Router();
 const controller = new MarketingController();
+
+// Configurar storage do multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../../../uploads/marketing');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb: any) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only images are allowed'));
+    }
+  }
+});
 
 // WAHA Webhook (no auth required) - must be before authenticate middleware
 router.post('/waha/webhook', (req, res) => controller.wahaWebhook(req, res));
@@ -77,5 +107,15 @@ router.post('/waha/sessions/:id/stop', (req, res) => controller.stopWahaSession(
 router.get('/waha/sessions/:id/qr', (req, res) => controller.getWahaQRCode(req, res));
 router.delete('/waha/sessions/:id', (req, res) => controller.deleteWahaSession(req, res));
 router.post('/waha/sessions/:id/send', (req, res) => controller.sendWahaMessage(req, res));
+
+// ============================================
+// IMAGE UPLOAD
+// ============================================
+router.post('/upload-image', upload.single('image'), (req, res) => controller.uploadImage(req, res));
+
+// ============================================
+// AI ASSISTANT - GENERATE COPY
+// ============================================
+router.post('/ai-assistant/generate-copy', (req, res) => controller.generateAICopy(req, res));
 
 export default router;

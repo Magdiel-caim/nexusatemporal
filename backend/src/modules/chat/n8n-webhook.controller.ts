@@ -985,12 +985,12 @@ export class N8NWebhookController {
               isGroup: isGroup,
             },
           },
-          {
+          mediaUrl ? {
             fileName: `${session}_${Date.now()}.${messageType}`,
             fileUrl: mediaUrl,
-            mimeType: payload._data?.mimetype || undefined,
-            fileSize: payload._data?.size || undefined,
-          }
+            mimeType: (payload._data as any)?.mimetype || undefined,
+            fileSize: (payload._data as any)?.size || undefined,
+          } : undefined
         );
       } else {
         // Mensagem de texto ou sem mídia processável
@@ -1012,7 +1012,7 @@ export class N8NWebhookController {
 
       // 3. Atualizar conversation (última mensagem, unread)
       await this.chatService.updateConversation(conversation.id, {
-        lastMessage: content || `[${messageType}]`,
+        lastMessagePreview: content || `[${messageType}]`,
         lastMessageAt: new Date(timestamp),
         isUnread: direction === 'incoming',
         unreadCount: direction === 'incoming' ? (conversation.unreadCount || 0) + 1 : conversation.unreadCount || 0,

@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAutomationDbPool = getAutomationDbPool;
 exports.query = query;
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../../database/data-source");
 /**
  * Get PostgreSQL Pool from TypeORM CrmDataSource
  *

@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { X, Send, Users, CheckSquare, Square } from 'lucide-react';
+import { X, Send, Users, CheckSquare, Square, Sparkles, Upload, Image as ImageIcon, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { BulkMessage, marketingService } from '@/services/marketingService';
+import Papa from 'papaparse';
+import { BulkMessage } from '@/services/marketingService';
 import { leadsService } from '@/services/leadsService';
 import * as Dialog from '@radix-ui/react-dialog';
 
@@ -25,6 +26,22 @@ interface BulkMessageFormProps {
   onSuccess: () => void;
 }
 
+interface WahaSession {
+  id: string;
+  name: string;
+  displayName: string;
+  phoneNumber?: string;
+  status: string;
+  isPrimary?: boolean;
+}
+
+interface Contact {
+  name: string;
+  phone: string;
+  isValid?: boolean;
+  error?: string;
+}
+
 const platformIcons: Record<string, string> = {
   whatsapp: '💬',
   instagram_dm: '📷',
@@ -43,6 +60,33 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
   const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+
+  // WAHA Sessions
+  const [wahaSessions, setWahaSessions] = useState<WahaSession[]>([]);
+  const [selectedSessionId, setSelectedSessionId] = useState<string>('');
+  const [loadingSessions, setLoadingSessions] = useState(false);
+
+  // CSV Upload
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [csvFile, setCsvFile] = useState<File | null>(null);
+  const [uploadingCSV, setUploadingCSV] = useState(false);
+
+  // AI Generation
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [showAIModal, setShowAIModal] = useState(false);
+
+  // Image Upload
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string>('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string>('');
+
+  // Randomization
+  const [minDelay, setMinDelay] = useState(1);
+  const [maxDelay, setMaxDelay] = useState(5);
+
+  // Send Mode
+  const [sendMode, setSendMode] = useState<'immediate' | 'scheduled'>('immediate');
 
   const {
     register,
@@ -77,6 +121,7 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
   useEffect(() => {
     if (isOpen) {
       loadLeads();
+      fetchWahaSessions();
     }
   }, [isOpen]);
 
@@ -87,6 +132,211 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
     } catch (error) {
       console.error('Erro ao carregar leads:', error);
       toast.error('Erro ao carregar leads');
+    }
+  };
+
+  // Fetch WAHA Sessions
+  const fetchWahaSessions = async () => {
+    setLoadingSessions(true);
+    try {
+      const response = await fetch('/api/marketing/waha/sessions', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Filtrar apenas sessões conectadas
+        const activeSessions = data.data.filter((s: WahaSession) => s.status === 'working');
+        setWahaSessions(activeSessions);
+
+        // Selecionar sessão primária automaticamente
+        const primarySession = activeSessions.find((s: WahaSession) => s.isPrimary);
+        if (primarySession) {
+          setSelectedSessionId(primarySession.id);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao buscar sessões WAHA:', error);
+      toast.error('Erro ao carregar sessões WhatsApp');
+    } finally {
+      setLoadingSessions(false);
+    }
+  };
+
+  // Validação de telefone brasileiro
+  const validateBRPhone = (phone: string): { isValid: boolean; cleaned: string; error?: string } => {
+    // Remove tudo exceto números
+    const cleaned = phone.replace(/\D/g, '');
+
+    // Verifica se tem +55
+    if (!cleaned.startsWith('55')) {
+      return { isValid: false, cleaned, error: 'Falta código do país (+55)' };
+    }
+
+    // Remove o 55
+    const withoutCountry = cleaned.substring(2);
+
+    // Verifica DDD (2 dígitos)
+    if (withoutCountry.length < 2) {
+      return { isValid: false, cleaned, error: 'DDD incompleto' };
+    }
+
+    const ddd = withoutCountry.substring(0, 2);
+    const number = withoutCountry.substring(2);
+
+    // Verifica se número tem 8 ou 9 dígitos
+    if (number.length === 9 && number[0] === '9') {
+      // Celular com 9 dígitos (padrão atual)
+      return { isValid: true, cleaned: `+55${ddd}${number}` };
+    } else if (number.length === 8) {
+      // Fixo com 8 dígitos
+      return { isValid: true, cleaned: `+55${ddd}${number}` };
+    } else {
+      return { isValid: false, cleaned, error: 'Número deve ter 8 ou 9 dígitos' };
+    }
+  };
+
+  // Parse CSV
+  const handleCSVUpload = (file: File) => {
+    setUploadingCSV(true);
+    setCsvFile(file);
+
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: (results) => {
+        const parsedContacts: Contact[] = results.data.map((row: any) => {
+          const name = row.nome || row.name || row.Name || row.NOME || '';
+          const phone = row.telefone || row.phone || row.Phone || row.TELEFONE || row.whatsapp || '';
+
+          const validation = validateBRPhone(phone);
+
+          return {
+            name: name.trim(),
+            phone: validation.cleaned,
+            isValid: validation.isValid,
+            error: validation.error
+          };
+        });
+
+        // Filtrar apenas válidos
+        const validContacts = parsedContacts.filter(c => c.isValid && c.name);
+        setContacts(validContacts);
+
+        toast.success(`${validContacts.length} contatos importados com sucesso!`);
+
+        // Avisar sobre inválidos
+        const invalidCount = parsedContacts.length - validContacts.length;
+        if (invalidCount > 0) {
+          toast.error(`${invalidCount} contatos foram ignorados (inválidos)`);
+        }
+
+        setUploadingCSV(false);
+      },
+      error: (error) => {
+        console.error('Erro ao processar CSV:', error);
+        toast.error('Erro ao processar arquivo CSV');
+        setUploadingCSV(false);
+      }
+    });
+  };
+
+  // Upload de imagem
+  const handleImageUpload = async (file: File) => {
+    // Validar tamanho (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Imagem muito grande. Máximo 5MB');
+      return;
+    }
+
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+      toast.error('Arquivo deve ser uma imagem');
+      return;
+    }
+
+    setImagePreviewUrl(URL.createObjectURL(file));
+    setUploadingImage(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch('/api/marketing/upload-image', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setImageUrl(data.url);
+        toast.success('Imagem enviada com sucesso!');
+      } else {
+        toast.error('Erro ao enviar imagem');
+        setImagePreviewUrl('');
+      }
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      toast.error('Erro ao enviar imagem');
+      setImagePreviewUrl('');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  // Geração com IA
+  const handleGenerateWithAI = async () => {
+    if (!aiPrompt.trim()) {
+      toast.error('Digite uma instrução para a IA');
+      return;
+    }
+
+    setAiGenerating(true);
+
+    try {
+      const response = await fetch('/api/marketing/ai-assistant/generate-copy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          prompt: aiPrompt,
+          context: {
+            platform: 'whatsapp',
+            audience: 'leads',
+            goal: 'engagement'
+          }
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Atualizar o campo de conteúdo usando react-hook-form
+        const contentField = document.querySelector('textarea[name="content"]') as HTMLTextAreaElement;
+        if (contentField) {
+          contentField.value = data.output.generatedText;
+          contentField.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        setShowAIModal(false);
+        setAiPrompt('');
+        toast.success('Mensagem gerada com sucesso!');
+      } else {
+        toast.error(data.message || 'Erro ao gerar mensagem');
+      }
+    } catch (error) {
+      console.error('Erro ao gerar com IA:', error);
+      toast.error('Erro ao comunicar com a IA');
+    } finally {
+      setAiGenerating(false);
     }
   };
 
@@ -128,49 +378,91 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
   };
 
   const onSubmit = async (data: BulkMessageFormData) => {
-    if (selectedLeads.length === 0) {
-      toast.error('Selecione pelo menos um destinatário');
+    // Validações
+    if (!selectedSessionId && platform === 'whatsapp') {
+      toast.error('Selecione uma sessão WhatsApp');
+      return;
+    }
+
+    if (contacts.length === 0 && selectedLeads.length === 0) {
+      toast.error('Importe uma lista de contatos ou selecione leads');
+      return;
+    }
+
+    if (!content.trim()) {
+      toast.error('Digite uma mensagem');
+      return;
+    }
+
+    if (sendMode === 'scheduled' && (!data.scheduledDate || !data.scheduledTime)) {
+      toast.error('Selecione data e hora do agendamento');
       return;
     }
 
     try {
       setLoading(true);
 
-      let scheduledAt: string | undefined;
-      if (data.scheduledDate && data.scheduledTime) {
-        scheduledAt = new Date(`${data.scheduledDate}T${data.scheduledTime}`).toISOString();
+      let scheduledFor: string | undefined;
+      if (sendMode === 'scheduled' && data.scheduledDate && data.scheduledTime) {
+        scheduledFor = new Date(`${data.scheduledDate}T${data.scheduledTime}`).toISOString();
       }
 
-      const messageData = {
-        name: data.name,
-        platform: data.platform,
-        content: data.content,
-        scheduledAt,
-        status: scheduledAt ? ('scheduled' as const) : ('draft' as const),
-        totalRecipients: selectedLeads.length,
-        sentCount: 0,
-        deliveredCount: 0,
-        openedCount: 0,
-        clickedCount: 0,
-        failedCount: 0,
-      };
+      // Usar contatos do CSV se disponível, caso contrário usar leads selecionados
+      const recipientsList = contacts.length > 0
+        ? contacts
+        : selectedLeads.map(leadId => {
+            const lead = leads.find(l => l.id === leadId);
+            return {
+              name: lead?.name || '',
+              phone: lead?.phone || ''
+            };
+          });
 
-      if (message) {
-        await marketingService.createBulkMessage(messageData); // API doesn't support update yet
-        toast.success('Mensagem atualizada com sucesso!');
+      const response = await fetch('/api/marketing/bulk-messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          sessionId: selectedSessionId,
+          contacts: recipientsList,
+          message: content,
+          imageUrl: imageUrl || null,
+          minDelaySeconds: minDelay,
+          maxDelaySeconds: maxDelay,
+          scheduledFor: scheduledFor || null
+        })
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success(
+          sendMode === 'immediate'
+            ? `Disparo iniciado! ${recipientsList.length} mensagens na fila`
+            : `Disparo agendado para ${new Date(scheduledFor!).toLocaleString()}`
+        );
+
+        // Resetar form
+        reset();
+        setContacts([]);
+        setSelectedLeads([]);
+        setSelectAll(false);
+        setImagePreviewUrl('');
+        setImageUrl('');
+        setCsvFile(null);
+        setSearchTerm('');
+        setSendMode('immediate');
+
+        onSuccess();
+        onClose();
       } else {
-        await marketingService.createBulkMessage(messageData);
-        toast.success(`Mensagem criada com sucesso! ${selectedLeads.length} destinatários selecionados.`);
+        toast.error(result.message || 'Erro ao criar disparo');
       }
-
-      reset();
-      setSelectedLeads([]);
-      setSelectAll(false);
-      onSuccess();
-      onClose();
     } catch (error) {
-      console.error('Erro ao salvar mensagem:', error);
-      toast.error('Erro ao salvar mensagem');
+      console.error('Erro ao criar disparo:', error);
+      toast.error('Erro ao comunicar com o servidor');
     } finally {
       setLoading(false);
     }
@@ -246,6 +538,158 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
                   </div>
                 </div>
 
+                {/* WAHA Session Selection (only for WhatsApp) */}
+                {platform === 'whatsapp' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Sessão WhatsApp *
+                    </label>
+
+                    {loadingSessions ? (
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        Carregando sessões...
+                      </div>
+                    ) : wahaSessions.length === 0 ? (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p className="text-sm text-yellow-800">
+                          ⚠️ Nenhuma sessão WhatsApp conectada.
+                        </p>
+                        <a
+                          href="/integracoes-sociais"
+                          className="text-sm text-blue-600 hover:underline mt-1 inline-block"
+                        >
+                          Configurar sessões WhatsApp →
+                        </a>
+                      </div>
+                    ) : (
+                      <select
+                        value={selectedSessionId}
+                        onChange={(e) => setSelectedSessionId(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:text-white"
+                        required
+                      >
+                        <option value="">Selecione uma sessão</option>
+                        {wahaSessions.map((session) => (
+                          <option key={session.id} value={session.id}>
+                            {session.displayName} {session.phoneNumber ? `(${session.phoneNumber})` : ''}
+                            {session.status === 'working' ? ' ✓' : ''}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+
+                    {selectedSessionId && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Os disparos serão enviados através desta sessão WhatsApp
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* CSV Upload (only for WhatsApp) */}
+                {platform === 'whatsapp' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Importar Lista de Contatos (CSV)
+                    </label>
+
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+                      <input
+                        type="file"
+                        accept=".csv"
+                        onChange={(e) => {
+                          if (e.target.files?.[0]) {
+                            handleCSVUpload(e.target.files[0]);
+                          }
+                        }}
+                        className="hidden"
+                        id="csv-upload"
+                        disabled={uploadingCSV}
+                      />
+
+                      <label
+                        htmlFor="csv-upload"
+                        className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                      >
+                        <Upload size={18} />
+                        Selecionar Arquivo CSV
+                      </label>
+
+                      {uploadingCSV && (
+                        <div className="mt-2 text-sm text-gray-500">
+                          Processando arquivo...
+                        </div>
+                      )}
+
+                      {csvFile && !uploadingCSV && (
+                        <div className="mt-2 text-sm text-gray-600">
+                          Arquivo: {csvFile.name}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Preview dos contatos */}
+                    {contacts.length > 0 && (
+                      <div className="mt-4 bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-green-800">
+                            ✓ {contacts.length} contatos prontos para envio
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => setContacts([])}
+                            className="text-xs text-red-600 hover:underline"
+                          >
+                            Limpar lista
+                          </button>
+                        </div>
+
+                        <div className="max-h-40 overflow-y-auto">
+                          <table className="w-full text-xs">
+                            <thead className="bg-green-100">
+                              <tr>
+                                <th className="text-left p-2">Nome</th>
+                                <th className="text-left p-2">Telefone</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {contacts.slice(0, 10).map((contact, index) => (
+                                <tr key={index} className="border-t border-green-200">
+                                  <td className="p-2">{contact.name}</td>
+                                  <td className="p-2">{contact.phone}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                          {contacts.length > 10 && (
+                            <p className="text-xs text-gray-500 mt-2 text-center">
+                              ... e mais {contacts.length - 10} contatos
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Instruções */}
+                    <div className="mt-2 text-xs text-gray-500">
+                      <p className="font-medium mb-1">Formato do CSV:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Colunas: <code className="bg-gray-100 px-1">nome,telefone</code></li>
+                        <li>Telefone: formato +5511999999999 ou 11999999999</li>
+                        <li>Aceita 8 ou 9 dígitos (fixo ou celular)</li>
+                      </ul>
+                      <a
+                        href="/exemplo-contatos.csv"
+                        download
+                        className="text-blue-600 hover:underline mt-1 inline-block"
+                      >
+                        Baixar arquivo de exemplo →
+                      </a>
+                    </div>
+                  </div>
+                )}
+
                 {/* Variables Helper */}
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
                   <p className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-2">
@@ -267,9 +711,19 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
 
                 {/* Content */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Mensagem *
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Mensagem *
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAIModal(true)}
+                      className="inline-flex items-center gap-1 px-3 py-1 text-xs bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600"
+                    >
+                      <Sparkles size={14} />
+                      Usar IA
+                    </button>
+                  </div>
                   <textarea
                     {...register('content')}
                     rows={8}
@@ -284,8 +738,163 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
                   </div>
                 </div>
 
-                {/* Scheduling */}
-                <div className="grid grid-cols-2 gap-4">
+                {/* Image Upload (only for WhatsApp) */}
+                {platform === 'whatsapp' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Imagem (Opcional)
+                    </label>
+
+                    <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4">
+                      {!imagePreviewUrl ? (
+                        <div className="text-center">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => {
+                              if (e.target.files?.[0]) {
+                                handleImageUpload(e.target.files[0]);
+                              }
+                            }}
+                            className="hidden"
+                            id="image-upload"
+                            disabled={uploadingImage}
+                          />
+                          <label
+                            htmlFor="image-upload"
+                            className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg"
+                          >
+                            <ImageIcon size={18} />
+                            Adicionar Imagem
+                          </label>
+                          <p className="text-xs text-gray-500 mt-2">
+                            PNG, JPG ou GIF • Máx. 5MB
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="relative">
+                          <img
+                            src={imagePreviewUrl}
+                            alt="Preview"
+                            className="w-full h-48 object-cover rounded-lg"
+                          />
+                          {uploadingImage && (
+                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                            </div>
+                          )}
+                          {!uploadingImage && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setImagePreviewUrl('');
+                                setImageUrl('');
+                              }}
+                              className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Randomization Controls (only for WhatsApp) */}
+                {platform === 'whatsapp' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Intervalo entre Mensagens
+                    </label>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Mínimo (segundos)</label>
+                        <input
+                          type="number"
+                          value={minDelay}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setMinDelay(Math.max(1, Math.min(val, maxDelay - 1)));
+                          }}
+                          min={1}
+                          max={60}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-xs text-gray-500 mb-1 block">Máximo (segundos)</label>
+                        <input
+                          type="number"
+                          value={maxDelay}
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setMaxDelay(Math.max(minDelay + 1, Math.min(val, 60)));
+                          }}
+                          min={1}
+                          max={60}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-600 dark:bg-gray-700 dark:text-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-2 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <p className="text-xs text-blue-800">
+                        ⏱️ Tempo aleatório entre <strong>{minDelay}s</strong> e <strong>{maxDelay}s</strong> entre cada mensagem
+                      </p>
+                      <p className="text-xs text-blue-600 mt-1">
+                        Tempo estimado total: {Math.ceil(((contacts.length || selectedLeads.length) * (minDelay + maxDelay) / 2) / 60)} minutos
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Send Mode */}
+                {platform === 'whatsapp' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Quando Enviar?
+                    </label>
+
+                    <div className="space-y-3">
+                      <label className="flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <input
+                          type="radio"
+                          name="sendMode"
+                          value="immediate"
+                          checked={sendMode === 'immediate'}
+                          onChange={() => setSendMode('immediate')}
+                          className="w-4 h-4 text-blue-500"
+                        />
+                        <div>
+                          <div className="font-medium">Enviar Imediatamente</div>
+                          <div className="text-xs text-gray-500">Os disparos começarão assim que você clicar em "Enviar"</div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-center gap-3 p-3 border border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <input
+                          type="radio"
+                          name="sendMode"
+                          value="scheduled"
+                          checked={sendMode === 'scheduled'}
+                          onChange={() => setSendMode('scheduled')}
+                          className="w-4 h-4 text-blue-500"
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium">Agendar Envio</div>
+                          <div className="text-xs text-gray-500 mb-2">Escolha data e hora para iniciar os disparos</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* Scheduling (show only if scheduled mode or not WhatsApp) */}
+                {(sendMode === 'scheduled' || platform !== 'whatsapp') && (
+                  <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Data de Envio (opcional)
@@ -307,6 +916,7 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
                     />
                   </div>
                 </div>
+                )}
               </div>
 
               {/* Right Column - Recipients */}
@@ -397,7 +1007,7 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
               </button>
               <button
                 type="submit"
-                disabled={loading || selectedLeads.length === 0}
+                disabled={loading || (selectedLeads.length === 0 && contacts.length === 0)}
                 className="flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <Send size={18} />
@@ -405,6 +1015,51 @@ export default function BulkMessageForm({ message, isOpen, onClose, onSuccess }:
               </button>
             </div>
           </form>
+
+          {/* AI Modal */}
+          {showAIModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <Sparkles size={20} className="text-purple-500" />
+                    Gerar Mensagem com IA
+                  </h3>
+                  <button
+                    onClick={() => setShowAIModal(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <textarea
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white mb-4"
+                  placeholder="Ex: Criar mensagem de vendas para curso online de marketing, tom amigável e profissional, incluir call-to-action"
+                />
+
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowAIModal(false)}
+                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100"
+                    disabled={aiGenerating}
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleGenerateWithAI}
+                    className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 disabled:opacity-50"
+                    disabled={aiGenerating}
+                  >
+                    {aiGenerating ? 'Gerando...' : 'Gerar'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

@@ -48,6 +48,9 @@ app.use(morgan('combined', { stream: { write: (message) => logger.info(message.t
 // Make io accessible to routes
 app.set('io', io);
 
+// Serve static files from uploads directory
+app.use('/uploads', express.static('uploads'));
+
 // Routes
 app.use('/api', routes);
 
@@ -74,6 +77,11 @@ initializeWebSocketService(io);
 import WhatsAppSyncService from '@/services/WhatsAppSyncService';
 let whatsappSyncService: WhatsAppSyncService | null = null;
 
+// ============================================
+// BULK MESSAGE WORKER - BullMQ
+// ============================================
+import '@/modules/marketing/workers/bulk-message.worker';
+
 const PORT = process.env.API_PORT || 3001;
 
 // Initialize databases and start server
@@ -96,6 +104,7 @@ Promise.all([
       logger.info(`🚀 Server running on port ${PORT}`);
       logger.info(`📡 Environment: ${process.env.NODE_ENV}`);
       logger.info(`🔗 API URL: ${process.env.BACKEND_URL}`);
+      logger.info(`⚙️  Bulk message worker started and listening for jobs`);
     });
   })
   .catch((error) => {

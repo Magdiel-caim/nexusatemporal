@@ -515,7 +515,7 @@ class ChatController {
             const sessions = await response.json();
             console.log(`[Channels] ${sessions.length} sessões encontradas no WAHA`);
             // Importar AppDataSource para queries
-            const { AppDataSource } = await Promise.resolve().then(() => __importStar(require('@/database/data-source')));
+            const { AppDataSource } = await Promise.resolve().then(() => __importStar(require('../../database/data-source')));
             // 2. Para cada sessão, contar conversas
             const channels = await Promise.all(sessions.map(async (session) => {
                 try {

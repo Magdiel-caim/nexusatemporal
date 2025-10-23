@@ -34,9 +34,9 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.N8NWebhookController = void 0;
-const data_source_1 = require("@/database/data-source");
-const media_upload_service_1 = require("@/services/media-upload.service");
-const logger_1 = require("@/shared/utils/logger");
+const data_source_1 = require("../../database/data-source");
+const media_upload_service_1 = require("../../services/media-upload.service");
+const logger_1 = require("../../shared/utils/logger");
 const chat_service_1 = require("./chat.service");
 class N8NWebhookController {
     mediaUploadService = new media_upload_service_1.MediaUploadService();
@@ -62,7 +62,7 @@ class N8NWebhookController {
                 });
             }
             // Importar funções S3
-            const { uploadFile } = await Promise.resolve().then(() => __importStar(require('@/integrations/idrive/s3-client')));
+            const { uploadFile } = await Promise.resolve().then(() => __importStar(require('../../integrations/idrive/s3-client')));
             // Converter base64 para Buffer
             const base64Data = mediaBase64.replace(/^data:.+;base64,/, '');
             const buffer = Buffer.from(base64Data, 'base64');
@@ -843,12 +843,12 @@ class N8NWebhookController {
                         rawPayload: wahaPayload,
                         isGroup: isGroup,
                     },
-                }, {
+                }, mediaUrl ? {
                     fileName: `${session}_${Date.now()}.${messageType}`,
                     fileUrl: mediaUrl,
                     mimeType: payload._data?.mimetype || undefined,
                     fileSize: payload._data?.size || undefined,
-                });
+                } : undefined);
             }
             else {
                 // Mensagem de texto ou sem mídia processável
@@ -869,7 +869,7 @@ class N8NWebhookController {
             }
             // 3. Atualizar conversation (última mensagem, unread)
             await this.chatService.updateConversation(conversation.id, {
-                lastMessage: content || `[${messageType}]`,
+                lastMessagePreview: content || `[${messageType}]`,
                 lastMessageAt: new Date(timestamp),
                 isUnread: direction === 'incoming',
                 unreadCount: direction === 'incoming' ? (conversation.unreadCount || 0) + 1 : conversation.unreadCount || 0,

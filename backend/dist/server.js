@@ -13,11 +13,11 @@ const morgan_1 = __importDefault(require("morgan"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
-const data_source_1 = require("@/database/data-source");
-const error_handler_1 = require("@/shared/middleware/error-handler");
-const logger_1 = require("@/shared/utils/logger");
-const routes_1 = __importDefault(require("@/routes"));
-const websocket_service_1 = require("@/modules/chat/websocket.service");
+const data_source_1 = require("./database/data-source");
+const error_handler_1 = require("./shared/middleware/error-handler");
+const logger_1 = require("./shared/utils/logger");
+const routes_1 = __importDefault(require("./routes"));
+const websocket_service_1 = require("./modules/chat/websocket.service");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 exports.app = app;
@@ -48,6 +48,8 @@ app.use((0, morgan_1.default)('combined', { stream: { write: (message) => logger
 // }
 // Make io accessible to routes
 app.set('io', io);
+// Serve static files from uploads directory
+app.use('/uploads', express_1.default.static('uploads'));
 // Routes
 app.use('/api', routes_1.default);
 // Health check
@@ -67,8 +69,12 @@ app.use(error_handler_1.errorHandler);
 // Remove quando webhooks WAHA funcionarem
 // Para desativar: ENABLE_WHATSAPP_POLLING=false
 // ============================================
-const WhatsAppSyncService_1 = __importDefault(require("@/services/WhatsAppSyncService"));
+const WhatsAppSyncService_1 = __importDefault(require("./services/WhatsAppSyncService"));
 let whatsappSyncService = null;
+// ============================================
+// BULK MESSAGE WORKER - BullMQ
+// ============================================
+require("./modules/marketing/workers/bulk-message.worker");
 const PORT = process.env.API_PORT || 3001;
 // Initialize databases and start server
 Promise.all([
@@ -88,6 +94,7 @@ Promise.all([
         logger_1.logger.info(`🚀 Server running on port ${PORT}`);
         logger_1.logger.info(`📡 Environment: ${process.env.NODE_ENV}`);
         logger_1.logger.info(`🔗 API URL: ${process.env.BACKEND_URL}`);
+        logger_1.logger.info(`⚙️  Bulk message worker started and listening for jobs`);
     });
 })
     .catch((error) => {
