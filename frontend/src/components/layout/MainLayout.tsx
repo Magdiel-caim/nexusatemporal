@@ -9,7 +9,6 @@ import {
   FileText,
   DollarSign,
   Package,
-  Bot,
   Users2,
   BarChart3,
   Megaphone,
@@ -18,7 +17,6 @@ import {
   Menu,
   X,
   TrendingUp,
-  Instagram,
 } from 'lucide-react';
 import logoFull from '@/assets/images/logo-full.png';
 import logoIcon from '@/assets/images/logo-icon.png';
@@ -61,17 +59,6 @@ const allMenuItems: MenuItem[] = [
     label: 'Estoque',
     path: '/estoque',
     roles: ['superadmin', 'owner', 'admin'] // USER não tem acesso
-  },
-  {
-    icon: Bot,
-    label: 'Automações',
-    path: '/automation',
-    roles: ['superadmin', 'owner', 'admin'] // Apenas administradores
-  },
-  {
-    icon: Instagram,
-    label: 'Redes Sociais',
-    path: '/integracoes-sociais',
   },
   { icon: Users2, label: 'Colaboração', path: '/colaboracao' },
   {

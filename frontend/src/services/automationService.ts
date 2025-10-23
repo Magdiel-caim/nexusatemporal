@@ -135,7 +135,7 @@ export const integrationService = {
    */
   async list(type?: string): Promise<Integration[]> {
     const params = type ? { type } : {};
-    const response = await api.get('/automation/integrations', { params });
+    const response = await api.get('/marketing/automation/integrations', { params });
     return response.data.data;
   },
 
@@ -143,7 +143,7 @@ export const integrationService = {
    * Get integration by ID
    */
   async getById(id: string): Promise<Integration> {
-    const response = await api.get(`/automation/integrations/${id}`);
+    const response = await api.get(`/marketing/automation/integrations/${id}`);
     return response.data.data;
   },
 
@@ -151,7 +151,7 @@ export const integrationService = {
    * Create new integration
    */
   async create(data: CreateIntegrationDto): Promise<Integration> {
-    const response = await api.post('/automation/integrations', data);
+    const response = await api.post('/marketing/automation/integrations', data);
     return response.data.data;
   },
 
@@ -159,7 +159,7 @@ export const integrationService = {
    * Update integration
    */
   async update(id: string, data: Partial<CreateIntegrationDto>): Promise<Integration> {
-    const response = await api.put(`/automation/integrations/${id}`, data);
+    const response = await api.put(`/marketing/automation/integrations/${id}`, data);
     return response.data.data;
   },
 
@@ -167,14 +167,14 @@ export const integrationService = {
    * Delete integration
    */
   async delete(id: string): Promise<void> {
-    await api.delete(`/automation/integrations/${id}`);
+    await api.delete(`/marketing/automation/integrations/${id}`);
   },
 
   /**
    * Test integration connection
    */
   async test(id: string): Promise<TestIntegrationResult> {
-    const response = await api.post(`/automation/integrations/${id}/test`);
+    const response = await api.post(`/marketing/automation/integrations/${id}/test`);
     return response.data;
   },
 };
@@ -188,7 +188,7 @@ export const triggerService = {
    * List all triggers
    */
   async list(filters?: { active?: boolean; event?: string }): Promise<Trigger[]> {
-    const response = await api.get('/automation/triggers', { params: filters });
+    const response = await api.get('/marketing/automation/triggers', { params: filters });
     return response.data.data;
   },
 
@@ -196,7 +196,7 @@ export const triggerService = {
    * Get trigger by ID
    */
   async getById(id: string): Promise<Trigger> {
-    const response = await api.get(`/automation/triggers/${id}`);
+    const response = await api.get(`/marketing/automation/triggers/${id}`);
     return response.data.data;
   },
 
@@ -204,7 +204,7 @@ export const triggerService = {
    * Create new trigger
    */
   async create(data: CreateTriggerDto): Promise<Trigger> {
-    const response = await api.post('/automation/triggers', data);
+    const response = await api.post('/marketing/automation/triggers', data);
     return response.data.data;
   },
 
@@ -212,7 +212,7 @@ export const triggerService = {
    * Update trigger
    */
   async update(id: string, data: Partial<CreateTriggerDto>): Promise<Trigger> {
-    const response = await api.put(`/automation/triggers/${id}`, data);
+    const response = await api.put(`/marketing/automation/triggers/${id}`, data);
     return response.data.data;
   },
 
@@ -220,14 +220,14 @@ export const triggerService = {
    * Delete trigger
    */
   async delete(id: string): Promise<void> {
-    await api.delete(`/automation/triggers/${id}`);
+    await api.delete(`/marketing/automation/triggers/${id}`);
   },
 
   /**
    * Toggle trigger active status
    */
   async toggle(id: string): Promise<Trigger> {
-    const response = await api.patch(`/automation/triggers/${id}/toggle`);
+    const response = await api.patch(`/marketing/automation/triggers/${id}/toggle`);
     return response.data.data;
   },
 
@@ -235,7 +235,7 @@ export const triggerService = {
    * Get trigger statistics
    */
   async getStats(): Promise<TriggerStats> {
-    const response = await api.get('/automation/triggers/stats');
+    const response = await api.get('/marketing/automation/triggers/stats');
     return response.data.data;
   },
 
@@ -243,7 +243,7 @@ export const triggerService = {
    * Get available event types
    */
   async getEventTypes(): Promise<string[]> {
-    const response = await api.get('/automation/triggers/events');
+    const response = await api.get('/marketing/automation/triggers/events');
     return response.data.data;
   },
 };
@@ -281,7 +281,7 @@ export const eventService = {
    * List events with filters
    */
   async list(filters?: QueryEventsDto): Promise<AutomationEvent[]> {
-    const response = await api.get('/automation/events/v2', { params: filters });
+    const response = await api.get('/marketing/automation/events/v2', { params: filters });
     const events = response.data.data || [];
     console.log('[eventService] Raw events from API:', events);
     const transformed = events.map(transformEvent);
@@ -293,7 +293,7 @@ export const eventService = {
    * Get event by ID
    */
   async getById(id: string): Promise<AutomationEvent> {
-    const response = await api.get(`/automation/events/v2/${id}`);
+    const response = await api.get(`/marketing/automation/events/v2/${id}`);
     return transformEvent(response.data.data);
   },
 
@@ -302,7 +302,7 @@ export const eventService = {
    */
   async getStats(startDate?: string, endDate?: string): Promise<EventStats> {
     const params = { startDate, endDate };
-    const response = await api.get('/automation/events/v2/stats', { params });
+    const response = await api.get('/marketing/automation/events/v2/stats', { params });
     return response.data.data;
   },
 
@@ -310,7 +310,7 @@ export const eventService = {
    * Get available event types
    */
   async getEventTypes(): Promise<string[]> {
-    const response = await api.get('/automation/events/v2/types');
+    const response = await api.get('/marketing/automation/events/v2/types');
     return response.data.data;
   },
 
@@ -318,7 +318,7 @@ export const eventService = {
    * Cleanup old events
    */
   async cleanup(daysToKeep: number): Promise<{ deleted: number }> {
-    const response = await api.delete('/automation/events/v2/cleanup', {
+    const response = await api.delete('/marketing/automation/events/v2/cleanup', {
       params: { daysToKeep }
     });
     return response.data;

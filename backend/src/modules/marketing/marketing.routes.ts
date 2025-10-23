@@ -118,4 +118,11 @@ router.post('/upload-image', upload.single('image'), (req, res) => controller.up
 // ============================================
 router.post('/ai-assistant/generate-copy', (req, res) => controller.generateAICopy(req, res));
 
+// ============================================
+// AI INTEGRATIONS CONFIG
+// ============================================
+router.get('/ai/configs', (req, res) => controller.listAIConfigs(req, res));
+router.post('/ai/configs', (req, res) => controller.createOrUpdateAIConfig(req, res));
+router.delete('/ai/configs/:provider', (req, res) => controller.deleteAIConfig(req, res));
+
 export default router;

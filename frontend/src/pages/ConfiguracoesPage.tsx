@@ -5,8 +5,9 @@
  */
 
 import React, { useState } from 'react';
-import { Settings, CreditCard, Bell, Users, Database, Shield, Palette } from 'lucide-react';
+import { Settings, CreditCard, Bell, Users, Database, Shield, Palette, Bot } from 'lucide-react';
 import UsersManagement from '@/components/users/UsersManagement';
+import AIIntegrationsTab from '@/components/settings/AIIntegrationsTab';
 
 interface ConfigSection {
   id: string;
@@ -24,6 +25,12 @@ const ConfiguracoesPage: React.FC = () => {
       label: 'Integrações',
       icon: <CreditCard className="w-5 h-5" />,
       description: 'Gateways de pagamento, APIs e serviços externos',
+    },
+    {
+      id: 'ai-integrations',
+      label: 'Integrações de IA',
+      icon: <Bot className="w-5 h-5" />,
+      description: 'OpenAI, Claude, Gemini, OpenRouter e outras IAs',
     },
     {
       id: 'notificacoes',
@@ -165,6 +172,9 @@ const ConfiguracoesPage: React.FC = () => {
             </div>
           </div>
         );
+
+      case 'ai-integrations':
+        return <AIIntegrationsTab />;
 
       case 'notificacoes':
         return (

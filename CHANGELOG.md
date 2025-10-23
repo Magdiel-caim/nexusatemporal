@@ -2,6 +2,85 @@
 
 ---
 
+## 💬 SESSÃO B: v120.5 - CORREÇÃO CHAT URLs + DIAGNÓSTICO (2025-10-23)
+
+### 📝 RESUMO
+**Versão**: v120.5-fix-chat-urls
+**Data**: 2025-10-23 02:30-02:45 UTC
+**Status**: ⚠️ **PARCIALMENTE RESOLVIDO** (erro persiste segundo usuário)
+**Documentação**: `PROXIMA_SESSAO_B_v120_5.md`, `CORRECAO_v120_5_CHAT_URLS.md`
+
+### 🚨 PROBLEMA REPORTADO
+Usuário reportou URLs malformados no chat:
+```
+Erro: https://api.nexusatemporal.com.br/apidata:image/png;base64,...
+Esperado: data:image/png;base64,...
+```
+
+### 🔍 CAUSA IDENTIFICADA
+Frontend v120.4-ai-integrations foi buildado **INCORRETAMENTE** usando Dockerfile de DEV:
+- ❌ Rodando `npm run dev` (Vite dev server)
+- ❌ Porta 3000 (dev)
+- ❌ Tamanho 484MB (dev)
+- ✅ Deveria rodar `nginx` (production)
+
+### ✅ CORREÇÃO APLICADA
+
+#### v120.5-fix-chat-urls
+**Mudanças**:
+1. ✅ Rebuild com `Dockerfile.prod` correto
+2. ✅ Deploy com nginx production
+3. ✅ Correção porta Traefik (80)
+4. ✅ Sistema acessível (HTTP 200)
+
+**Build**:
+```bash
+docker build -t nexus-frontend:v120.5-fix-chat-urls -f frontend/Dockerfile.prod frontend/
+docker service update --image nexus-frontend:v120.5-fix-chat-urls nexus_frontend
+docker service update --label-add traefik.http.services.nexusfrontend.loadbalancer.server.port=80 nexus_frontend
+```
+
+**Comparação**:
+| Aspecto | v120.4 ERRADO | v120.5 CORRETO |
+|---------|---------------|----------------|
+| Servidor | Vite Dev | Nginx Prod |
+| Comando | `npm run dev` | `nginx -g "daemon off;"` |
+| Porta | 3000 | 80 |
+| Tamanho | 484MB | 58MB |
+
+### ⚠️ STATUS ATUAL
+- ✅ Nginx rodando corretamente
+- ✅ Assets carregando (index-0UigDgzX.js)
+- ✅ HTTP 200 em https://one.nexusatemporal.com.br
+- ❌ **Usuário reporta que erro persiste**
+
+### 🎯 PRÓXIMA SESSÃO DEVE
+
+**Investigar**:
+1. Cache do navegador (MAIS PROVÁVEL)
+2. Endpoint `/chat/media/:messageId` existe no backend v120.4?
+3. Hook `useMediaUrl` sendo usado corretamente?
+4. Console do navegador (pedir screenshot ao usuário)
+
+**Script de Diagnóstico**: Ver `PROXIMA_SESSAO_B_v120_5.md`
+
+**Soluções possíveis**:
+- Opção 1: Pedir hard refresh (Ctrl+Shift+R)
+- Opção 2: Deploy backend v120.6 com media-proxy.controller
+- Opção 3: Deploy v122 completo (após corrigir TypeORM)
+
+### 📁 ARQUIVOS CRIADOS/MODIFICADOS
+- ✅ `PROXIMA_SESSAO_B_v120_5.md` - Guia detalhado próxima sessão
+- ✅ `CORRECAO_v120_5_CHAT_URLS.md` - Documentação da correção
+- ✅ `CHANGELOG.md` - Este arquivo
+
+### 🏷️ TAGS GIT
+```bash
+git tag v120.5-fix-chat-urls
+```
+
+---
+
 ## 🤖 SESSÃO C: v120.1-v120.4 - SISTEMA DE INTEGRAÇÕES DE IA (2025-10-23)
 
 ### 📝 RESUMO

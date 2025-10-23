@@ -12,10 +12,8 @@ import ProntuariosPage from './pages/ProntuariosPage';
 import FinanceiroPage from './pages/FinanceiroPage';
 import VendasPage from './pages/Vendas/VendasPage';
 import EstoquePage from './pages/EstoquePage';
-import AutomationPage from './pages/AutomationPage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
-import IntegracoesSociaisPage from './pages/IntegracoesSociaisPage';
 import NotificaMeCallbackPage from './pages/NotificaMeCallbackPage';
 import BIDashboard from './pages/BI/BIDashboard';
 import MarketingPage from './pages/MarketingPage';
@@ -134,13 +132,7 @@ function App() {
           />
           <Route
             path="/automation"
-            element={
-              <ProtectedRoute>
-                <MainLayout>
-                  <AutomationPage />
-                </MainLayout>
-              </ProtectedRoute>
-            }
+            element={<Navigate to="/marketing" replace />}
           />
           <Route
             path="/bi"
@@ -190,13 +182,7 @@ function App() {
           />
           <Route
             path="/integracoes-sociais"
-            element={
-              <ProtectedRoute>
-                <MainLayout>
-                  <IntegracoesSociaisPage />
-                </MainLayout>
-              </ProtectedRoute>
-            }
+            element={<Navigate to="/marketing" replace />}
           />
           <Route
             path="/integracoes-sociais/callback"

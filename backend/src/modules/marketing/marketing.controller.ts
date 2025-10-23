@@ -1051,4 +1051,82 @@ export class MarketingController {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  // ============================================
+  // AI INTEGRATIONS CONFIG
+  // ============================================
+
+  async listAIConfigs(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const aiConfigService = (await import('./ai-config.service')).default;
+      const configs = await aiConfigService.listConfigs(tenantId);
+
+      res.json({ success: true, data: configs });
+    } catch (error: any) {
+      console.error('[MarketingController] List AI configs error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async createOrUpdateAIConfig(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { provider, apiKey, model, isActive } = req.body;
+
+      if (!provider || !apiKey || !model) {
+        res.status(400).json({ success: false, message: 'Missing required fields' });
+        return;
+      }
+
+      const aiConfigService = (await import('./ai-config.service')).default;
+      const config = await aiConfigService.upsertConfig({
+        tenant_id: tenantId,
+        provider,
+        api_key: apiKey,
+        model,
+        is_active: isActive !== false,
+      });
+
+      res.json({ success: true, data: config });
+    } catch (error: any) {
+      console.error('[MarketingController] Create/Update AI config error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async deleteAIConfig(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+      const { provider } = req.params;
+
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const aiConfigService = (await import('./ai-config.service')).default;
+      const deleted = await aiConfigService.deleteConfig(tenantId, provider);
+
+      if (!deleted) {
+        res.status(404).json({ success: false, message: 'Config not found' });
+        return;
+      }
+
+      res.json({ success: true, message: 'Config deleted' });
+    } catch (error: any) {
+      console.error('[MarketingController] Delete AI config error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }

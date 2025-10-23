@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MarketingController = void 0;
 const bulk_message_worker_1 = require("./workers/bulk-message.worker");
@@ -900,6 +933,73 @@ class MarketingController {
         }
         catch (error) {
             console.error('[MarketingController] Generate copy error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
+    // ============================================
+    // AI INTEGRATIONS CONFIG
+    // ============================================
+    async listAIConfigs(req, res) {
+        try {
+            const tenantId = req.user?.tenantId;
+            if (!tenantId) {
+                res.status(401).json({ success: false, message: 'Unauthorized' });
+                return;
+            }
+            const aiConfigService = (await Promise.resolve().then(() => __importStar(require('./ai-config.service')))).default;
+            const configs = await aiConfigService.listConfigs(tenantId);
+            res.json({ success: true, data: configs });
+        }
+        catch (error) {
+            console.error('[MarketingController] List AI configs error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
+    async createOrUpdateAIConfig(req, res) {
+        try {
+            const tenantId = req.user?.tenantId;
+            if (!tenantId) {
+                res.status(401).json({ success: false, message: 'Unauthorized' });
+                return;
+            }
+            const { provider, apiKey, model, isActive } = req.body;
+            if (!provider || !apiKey || !model) {
+                res.status(400).json({ success: false, message: 'Missing required fields' });
+                return;
+            }
+            const aiConfigService = (await Promise.resolve().then(() => __importStar(require('./ai-config.service')))).default;
+            const config = await aiConfigService.upsertConfig({
+                tenant_id: tenantId,
+                provider,
+                api_key: apiKey,
+                model,
+                is_active: isActive !== false,
+            });
+            res.json({ success: true, data: config });
+        }
+        catch (error) {
+            console.error('[MarketingController] Create/Update AI config error:', error);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    }
+    async deleteAIConfig(req, res) {
+        try {
+            const tenantId = req.user?.tenantId;
+            const { provider } = req.params;
+            if (!tenantId) {
+                res.status(401).json({ success: false, message: 'Unauthorized' });
+                return;
+            }
+            const aiConfigService = (await Promise.resolve().then(() => __importStar(require('./ai-config.service')))).default;
+            const deleted = await aiConfigService.deleteConfig(tenantId, provider);
+            if (!deleted) {
+                res.status(404).json({ success: false, message: 'Config not found' });
+                return;
+            }
+            res.json({ success: true, message: 'Config deleted' });
+        }
+        catch (error) {
+            console.error('[MarketingController] Delete AI config error:', error);
             res.status(500).json({ success: false, message: error.message });
         }
     }
