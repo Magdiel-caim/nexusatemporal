@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import NotificaMeConfig from '@/components/integrations/NotificaMeConfig';
 import { NotificaMeChannels } from '@/components/integrations/NotificaMeChannels';
+import { MetaInstagramConnect } from '@/components/integrations/MetaInstagramConnect';
 import { Instagram, MessageCircle, Bot, ExternalLink } from 'lucide-react';
 
 const IntegracoesSociaisPage: React.FC = () => {
@@ -36,11 +37,15 @@ const IntegracoesSociaisPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="notificame" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+      <Tabs defaultValue="meta-direct" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="meta-direct" className="flex items-center gap-2">
+            <Instagram className="h-4 w-4" />
+            Instagram Direct (Meta API)
+          </TabsTrigger>
           <TabsTrigger value="notificame" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />
-            Instagram & Messenger
+            NotificaMe Hub
           </TabsTrigger>
           <TabsTrigger value="whatsapp" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" />
@@ -52,7 +57,12 @@ const IntegracoesSociaisPage: React.FC = () => {
           </TabsTrigger>
         </TabsList>
 
-        {/* Instagram & Messenger */}
+        {/* Meta Direct API - Instagram */}
+        <TabsContent value="meta-direct" className="mt-6">
+          <MetaInstagramConnect />
+        </TabsContent>
+
+        {/* NotificaMe Hub - Instagram & Messenger */}
         <TabsContent value="notificame" className="mt-6">
           <div className="space-y-6">
             <NotificaMeConfig />
