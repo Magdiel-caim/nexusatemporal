@@ -23,13 +23,14 @@ import SocialPostList from '@/components/marketing/social/SocialPostList';
 import SocialPostCalendar from '@/components/marketing/social/SocialPostCalendar';
 import AICopyOptimizer from '@/components/marketing/ai-assistant/AICopyOptimizer';
 import AIAnalysisHistory from '@/components/marketing/ai-assistant/AIAnalysisHistory';
+import { AIUsageDashboard } from '@/components/marketing/AIUsageDashboard';
 import BulkMessageForm from '@/components/marketing/bulk-messaging/BulkMessageForm';
 import BulkMessageList from '@/components/marketing/bulk-messaging/BulkMessageList';
 import LandingPageList from '@/components/marketing/landing-pages/LandingPageList';
 import TriggersTab from '@/components/automation/TriggersTab';
 import DashboardTab from '@/components/automation/DashboardTab';
 
-type ActiveTab = 'dashboard' | 'campaigns' | 'social' | 'bulk-messaging' | 'landing-pages' | 'ai-assistant' | 'automation';
+type ActiveTab = 'dashboard' | 'campaigns' | 'social' | 'bulk-messaging' | 'landing-pages' | 'ai-assistant' | 'ai-usage' | 'automation';
 type SocialView = 'list' | 'calendar';
 
 export default function MarketingPage() {
@@ -189,6 +190,15 @@ export default function MarketingPage() {
               <div className="flex items-center gap-2">
                 <Sparkles size={16} />
                 Assistente IA
+              </div>
+            </Tabs.Trigger>
+            <Tabs.Trigger
+              value="ai-usage"
+              className="px-4 py-3 text-sm font-medium transition-colors data-[state=active]:border-b-2 data-[state=active]:border-primary-600 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+            >
+              <div className="flex items-center gap-2">
+                <BarChart3 size={16} />
+                Uso de IA
               </div>
             </Tabs.Trigger>
             <Tabs.Trigger
@@ -661,6 +671,11 @@ export default function MarketingPage() {
               {/* AI Analysis History */}
               <AIAnalysisHistory refreshTrigger={aiRefreshTrigger} />
             </div>
+          </Tabs.Content>
+
+          {/* AI Usage Dashboard Tab */}
+          <Tabs.Content value="ai-usage">
+            <AIUsageDashboard />
           </Tabs.Content>
 
           {/* Automation Tab */}

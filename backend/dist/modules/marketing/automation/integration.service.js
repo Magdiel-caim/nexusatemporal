@@ -4,7 +4,6 @@ exports.IntegrationService = void 0;
 const WahaService_1 = require("../../../services/WahaService");
 const OpenAIService_1 = require("../../../services/OpenAIService");
 const N8nService_1 = require("../../../services/N8nService");
-const NotificaMeService_1 = require("../../../services/NotificaMeService");
 class IntegrationService {
     db;
     constructor(db) {
@@ -312,45 +311,14 @@ class IntegrationService {
     }
     /**
      * Testa integração Notifica.me
+     * @deprecated NotificaMe service was removed - this method is kept for backward compatibility
      */
     async testNotificaMe(integration) {
-        const creds = integration.credentials;
-        if (!creds.notificame_api_key) {
-            return {
-                success: false,
-                message: 'Missing Notifica.me API key',
-                tested_at: new Date()
-            };
-        }
-        const notificaMeService = new NotificaMeService_1.NotificaMeService({
-            apiKey: creds.notificame_api_key,
-            baseURL: creds.notificame_api_url
-        });
-        try {
-            const testResult = await notificaMeService.testConnection();
-            if (testResult.success) {
-                return {
-                    success: true,
-                    message: testResult.message,
-                    details: testResult.data,
-                    tested_at: new Date()
-                };
-            }
-            else {
-                return {
-                    success: false,
-                    message: testResult.message,
-                    tested_at: new Date()
-                };
-            }
-        }
-        catch (error) {
-            return {
-                success: false,
-                message: `Notifica.me test failed: ${error.message}`,
-                tested_at: new Date()
-            };
-        }
+        return {
+            success: false,
+            message: 'Notifica.me integration is no longer supported',
+            tested_at: new Date()
+        };
     }
     /**
      * Testa webhook

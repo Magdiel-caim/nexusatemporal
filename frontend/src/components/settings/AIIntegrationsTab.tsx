@@ -91,6 +91,7 @@ export default function AIIntegrationsTab() {
   const [apiKey, setApiKey] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [loading, setLoading] = useState(false);
+  const [testing, setTesting] = useState(false);
 
   useEffect(() => {
     loadConfigurations();
@@ -125,6 +126,38 @@ export default function AIIntegrationsTab() {
     setApiKey(provider.apiKey || '');
     setSelectedModel(provider.selectedModel || provider.models[0]);
     setShowConfigModal(true);
+  };
+
+  const handleTestConnection = async () => {
+    if (!selectedProvider || !apiKey) {
+      toast.error('Preencha a API Key');
+      return;
+    }
+
+    try {
+      setTesting(true);
+      toast.loading('Testando conexão...');
+
+      const response = await api.post('/marketing/ai/configs/test', {
+        provider: selectedProvider.id,
+        apiKey,
+        model: selectedModel,
+      });
+
+      toast.dismiss();
+
+      if (response.data.success) {
+        toast.success(response.data.message || 'Conexão testada com sucesso!');
+      } else {
+        toast.error(response.data.message || 'Erro ao testar conexão');
+      }
+    } catch (error: any) {
+      toast.dismiss();
+      console.error('Erro ao testar conexão:', error);
+      toast.error(error.response?.data?.message || 'Erro ao testar conexão');
+    } finally {
+      setTesting(false);
+    }
   };
 
   const handleSave = async () => {
@@ -312,20 +345,30 @@ export default function AIIntegrationsTab() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700">
               <button
-                onClick={() => setShowConfigModal(false)}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                onClick={handleTestConnection}
+                disabled={testing || !apiKey}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Cancelar
+                <Zap className="w-4 h-4" />
+                {testing ? 'Testando...' : 'Testar Conexão'}
               </button>
-              <button
-                onClick={handleSave}
-                disabled={loading}
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {loading ? 'Salvando...' : 'Salvar'}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setShowConfigModal(false)}
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={loading}
+                  className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? 'Salvando...' : 'Salvar'}
+                </button>
+              </div>
             </div>
           </div>
         </div>

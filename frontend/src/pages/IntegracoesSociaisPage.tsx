@@ -7,8 +7,9 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import NotificaMeConfig from '@/components/integrations/NotificaMeConfig';
-import { NotificaMeChannels } from '@/components/integrations/NotificaMeChannels';
+// TEMPORARIAMENTE COMENTADO - Componentes não existem
+// import NotificaMeConfig from '@/components/integrations/NotificaMeConfig';
+// import { NotificaMeChannels } from '@/components/integrations/NotificaMeChannels';
 import { MetaInstagramConnect } from '@/components/integrations/MetaInstagramConnect';
 import { Instagram, MessageCircle, Bot, ExternalLink } from 'lucide-react';
 
@@ -65,8 +66,12 @@ const IntegracoesSociaisPage: React.FC = () => {
         {/* NotificaMe Hub - Instagram & Messenger */}
         <TabsContent value="notificame" className="mt-6">
           <div className="space-y-6">
-            <NotificaMeConfig />
-            <NotificaMeChannels />
+            {/* TEMPORARIAMENTE COMENTADO - Componentes não existem */}
+            {/* <NotificaMeConfig /> */}
+            {/* <NotificaMeChannels /> */}
+            <div className="text-center text-gray-500 py-8">
+              <p>Componentes NotificaMe em desenvolvimento</p>
+            </div>
           </div>
         </TabsContent>
 

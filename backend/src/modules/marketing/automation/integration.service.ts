@@ -8,7 +8,6 @@ import {
 import { WahaService } from '@/services/WahaService';
 import { OpenAIService } from '@/services/OpenAIService';
 import { N8nService } from '@/services/N8nService';
-import { NotificaMeService } from '@/services/NotificaMeService';
 
 export class IntegrationService {
   constructor(private db: Pool) {}
@@ -358,47 +357,14 @@ export class IntegrationService {
 
   /**
    * Testa integração Notifica.me
+   * @deprecated NotificaMe service was removed - this method is kept for backward compatibility
    */
   private async testNotificaMe(integration: Integration): Promise<TestIntegrationResult> {
-    const creds = integration.credentials;
-
-    if (!creds.notificame_api_key) {
-      return {
-        success: false,
-        message: 'Missing Notifica.me API key',
-        tested_at: new Date()
-      };
-    }
-
-    const notificaMeService = new NotificaMeService({
-      apiKey: creds.notificame_api_key,
-      baseURL: creds.notificame_api_url
-    });
-
-    try {
-      const testResult = await notificaMeService.testConnection();
-
-      if (testResult.success) {
-        return {
-          success: true,
-          message: testResult.message,
-          details: testResult.data,
-          tested_at: new Date()
-        };
-      } else {
-        return {
-          success: false,
-          message: testResult.message,
-          tested_at: new Date()
-        };
-      }
-    } catch (error: any) {
-      return {
-        success: false,
-        message: `Notifica.me test failed: ${error.message}`,
-        tested_at: new Date()
-      };
-    }
+    return {
+      success: false,
+      message: 'Notifica.me integration is no longer supported',
+      tested_at: new Date()
+    };
   }
 
   /**

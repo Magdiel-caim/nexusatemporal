@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, User, MapPin, Heart, Phone as PhoneIcon, FileText, AlertCircle } from 'lucide-react';
 import medicalRecordsService, { CreateMedicalRecordDto } from '../../services/medicalRecordsService';
 import { leadsService, Lead } from '../../services/leadsService';
+import { CepInput, CepInputData } from '@/components/ui/CepInput';
 
 interface CreateMedicalRecordFormProps {
   onClose: () => void;
@@ -87,6 +88,16 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
         [field]: items,
       }));
     }
+  };
+
+  const handleCepFound = (cepData: CepInputData) => {
+    setFormData(prev => ({
+      ...prev,
+      zipCode: cepData.cep,
+      address: cepData.street,
+      city: cepData.city,
+      state: cepData.state,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -310,20 +321,16 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
             {/* Endereço */}
             {activeTab === 'endereco' && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Endereço Completo
-                  </label>
-                  <textarea
-                    value={formData.address}
-                    onChange={(e) => handleInputChange('address', e.target.value)}
-                    rows={3}
-                    placeholder="Rua, número, complemento"
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <CepInput
+                    value={formData.zipCode || ''}
+                    onChange={(cep) => handleInputChange('zipCode', cep)}
+                    onAddressFound={handleCepFound}
+                    label="CEP"
+                    className="md:col-span-1"
+                    autoFetch={true}
+                  />
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                       Cidade
@@ -346,22 +353,22 @@ const CreateMedicalRecordForm: React.FC<CreateMedicalRecordFormProps> = ({ onClo
                       onChange={(e) => handleInputChange('state', e.target.value)}
                       placeholder="SP"
                       maxLength={2}
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent uppercase"
                     />
                   </div>
+                </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
-                      CEP
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.zipCode}
-                      onChange={(e) => handleInputChange('zipCode', e.target.value)}
-                      placeholder="00000-000"
-                      className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    />
-                  </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
+                    Endereço Completo (Rua, número)
+                  </label>
+                  <textarea
+                    value={formData.address}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
+                    rows={3}
+                    placeholder="Rua, número, complemento"
+                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  />
                 </div>
               </div>
             )}
