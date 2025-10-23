@@ -1,8 +1,13 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIAssistantService = void 0;
 const data_source_1 = require("../../../database/data-source");
 const entities_1 = require("../entities");
+const ai_provider_service_1 = __importDefault(require("../ai-provider.service"));
+const AIProviderService = ai_provider_service_1.default.getInstance();
 class AIAssistantService {
     analysisRepository = data_source_1.AppDataSource.getRepository(entities_1.AIAnalysis);
     // AI Provider configurations
@@ -153,6 +158,116 @@ class AIAssistantService {
     // Helper methods for specific use cases
     async optimizeCopy(tenantId, content, context, userId) {
         return await this.analyze(tenantId, entities_1.AIProvider.OPENROUTER, 'anthropic/claude-3.5-sonnet', entities_1.AnalysisType.OPTIMIZATION, { content, context }, userId);
+    }
+    /**
+     * Gera copy de marketing usando o provider configurado
+     */
+    async generateCopy(tenantId, provider, prompt, context, userId) {
+        const messages = [
+            {
+                role: 'system',
+                content: `Você é um especialista em copywriting e marketing digital. Crie textos persuasivos, criativos e otimizados para conversão.
+${context ? `Contexto: Plataforma: ${context.platform || 'geral'}, Público: ${context.audience || 'geral'}, Objetivo: ${context.goal || 'engajamento'}` : ''}`,
+            },
+            {
+                role: 'user',
+                content: prompt,
+            },
+        ];
+        const result = await AIProviderService.generateWithFallback({
+            tenantId,
+            provider,
+            messages,
+            temperature: 0.8,
+            maxTokens: 1000,
+            module: 'marketing-assistant',
+            userId,
+        });
+        return result.content;
+    }
+    /**
+     * Analisa sentimento de texto
+     */
+    async analyzeSentiment(tenantId, provider, text, userId) {
+        const messages = [
+            {
+                role: 'system',
+                content: 'Você é um analisador de sentimentos. Analise o texto e retorne apenas um JSON com: sentiment (positive/negative/neutral/urgent), confidence (0-1), e emotions (objeto com emoções e scores 0-1).',
+            },
+            {
+                role: 'user',
+                content: `Analise o sentimento deste texto:\n\n${text}`,
+            },
+        ];
+        const result = await AIProviderService.generate({
+            tenantId,
+            provider,
+            messages,
+            temperature: 0.3,
+            maxTokens: 300,
+            module: 'sentiment-analysis',
+            userId,
+        });
+        try {
+            return JSON.parse(result.content);
+        }
+        catch {
+            return {
+                sentiment: 'neutral',
+                confidence: 0.5,
+                emotions: {},
+            };
+        }
+    }
+    /**
+     * Gera resumo de texto
+     */
+    async generateSummary(tenantId, provider, text, maxLength = 200, userId) {
+        const messages = [
+            {
+                role: 'system',
+                content: `Você é um especialista em criar resumos executivos. Resuma o texto de forma clara, objetiva e informativa em até ${maxLength} caracteres.`,
+            },
+            {
+                role: 'user',
+                content: `Resuma este texto:\n\n${text}`,
+            },
+        ];
+        const result = await AIProviderService.generate({
+            tenantId,
+            provider,
+            messages,
+            temperature: 0.5,
+            maxTokens: 500,
+            module: 'summary',
+            userId,
+        });
+        return result.content;
+    }
+    /**
+     * Traduz texto
+     */
+    async translateText(tenantId, provider, text, targetLanguage, userId) {
+        const messages = [
+            {
+                role: 'system',
+                content: `Você é um tradutor profissional. Traduza o texto para ${targetLanguage} mantendo o tom, estilo e significado original.`,
+            },
+            {
+                role: 'user',
+                content: text,
+            },
+        ];
+        const result = await AIProviderService.generate({
+            tenantId,
+            provider,
+            messages,
+            temperature: 0.3,
+            maxTokens: 2000,
+            module: 'translation',
+            userId,
+        });
+        return result.content;
     }
     async generateImage(tenantId, prompt, options, userId) {
         return await this.analyze(tenantId, entities_1.AIProvider.OPENROUTER, 'black-forest-labs/flux-1-dev', entities_1.AnalysisType.IMAGE_GEN, { prompt, ...options }, userId);

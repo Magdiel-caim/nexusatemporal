@@ -8,7 +8,7 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+// import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
   Loader2,
   Instagram,
@@ -204,13 +204,13 @@ export const MetaInstagramConnect: React.FC = () => {
 
       <CardContent className="space-y-4">
         {/* Info Alert */}
-        <Alert>
-          <Info className="h-4 w-4" />
-          <AlertDescription>
+        <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950 rounded-md border border-blue-200 dark:border-blue-800">
+          <Info className="h-4 w-4 mt-0.5 text-blue-600 dark:text-blue-400" />
+          <p className="text-sm text-blue-900 dark:text-blue-100">
             <strong>Requisitos:</strong> Conta Instagram Business ou Creator conectada a uma Facebook Page.
             Você precisa ter permissões de administrador na página.
-          </AlertDescription>
-        </Alert>
+          </p>
+        </div>
 
         {/* Loading State */}
         {loading && (

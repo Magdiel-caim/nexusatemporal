@@ -20,6 +20,7 @@ const vendas_routes_1 = __importDefault(require("../modules/vendas/vendas.routes
 const bi_routes_1 = __importDefault(require("../modules/bi/bi.routes")); // BI Module - Business Intelligence
 const notificame_routes_1 = __importDefault(require("../modules/notificame/notificame.routes")); // Notifica.me integration (WhatsApp/Instagram)
 const marketing_routes_1 = __importDefault(require("../modules/marketing/marketing.routes")); // Marketing Module - Campaigns, Social Posts, Bulk Messages, Landing Pages, AI Assistant
+const meta_routes_1 = __importDefault(require("../modules/meta/meta.routes")); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import configRoutes from '@/modules/config/config.routes';
@@ -49,6 +50,7 @@ router.use('/vendas', vendas_routes_1.default); // Sales and commissions managem
 router.use('/bi', bi_routes_1.default); // Business Intelligence - Dashboards, KPIs, Analytics, Reports
 router.use('/notificame', notificame_routes_1.default); // Notifica.me integration (WhatsApp/Instagram messaging)
 router.use('/marketing', marketing_routes_1.default); // Marketing Module - Campaigns, Social Media, Bulk Messages, Landing Pages, AI
+router.use('/meta', meta_routes_1.default); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);
 // router.use('/config', configRoutes);

@@ -115,5 +115,19 @@ router.post('/ai-assistant/generate-copy', (req, res) => controller.generateAICo
 router.get('/ai/configs', (req, res) => controller.listAIConfigs(req, res));
 router.post('/ai/configs', (req, res) => controller.createOrUpdateAIConfig(req, res));
 router.delete('/ai/configs/:provider', (req, res) => controller.deleteAIConfig(req, res));
+router.post('/ai/configs/test', (req, res) => controller.testAIConnection(req, res));
+// ============================================
+// AI ASSISTANT - NEW FEATURES (Sessão D)
+// ============================================
+router.post('/ai-assistant/generate-copy-v2', (req, res) => controller.generateAICopyV2(req, res));
+router.post('/ai-assistant/analyze-sentiment', (req, res) => controller.analyzeSentiment(req, res));
+router.post('/ai-assistant/generate-summary', (req, res) => controller.generateSummary(req, res));
+router.post('/ai-assistant/translate', (req, res) => controller.translateText(req, res));
+// ============================================
+// AI USAGE & MONITORING
+// ============================================
+router.get('/ai/usage-stats', (req, res) => controller.getAIUsageStats(req, res));
+router.get('/ai/rate-limits', (req, res) => controller.getAIRateLimits(req, res));
+router.put('/ai/rate-limits', (req, res) => controller.updateAIRateLimits(req, res));
 exports.default = router;
 //# sourceMappingURL=marketing.routes.js.map

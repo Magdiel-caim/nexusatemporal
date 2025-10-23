@@ -23,10 +23,19 @@ const getDbPool = () => {
   return driver.master;
 };
 
-// Initialize controllers
-const oauthController = new MetaOAuthController(getDbPool());
-const webhookController = new MetaWebhookController(getDbPool());
-const messagingController = new MetaMessagingController(getDbPool());
+// Lazy initialization of controllers to avoid accessing DB before initialization
+let oauthController: MetaOAuthController;
+let webhookController: MetaWebhookController;
+let messagingController: MetaMessagingController;
+
+const getControllers = () => {
+  if (!oauthController) {
+    oauthController = new MetaOAuthController(getDbPool());
+    webhookController = new MetaWebhookController(getDbPool());
+    messagingController = new MetaMessagingController(getDbPool());
+  }
+  return { oauthController, webhookController, messagingController };
+};
 
 // ============================================
 // OAUTH ROUTES (Protected)

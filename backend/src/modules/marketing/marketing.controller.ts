@@ -1064,7 +1064,7 @@ export class MarketingController {
         return;
       }
 
-      const aiConfigService = (await import('./ai-config.service')).default;
+      const aiConfigService = (await import('./ai-config.service')).default.getInstance();
       const configs = await aiConfigService.listConfigs(tenantId);
 
       res.json({ success: true, data: configs });
@@ -1089,7 +1089,7 @@ export class MarketingController {
         return;
       }
 
-      const aiConfigService = (await import('./ai-config.service')).default;
+      const aiConfigService = (await import('./ai-config.service')).default.getInstance();
       const config = await aiConfigService.upsertConfig({
         tenant_id: tenantId,
         provider,
@@ -1115,7 +1115,7 @@ export class MarketingController {
         return;
       }
 
-      const aiConfigService = (await import('./ai-config.service')).default;
+      const aiConfigService = (await import('./ai-config.service')).default.getInstance();
       const deleted = await aiConfigService.deleteConfig(tenantId, provider);
 
       if (!deleted) {
@@ -1126,6 +1126,306 @@ export class MarketingController {
       res.json({ success: true, message: 'Config deleted' });
     } catch (error: any) {
       console.error('[MarketingController] Delete AI config error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async testAIConnection(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { provider, apiKey, model } = req.body;
+
+      if (!provider || !apiKey || !model) {
+        res.status(400).json({ success: false, message: 'Missing required fields' });
+        return;
+      }
+
+      const aiConfigService = (await import('./ai-config.service')).default.getInstance();
+      const result = await aiConfigService.testConnection({
+        tenant_id: tenantId,
+        provider,
+        api_key: apiKey,
+        model,
+        is_active: true,
+      });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error('[MarketingController] Test AI connection error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  // ============================================
+  // AI ASSISTANT - NEW FEATURES
+  // ============================================
+
+  async generateAICopyV2(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+      const userId = req.user?.userId;
+
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { provider, prompt, context } = req.body;
+
+      if (!provider || !prompt) {
+        res.status(400).json({ success: false, message: 'Provider and prompt are required' });
+        return;
+      }
+
+      const result = await this.aiAssistantService.generateCopy(
+        tenantId,
+        provider,
+        prompt,
+        context,
+        userId ? parseInt(userId) : undefined
+      );
+
+      res.json({ success: true, data: { content: result } });
+    } catch (error: any) {
+      console.error('[MarketingController] Generate AI copy v2 error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async analyzeSentiment(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+      const userId = req.user?.userId;
+
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { provider, text } = req.body;
+
+      if (!provider || !text) {
+        res.status(400).json({ success: false, message: 'Provider and text are required' });
+        return;
+      }
+
+      const result = await this.aiAssistantService.analyzeSentiment(tenantId, provider, text, userId ? parseInt(userId) : undefined);
+
+      res.json({ success: true, data: result });
+    } catch (error: any) {
+      console.error('[MarketingController] Analyze sentiment error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async generateSummary(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+      const userId = req.user?.userId;
+
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { provider, text, maxLength } = req.body;
+
+      if (!provider || !text) {
+        res.status(400).json({ success: false, message: 'Provider and text are required' });
+        return;
+      }
+
+      const result = await this.aiAssistantService.generateSummary(
+        tenantId,
+        provider,
+        text,
+        maxLength || 200,
+        userId ? parseInt(userId) : undefined
+      );
+
+      res.json({ success: true, data: { summary: result } });
+    } catch (error: any) {
+      console.error('[MarketingController] Generate summary error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async translateText(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+      const userId = req.user?.userId;
+
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { provider, text, targetLanguage } = req.body;
+
+      if (!provider || !text || !targetLanguage) {
+        res.status(400).json({ success: false, message: 'Provider, text, and targetLanguage are required' });
+        return;
+      }
+
+      const result = await this.aiAssistantService.translateText(
+        tenantId,
+        provider,
+        text,
+        targetLanguage,
+        userId ? parseInt(userId) : undefined
+      );
+
+      res.json({ success: true, data: { translation: result } });
+    } catch (error: any) {
+      console.error('[MarketingController] Translate text error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async getAIUsageStats(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const { startDate, endDate, provider, module } = req.query;
+
+      const aiProviderService = (await import('./ai-provider.service')).default.getInstance();
+      const db = aiProviderService['db']; // Acessar db privado
+
+      let query = `
+        SELECT
+          provider,
+          module,
+          COUNT(*) as total_requests,
+          SUM(total_tokens) as total_tokens,
+          SUM(cost_usd) as total_cost_usd,
+          AVG(response_time_ms) as avg_response_time_ms,
+          DATE(created_at) as date
+        FROM ai_usage_logs
+        WHERE tenant_id = $1
+      `;
+
+      const params: any[] = [tenantId];
+      let paramIndex = 2;
+
+      if (startDate) {
+        query += ` AND created_at >= $${paramIndex}`;
+        params.push(startDate);
+        paramIndex++;
+      }
+
+      if (endDate) {
+        query += ` AND created_at <= $${paramIndex}`;
+        params.push(endDate);
+        paramIndex++;
+      }
+
+      if (provider) {
+        query += ` AND provider = $${paramIndex}`;
+        params.push(provider);
+        paramIndex++;
+      }
+
+      if (module) {
+        query += ` AND module = $${paramIndex}`;
+        params.push(module);
+        paramIndex++;
+      }
+
+      query += ` GROUP BY provider, module, DATE(created_at) ORDER BY date DESC`;
+
+      const result = await db.query(query, params);
+
+      res.json({ success: true, data: result.rows });
+    } catch (error: any) {
+      console.error('[MarketingController] Get AI usage stats error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async getAIRateLimits(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const aiProviderService = (await import('./ai-provider.service')).default.getInstance();
+      const db = aiProviderService['db'];
+
+      const query = `SELECT * FROM ai_rate_limits WHERE tenant_id = $1 LIMIT 1`;
+      const result = await db.query(query, [tenantId]);
+
+      if (result.rows.length === 0) {
+        // Criar rate limit padrão
+        await db.query('INSERT INTO ai_rate_limits (tenant_id) VALUES ($1)', [tenantId]);
+        const newResult = await db.query(query, [tenantId]);
+        res.json({ success: true, data: newResult.rows[0] });
+      } else {
+        res.json({ success: true, data: result.rows[0] });
+      }
+    } catch (error: any) {
+      console.error('[MarketingController] Get AI rate limits error:', error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
+
+  async updateAIRateLimits(req: Request, res: Response): Promise<void> {
+    try {
+      const tenantId = req.user?.tenantId;
+
+      if (!tenantId) {
+        res.status(401).json({ success: false, message: 'Unauthorized' });
+        return;
+      }
+
+      const {
+        maxRequestsPerHour,
+        maxTokensPerDay,
+        maxCostPerMonthUsd,
+        alertsEnabled,
+        alertThresholdPercent,
+      } = req.body;
+
+      const aiProviderService = (await import('./ai-provider.service')).default.getInstance();
+      const db = aiProviderService['db'];
+
+      const query = `
+        UPDATE ai_rate_limits
+        SET
+          max_requests_per_hour = COALESCE($2, max_requests_per_hour),
+          max_tokens_per_day = COALESCE($3, max_tokens_per_day),
+          max_cost_per_month_usd = COALESCE($4, max_cost_per_month_usd),
+          alerts_enabled = COALESCE($5, alerts_enabled),
+          alert_threshold_percent = COALESCE($6, alert_threshold_percent),
+          updated_at = NOW()
+        WHERE tenant_id = $1
+        RETURNING *
+      `;
+
+      const result = await db.query(query, [
+        tenantId,
+        maxRequestsPerHour,
+        maxTokensPerDay,
+        maxCostPerMonthUsd,
+        alertsEnabled,
+        alertThresholdPercent,
+      ]);
+
+      res.json({ success: true, data: result.rows[0] });
+    } catch (error: any) {
+      console.error('[MarketingController] Update AI rate limits error:', error);
       res.status(500).json({ success: false, message: error.message });
     }
   }

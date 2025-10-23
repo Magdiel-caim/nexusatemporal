@@ -4,11 +4,46 @@
  *
  * Serviço para gerenciar configurações de múltiplas IAs
  */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AIConfigService = void 0;
 const database_1 = require("../marketing/automation/database");
 class AIConfigService {
-    db = (0, database_1.getAutomationDbPool)();
+    get db() {
+        return (0, database_1.getAutomationDbPool)();
+    }
     /**
      * Inicializa a tabela de configurações de IA
      */
@@ -116,19 +151,114 @@ class AIConfigService {
      */
     async testConnection(config) {
         try {
-            // Implementação básica - pode ser expandida para testar cada provider
             if (!config.api_key || config.api_key.length < 10) {
                 return { success: false, message: 'API Key inválida' };
             }
-            // Aqui você pode adicionar lógica específica para testar cada provider
-            // Por exemplo, fazer uma chamada simples à API para validar a chave
-            return { success: true, message: 'Configuração salva com sucesso' };
+            switch (config.provider.toLowerCase()) {
+                case 'openai':
+                    return await this.testOpenAI(config);
+                case 'anthropic':
+                    return await this.testAnthropic(config);
+                case 'google':
+                case 'gemini':
+                    return await this.testGemini(config);
+                case 'groq':
+                    return await this.testGroq(config);
+                case 'openrouter':
+                    return await this.testOpenRouter(config);
+                default:
+                    return { success: false, message: `Provedor ${config.provider} não suportado` };
+            }
         }
         catch (error) {
             return { success: false, message: error instanceof Error ? error.message : 'Erro desconhecido' };
         }
     }
+    async testOpenAI(config) {
+        try {
+            const OpenAI = (await Promise.resolve().then(() => __importStar(require('openai')))).default;
+            const openai = new OpenAI({ apiKey: config.api_key });
+            await openai.models.list();
+            return { success: true, message: 'Conexão com OpenAI bem-sucedida!' };
+        }
+        catch (error) {
+            return { success: false, message: `Erro OpenAI: ${error.message}` };
+        }
+    }
+    async testAnthropic(config) {
+        try {
+            const Anthropic = (await Promise.resolve().then(() => __importStar(require('@anthropic-ai/sdk')))).default;
+            const anthropic = new Anthropic({ apiKey: config.api_key });
+            await anthropic.messages.create({
+                model: config.model || 'claude-3-5-haiku-20241022',
+                max_tokens: 10,
+                messages: [{ role: 'user', content: 'Hi' }],
+            });
+            return { success: true, message: 'Conexão com Claude (Anthropic) bem-sucedida!' };
+        }
+        catch (error) {
+            return { success: false, message: `Erro Anthropic: ${error.message}` };
+        }
+    }
+    async testGemini(config) {
+        try {
+            const { GoogleGenerativeAI } = await Promise.resolve().then(() => __importStar(require('@google/generative-ai')));
+            const genAI = new GoogleGenerativeAI(config.api_key);
+            const model = genAI.getGenerativeModel({ model: config.model || 'gemini-1.5-flash' });
+            await model.generateContent('Hi');
+            return { success: true, message: 'Conexão com Google Gemini bem-sucedida!' };
+        }
+        catch (error) {
+            return { success: false, message: `Erro Gemini: ${error.message}` };
+        }
+    }
+    async testGroq(config) {
+        try {
+            const Groq = (await Promise.resolve().then(() => __importStar(require('groq-sdk')))).default;
+            const groq = new Groq({ apiKey: config.api_key });
+            await groq.chat.completions.create({
+                model: config.model || 'llama-3.3-70b-versatile',
+                messages: [{ role: 'user', content: 'Hi' }],
+                max_tokens: 10,
+            });
+            return { success: true, message: 'Conexão com Groq bem-sucedida!' };
+        }
+        catch (error) {
+            return { success: false, message: `Erro Groq: ${error.message}` };
+        }
+    }
+    async testOpenRouter(config) {
+        try {
+            const OpenAI = (await Promise.resolve().then(() => __importStar(require('openai')))).default;
+            const openrouter = new OpenAI({
+                baseURL: 'https://openrouter.ai/api/v1',
+                apiKey: config.api_key,
+                defaultHeaders: {
+                    'HTTP-Referer': 'https://nexus-crm.com',
+                    'X-Title': 'Nexus CRM',
+                },
+            });
+            await openrouter.chat.completions.create({
+                model: config.model || 'google/gemini-2.0-flash-001:free',
+                messages: [{ role: 'user', content: 'Hi' }],
+                max_tokens: 10,
+            });
+            return { success: true, message: 'Conexão com OpenRouter bem-sucedida!' };
+        }
+        catch (error) {
+            return { success: false, message: `Erro OpenRouter: ${error.message}` };
+        }
+    }
 }
 exports.AIConfigService = AIConfigService;
-exports.default = new AIConfigService();
+// Export a singleton instance (lazy initialization)
+let instance = null;
+exports.default = {
+    getInstance() {
+        if (!instance) {
+            instance = new AIConfigService();
+        }
+        return instance;
+    },
+};
 //# sourceMappingURL=ai-config.service.js.map

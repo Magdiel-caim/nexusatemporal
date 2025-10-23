@@ -14,9 +14,9 @@ import VendasPage from './pages/Vendas/VendasPage';
 import EstoquePage from './pages/EstoquePage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
-import NotificaMeCallbackPage from './pages/NotificaMeCallbackPage';
 import BIDashboard from './pages/BI/BIDashboard';
 import MarketingPage from './pages/MarketingPage';
+import RedesSociaisPage from './pages/RedesSociaisPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import MainLayout from './components/layout/MainLayout';
 
@@ -181,14 +181,12 @@ function App() {
             }
           />
           <Route
-            path="/integracoes-sociais"
-            element={<Navigate to="/marketing" replace />}
-          />
-          <Route
-            path="/integracoes-sociais/callback"
+            path="/redes-sociais"
             element={
               <ProtectedRoute>
-                <NotificaMeCallbackPage />
+                <MainLayout>
+                  <RedesSociaisPage />
+                </MainLayout>
               </ProtectedRoute>
             }
           />

@@ -29,10 +29,8 @@ import BulkMessageList from '@/components/marketing/bulk-messaging/BulkMessageLi
 import LandingPageList from '@/components/marketing/landing-pages/LandingPageList';
 import TriggersTab from '@/components/automation/TriggersTab';
 import DashboardTab from '@/components/automation/DashboardTab';
-import NotificaMeConfig from '@/components/integrations/NotificaMeConfig';
-import { NotificaMeChannels } from '@/components/integrations/NotificaMeChannels';
 
-type ActiveTab = 'dashboard' | 'campaigns' | 'social' | 'bulk-messaging' | 'landing-pages' | 'ai-assistant' | 'automation' | 'social-integrations';
+type ActiveTab = 'dashboard' | 'campaigns' | 'social' | 'bulk-messaging' | 'landing-pages' | 'ai-assistant' | 'automation';
 type SocialView = 'list' | 'calendar';
 
 export default function MarketingPage() {
@@ -201,15 +199,6 @@ export default function MarketingPage() {
               <div className="flex items-center gap-2">
                 <Bot size={16} />
                 Automações
-              </div>
-            </Tabs.Trigger>
-            <Tabs.Trigger
-              value="social-integrations"
-              className="px-4 py-3 text-sm font-medium transition-colors data-[state=active]:border-b-2 data-[state=active]:border-primary-600 data-[state=active]:text-primary-600 dark:data-[state=active]:text-primary-400 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
-            >
-              <div className="flex items-center gap-2">
-                <MessageCircle size={16} />
-                Integrações Sociais
               </div>
             </Tabs.Trigger>
           </Tabs.List>
@@ -700,33 +689,6 @@ export default function MarketingPage() {
             </div>
           </Tabs.Content>
 
-          {/* Social Integrations Tab */}
-          <Tabs.Content value="social-integrations">
-            <div className="space-y-6">
-              {/* Header */}
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                  <MessageCircle className="text-primary-600" />
-                  Integrações Sociais
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Conecte Instagram, Messenger e outras redes sociais via NotificaMe
-                </p>
-              </div>
-
-              {/* NotificaMe Configuration */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Configuração NotificaMe</h3>
-                <NotificaMeConfig />
-              </div>
-
-              {/* NotificaMe Channels */}
-              <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Canais Conectados</h3>
-                <NotificaMeChannels />
-              </div>
-            </div>
-          </Tabs.Content>
         </Tabs.Root>
       </div>
     </div>

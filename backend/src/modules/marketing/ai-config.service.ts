@@ -18,7 +18,9 @@ export interface AIConfig {
 }
 
 export class AIConfigService {
-  private db = getAutomationDbPool();
+  private get db() {
+    return getAutomationDbPool();
+  }
 
   /**
    * Inicializa a tabela de configurações de IA
@@ -143,19 +145,114 @@ export class AIConfigService {
    */
   async testConnection(config: AIConfig): Promise<{ success: boolean; message: string }> {
     try {
-      // Implementação básica - pode ser expandida para testar cada provider
       if (!config.api_key || config.api_key.length < 10) {
         return { success: false, message: 'API Key inválida' };
       }
 
-      // Aqui você pode adicionar lógica específica para testar cada provider
-      // Por exemplo, fazer uma chamada simples à API para validar a chave
-
-      return { success: true, message: 'Configuração salva com sucesso' };
+      switch (config.provider.toLowerCase()) {
+        case 'openai':
+          return await this.testOpenAI(config);
+        case 'anthropic':
+          return await this.testAnthropic(config);
+        case 'google':
+        case 'gemini':
+          return await this.testGemini(config);
+        case 'groq':
+          return await this.testGroq(config);
+        case 'openrouter':
+          return await this.testOpenRouter(config);
+        default:
+          return { success: false, message: `Provedor ${config.provider} não suportado` };
+      }
     } catch (error) {
       return { success: false, message: error instanceof Error ? error.message : 'Erro desconhecido' };
     }
   }
+
+  private async testOpenAI(config: AIConfig): Promise<{ success: boolean; message: string }> {
+    try {
+      const OpenAI = (await import('openai')).default;
+      const openai = new OpenAI({ apiKey: config.api_key });
+      await openai.models.list();
+      return { success: true, message: 'Conexão com OpenAI bem-sucedida!' };
+    } catch (error: any) {
+      return { success: false, message: `Erro OpenAI: ${error.message}` };
+    }
+  }
+
+  private async testAnthropic(config: AIConfig): Promise<{ success: boolean; message: string }> {
+    try {
+      const Anthropic = (await import('@anthropic-ai/sdk')).default;
+      const anthropic = new Anthropic({ apiKey: config.api_key });
+      await anthropic.messages.create({
+        model: config.model || 'claude-3-5-haiku-20241022',
+        max_tokens: 10,
+        messages: [{ role: 'user', content: 'Hi' }],
+      });
+      return { success: true, message: 'Conexão com Claude (Anthropic) bem-sucedida!' };
+    } catch (error: any) {
+      return { success: false, message: `Erro Anthropic: ${error.message}` };
+    }
+  }
+
+  private async testGemini(config: AIConfig): Promise<{ success: boolean; message: string }> {
+    try {
+      const { GoogleGenerativeAI } = await import('@google/generative-ai');
+      const genAI = new GoogleGenerativeAI(config.api_key);
+      const model = genAI.getGenerativeModel({ model: config.model || 'gemini-1.5-flash' });
+      await model.generateContent('Hi');
+      return { success: true, message: 'Conexão com Google Gemini bem-sucedida!' };
+    } catch (error: any) {
+      return { success: false, message: `Erro Gemini: ${error.message}` };
+    }
+  }
+
+  private async testGroq(config: AIConfig): Promise<{ success: boolean; message: string }> {
+    try {
+      const Groq = (await import('groq-sdk')).default;
+      const groq = new Groq({ apiKey: config.api_key });
+      await groq.chat.completions.create({
+        model: config.model || 'llama-3.3-70b-versatile',
+        messages: [{ role: 'user', content: 'Hi' }],
+        max_tokens: 10,
+      });
+      return { success: true, message: 'Conexão com Groq bem-sucedida!' };
+    } catch (error: any) {
+      return { success: false, message: `Erro Groq: ${error.message}` };
+    }
+  }
+
+  private async testOpenRouter(config: AIConfig): Promise<{ success: boolean; message: string }> {
+    try {
+      const OpenAI = (await import('openai')).default;
+      const openrouter = new OpenAI({
+        baseURL: 'https://openrouter.ai/api/v1',
+        apiKey: config.api_key,
+        defaultHeaders: {
+          'HTTP-Referer': 'https://nexus-crm.com',
+          'X-Title': 'Nexus CRM',
+        },
+      });
+      await openrouter.chat.completions.create({
+        model: config.model || 'google/gemini-2.0-flash-001:free',
+        messages: [{ role: 'user', content: 'Hi' }],
+        max_tokens: 10,
+      });
+      return { success: true, message: 'Conexão com OpenRouter bem-sucedida!' };
+    } catch (error: any) {
+      return { success: false, message: `Erro OpenRouter: ${error.message}` };
+    }
+  }
 }
 
-export default new AIConfigService();
+// Export a singleton instance (lazy initialization)
+let instance: AIConfigService | null = null;
+
+export default {
+  getInstance(): AIConfigService {
+    if (!instance) {
+      instance = new AIConfigService();
+    }
+    return instance;
+  },
+};

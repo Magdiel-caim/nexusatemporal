@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   TrendingUp,
+  Share2,
 } from 'lucide-react';
 import logoFull from '@/assets/images/logo-full.png';
 import logoIcon from '@/assets/images/logo-icon.png';
@@ -65,6 +66,12 @@ const allMenuItems: MenuItem[] = [
     icon: BarChart3,
     label: 'BI & Analytics',
     path: '/bi',
+    roles: ['superadmin', 'owner', 'admin'] // USER e PROFESSIONAL não têm acesso
+  },
+  {
+    icon: Share2,
+    label: 'Redes Sociais',
+    path: '/redes-sociais',
     roles: ['superadmin', 'owner', 'admin'] // USER e PROFESSIONAL não têm acesso
   },
   {

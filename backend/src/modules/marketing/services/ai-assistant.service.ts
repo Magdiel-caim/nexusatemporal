@@ -1,6 +1,9 @@
 import { AppDataSource } from '../../../database/data-source';
 import { AIAnalysis, AIProvider, AnalysisType, RelatedType } from '../entities';
+import AIProviderServiceModule, { AIMessage } from '../ai-provider.service';
 import axios from 'axios';
+
+const AIProviderService = AIProviderServiceModule.getInstance();
 
 export class AIAssistantService {
   private analysisRepository = AppDataSource.getRepository(AIAnalysis);
@@ -202,6 +205,150 @@ export class AIAssistantService {
       { content, context },
       userId
     );
+  }
+
+  /**
+   * Gera copy de marketing usando o provider configurado
+   */
+  async generateCopy(
+    tenantId: string,
+    provider: string,
+    prompt: string,
+    context?: { platform?: string; audience?: string; goal?: string },
+    userId?: number
+  ): Promise<string> {
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: `Você é um especialista em copywriting e marketing digital. Crie textos persuasivos, criativos e otimizados para conversão.
+${context ? `Contexto: Plataforma: ${context.platform || 'geral'}, Público: ${context.audience || 'geral'}, Objetivo: ${context.goal || 'engajamento'}` : ''}`,
+      },
+      {
+        role: 'user',
+        content: prompt,
+      },
+    ];
+
+    const result = await AIProviderService.generateWithFallback({
+      tenantId,
+      provider,
+      messages,
+      temperature: 0.8,
+      maxTokens: 1000,
+      module: 'marketing-assistant',
+      userId,
+    });
+
+    return result.content;
+  }
+
+  /**
+   * Analisa sentimento de texto
+   */
+  async analyzeSentiment(
+    tenantId: string,
+    provider: string,
+    text: string,
+    userId?: number
+  ): Promise<{ sentiment: string; confidence: number; emotions: Record<string, number> }> {
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: 'Você é um analisador de sentimentos. Analise o texto e retorne apenas um JSON com: sentiment (positive/negative/neutral/urgent), confidence (0-1), e emotions (objeto com emoções e scores 0-1).',
+      },
+      {
+        role: 'user',
+        content: `Analise o sentimento deste texto:\n\n${text}`,
+      },
+    ];
+
+    const result = await AIProviderService.generate({
+      tenantId,
+      provider,
+      messages,
+      temperature: 0.3,
+      maxTokens: 300,
+      module: 'sentiment-analysis',
+      userId,
+    });
+
+    try {
+      return JSON.parse(result.content);
+    } catch {
+      return {
+        sentiment: 'neutral',
+        confidence: 0.5,
+        emotions: {},
+      };
+    }
+  }
+
+  /**
+   * Gera resumo de texto
+   */
+  async generateSummary(
+    tenantId: string,
+    provider: string,
+    text: string,
+    maxLength: number = 200,
+    userId?: number
+  ): Promise<string> {
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: `Você é um especialista em criar resumos executivos. Resuma o texto de forma clara, objetiva e informativa em até ${maxLength} caracteres.`,
+      },
+      {
+        role: 'user',
+        content: `Resuma este texto:\n\n${text}`,
+      },
+    ];
+
+    const result = await AIProviderService.generate({
+      tenantId,
+      provider,
+      messages,
+      temperature: 0.5,
+      maxTokens: 500,
+      module: 'summary',
+      userId,
+    });
+
+    return result.content;
+  }
+
+  /**
+   * Traduz texto
+   */
+  async translateText(
+    tenantId: string,
+    provider: string,
+    text: string,
+    targetLanguage: string,
+    userId?: number
+  ): Promise<string> {
+    const messages: AIMessage[] = [
+      {
+        role: 'system',
+        content: `Você é um tradutor profissional. Traduza o texto para ${targetLanguage} mantendo o tom, estilo e significado original.`,
+      },
+      {
+        role: 'user',
+        content: text,
+      },
+    ];
+
+    const result = await AIProviderService.generate({
+      tenantId,
+      provider,
+      messages,
+      temperature: 0.3,
+      maxTokens: 2000,
+      module: 'translation',
+      userId,
+    });
+
+    return result.content;
   }
 
   async generateImage(
