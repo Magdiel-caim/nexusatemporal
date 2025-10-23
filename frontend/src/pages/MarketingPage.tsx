@@ -15,7 +15,6 @@ import {
   Calendar as CalendarIcon,
   List,
   Bot,
-  MessageCircle,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import * as Tabs from '@radix-ui/react-tabs';

@@ -48,7 +48,7 @@ const getControllers = () => {
 router.get(
   '/oauth/start',
   authenticate,
-  (req, res) => oauthController.startOAuth(req, res)
+  (req, res) => getControllers().oauthController.startOAuth(req, res)
 );
 
 /**
@@ -58,7 +58,7 @@ router.get(
  */
 router.get(
   '/oauth/callback',
-  (req, res) => oauthController.oauthCallback(req, res)
+  (req, res) => getControllers().oauthController.oauthCallback(req, res)
 );
 
 /**
@@ -68,7 +68,7 @@ router.get(
 router.get(
   '/accounts',
   authenticate,
-  (req, res) => oauthController.listAccounts(req, res)
+  (req, res) => getControllers().oauthController.listAccounts(req, res)
 );
 
 /**
@@ -78,7 +78,7 @@ router.get(
 router.delete(
   '/accounts/:id',
   authenticate,
-  (req, res) => oauthController.disconnectAccount(req, res)
+  (req, res) => getControllers().oauthController.disconnectAccount(req, res)
 );
 
 // ============================================
@@ -92,7 +92,7 @@ router.delete(
  */
 router.get(
   '/webhook',
-  (req, res) => webhookController.verify(req, res)
+  (req, res) => getControllers().webhookController.verify(req, res)
 );
 
 /**
@@ -102,7 +102,7 @@ router.get(
  */
 router.post(
   '/webhook',
-  (req, res) => webhookController.receive(req, res)
+  (req, res) => getControllers().webhookController.receive(req, res)
 );
 
 // ============================================
@@ -124,7 +124,7 @@ router.post(
 router.post(
   '/send-message',
   authenticate,
-  (req, res) => messagingController.sendMessage(req, res)
+  (req, res) => getControllers().messagingController.sendMessage(req, res)
 );
 
 /**
@@ -137,7 +137,7 @@ router.post(
 router.get(
   '/conversations/:accountId',
   authenticate,
-  (req, res) => messagingController.getConversations(req, res)
+  (req, res) => getControllers().messagingController.getConversations(req, res)
 );
 
 /**
@@ -150,7 +150,7 @@ router.get(
 router.get(
   '/messages/:accountId/:contactId',
   authenticate,
-  (req, res) => messagingController.getMessages(req, res)
+  (req, res) => getControllers().messagingController.getMessages(req, res)
 );
 
 export default router;

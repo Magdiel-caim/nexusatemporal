@@ -13,7 +13,6 @@ import automationRoutes from '@/modules/marketing/automation/automation.routes';
 import estoqueRoutes from '@/modules/estoque/estoque.routes';
 import vendasRoutes from '@/modules/vendas/vendas.routes';
 import biRoutes from '@/modules/bi/bi.routes'; // BI Module - Business Intelligence
-import notificaMeRoutes from '@/modules/notificame/notificame.routes'; // Notifica.me integration (WhatsApp/Instagram)
 import marketingRoutes from '@/modules/marketing/marketing.routes'; // Marketing Module - Campaigns, Social Posts, Bulk Messages, Landing Pages, AI Assistant
 import metaRoutes from '@/modules/meta/meta.routes'; // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 // Import other module routes as they are created
@@ -46,7 +45,6 @@ router.use('/marketing/automation', automationRoutes); // Automation system (tri
 router.use('/stock', estoqueRoutes); // Stock/Inventory management
 router.use('/vendas', vendasRoutes); // Sales and commissions management
 router.use('/bi', biRoutes); // Business Intelligence - Dashboards, KPIs, Analytics, Reports
-router.use('/notificame', notificaMeRoutes); // Notifica.me integration (WhatsApp/Instagram messaging)
 router.use('/marketing', marketingRoutes); // Marketing Module - Campaigns, Social Media, Bulk Messages, Landing Pages, AI
 router.use('/meta', metaRoutes); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 
