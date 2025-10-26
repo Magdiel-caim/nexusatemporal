@@ -3,14 +3,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy package files from backend directory
+COPY backend/package*.json ./
 
 # Install all dependencies (including dev for tsx)
 RUN npm install
 
-# Copy all source code
-COPY . .
+# Copy all backend source code
+COPY backend/ .
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001

@@ -66,17 +66,15 @@ services:
 
   # Backend API
   backend:
-    image: nexus_backend:v49-corrigido
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: nexus-backend:v120.6-restored
     environment:
       - NODE_ENV=production
-      - DB_HOST=postgres
+      - DB_HOST=46.202.144.210
+      - DB_DATABASE=nexus_crm
+      - DB_USERNAME=nexus_admin
+      - DB_PASSWORD=nexus2024@secure
       - REDIS_HOST=redis
       - RABBITMQ_HOST=rabbitmq
-      - DB_USERNAME=nexus_admin
-      - DB_PASSWORD=6uyJZdc0xsCe7ymief3x2Izi9QubcTYP
       - REDIS_PASSWORD=86Bj2r94OyfxdVqklbvKNAiSVgYRJvUg
       - RABBITMQ_USER=nexus_mq
       - RABBITMQ_PASSWORD=ZSGbN3hQJnl3Rnq6TE1wsFVQCi47EJgR
@@ -112,10 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus_frontend:v53-dark-mode
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
+    image: nexus-frontend:v120.6-error-fixed
     networks:
       - nexusatnet
     deploy:
@@ -130,4 +125,4 @@ services:
         - "traefik.http.routers.nexusfrontend.rule=Host(`one.nexusatemporal.com.br`)"
         - "traefik.http.routers.nexusfrontend.entrypoints=websecure"
         - "traefik.http.routers.nexusfrontend.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=80"
+        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=3000"
