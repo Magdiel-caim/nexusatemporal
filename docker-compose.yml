@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v120.6-error-fixed
+    image: nexus-frontend:v120.6-routes-fixed
     networks:
       - nexusatnet
     deploy:

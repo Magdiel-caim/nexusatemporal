@@ -113,6 +113,16 @@ function App() {
             }
           />
           <Route
+            path="/financeiro/*"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <FinanceiroPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/vendas"
             element={
               <ProtectedRoute>
@@ -123,7 +133,27 @@ function App() {
             }
           />
           <Route
+            path="/vendas/*"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <VendasPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/estoque"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <EstoquePage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/estoque/*"
             element={
               <ProtectedRoute>
                 <MainLayout>
@@ -147,6 +177,16 @@ function App() {
             }
           />
           <Route
+            path="/bi/*"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <BIDashboard />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/colaboracao"
             element={
               <ProtectedRoute>
@@ -160,20 +200,17 @@ function App() {
             }
           />
           <Route
-            path="/bi"
+            path="/marketing"
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <div className="text-center py-12">
-                    <h2 className="text-2xl font-bold mb-4">BI & Analytics</h2>
-                    <p className="text-gray-600">Em desenvolvimento...</p>
-                  </div>
+                  <MarketingPage />
                 </MainLayout>
               </ProtectedRoute>
             }
           />
           <Route
-            path="/marketing"
+            path="/marketing/*"
             element={
               <ProtectedRoute>
                 <MainLayout>
