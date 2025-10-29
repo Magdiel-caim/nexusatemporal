@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { AppDataSource, CrmDataSource } from '@/database/data-source';
+import { PatientDataSource } from '@/modules/pacientes/database/patient.datasource';
 import { errorHandler } from '@/shared/middleware/error-handler';
 import { rateLimiter } from '@/shared/middleware/rate-limiter';
 import { logger } from '@/shared/utils/logger';
@@ -87,12 +88,15 @@ const PORT = process.env.API_PORT || 3001;
 // Initialize databases and start server
 Promise.all([
   AppDataSource.initialize(),
-  CrmDataSource.initialize()
+  CrmDataSource.initialize(),
+  PatientDataSource.initialize()
 ])
-  .then(([chatDb, crmDb]) => {
+  .then(([chatDb, crmDb, patientDb]) => {
     logger.info('✅ Chat Database connected successfully (chat_messages, whatsapp_sessions)');
     logger.info('✅ CRM Database connected successfully (leads, users, pipelines, etc)');
     logger.info(`   CRM DB Host: ${(crmDb.options as any).host}`);
+    logger.info('✅ Patient Database connected successfully (patients, medical_records, images)');
+    logger.info(`   Patient DB Host: ${(patientDb.options as any).host}`);
 
     // ============================================
     // Inicializar WhatsApp Polling Service
@@ -125,7 +129,8 @@ process.on('SIGTERM', () => {
     logger.info('HTTP server closed');
     Promise.all([
       AppDataSource.destroy(),
-      CrmDataSource.destroy()
+      CrmDataSource.destroy(),
+      PatientDataSource.destroy()
     ]).then(() => {
       logger.info('All database connections closed');
       process.exit(0);

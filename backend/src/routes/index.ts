@@ -15,6 +15,7 @@ import vendasRoutes from '@/modules/vendas/vendas.routes';
 import biRoutes from '@/modules/bi/bi.routes'; // BI Module - Business Intelligence
 import marketingRoutes from '@/modules/marketing/marketing.routes'; // Marketing Module - Campaigns, Social Posts, Bulk Messages, Landing Pages, AI Assistant
 import metaRoutes from '@/modules/meta/meta.routes'; // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
+import pacientesRoutes from '@/modules/pacientes/routes/patient.routes'; // Patient Management - Complete medical records, images, appointments
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import configRoutes from '@/modules/config/config.routes';
@@ -47,6 +48,7 @@ router.use('/vendas', vendasRoutes); // Sales and commissions management
 router.use('/bi', biRoutes); // Business Intelligence - Dashboards, KPIs, Analytics, Reports
 router.use('/marketing', marketingRoutes); // Marketing Module - Campaigns, Social Media, Bulk Messages, Landing Pages, AI
 router.use('/meta', metaRoutes); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
+router.use('/pacientes', pacientesRoutes); // Patient Management - Complete medical records, images, appointments
 
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);

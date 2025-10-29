@@ -64,6 +64,7 @@ const allMenuItems: MenuItem[] = [
   { icon: MessageSquare, label: 'Chat', path: '/chat' },
   { icon: Calendar, label: 'Agenda', path: '/agenda' },
   { icon: FileText, label: 'Prontuários', path: '/prontuarios' },
+  { icon: Users2, label: 'Pacientes', path: '/pacientes' },
   {
     icon: DollarSign,
     label: 'Financeiro',

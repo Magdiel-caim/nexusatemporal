@@ -12,6 +12,7 @@ import AgendaPage from './pages/AgendaPage';
 import ProntuariosPage from './pages/ProntuariosPage';
 import FinanceiroPage from './pages/FinanceiroPage';
 import VendasPage from './pages/Vendas/VendasPage';
+import PacientesPage from './pages/PacientesPage';
 import EstoquePage from './pages/EstoquePage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
@@ -98,6 +99,26 @@ function App() {
               <ProtectedRoute>
                 <MainLayout>
                   <ProntuariosPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pacientes"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PacientesPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pacientes/*"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PacientesPage />
                 </MainLayout>
               </ProtectedRoute>
             }
