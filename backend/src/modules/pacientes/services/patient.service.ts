@@ -238,4 +238,152 @@ export class PatientService {
     const count = await query.getCount();
     return count > 0;
   }
+
+  /**
+   * Buscar agendamentos do paciente
+   */
+  async getPatientAppointments(patientId: string, tenantId: string) {
+    try {
+      const { CrmDataSource } = await import('../../../database/data-source');
+      const { Appointment } = await import('../../agenda/appointment.entity');
+      const { Lead } = await import('../../leads/lead.entity');
+
+      const appointmentRepository = CrmDataSource.getRepository(Appointment);
+      const leadRepository = CrmDataSource.getRepository(Lead);
+
+      // Buscar paciente
+      const patient = await this.findById(patientId, tenantId);
+      if (!patient) {
+        return [];
+      }
+
+      // Buscar lead associado ao paciente (por WhatsApp)
+      let lead = null;
+      if (patient.whatsapp) {
+        const phoneNumber = patient.whatsapp.replace(/\D/g, '');
+        lead = await leadRepository.findOne({
+          where: { whatsapp: phoneNumber, tenantId: tenantId as any },
+        });
+      }
+
+      if (!lead) {
+        return [];
+      }
+
+      // Buscar agendamentos do lead
+      const appointments = await appointmentRepository.find({
+        where: { leadId: lead.id },
+        relations: ['procedure', 'professional'],
+        order: { createdAt: 'DESC' } as any,
+        take: 50,
+      });
+
+      return appointments;
+    } catch (error) {
+      console.error('Error fetching patient appointments:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Buscar transações financeiras do paciente
+   */
+  async getPatientTransactions(patientId: string, tenantId: string) {
+    try {
+      const { CrmDataSource } = await import('../../../database/data-source');
+      const { Transaction } = await import('../../financeiro/transaction.entity');
+      const { Lead } = await import('../../leads/lead.entity');
+
+      const transactionRepository = CrmDataSource.getRepository(Transaction);
+      const leadRepository = CrmDataSource.getRepository(Lead);
+
+      // Buscar paciente
+      const patient = await this.findById(patientId, tenantId);
+      if (!patient) {
+        return { transactions: [], summary: { total: 0, paid: 0, pending: 0 } };
+      }
+
+      // Buscar lead associado ao paciente (por WhatsApp)
+      let lead = null;
+      if (patient.whatsapp) {
+        const phoneNumber = patient.whatsapp.replace(/\D/g, '');
+        lead = await leadRepository.findOne({
+          where: { whatsapp: phoneNumber, tenantId: tenantId as any },
+        });
+      }
+
+      if (!lead) {
+        return { transactions: [], summary: { total: 0, paid: 0, pending: 0 } };
+      }
+
+      // Buscar transações do lead
+      const transactions = await transactionRepository.find({
+        where: { leadId: lead.id, tenantId },
+        order: { createdAt: 'DESC' },
+        take: 100,
+      });
+
+      // Calcular resumo
+      const summary = transactions.reduce(
+        (acc, transaction) => {
+          acc.total += transaction.amount;
+          if (transaction.status === 'confirmada') {
+            acc.paid += transaction.amount;
+          } else if (transaction.status === 'pendente') {
+            acc.pending += transaction.amount;
+          }
+          return acc;
+        },
+        { total: 0, paid: 0, pending: 0 }
+      );
+
+      return { transactions, summary };
+    } catch (error) {
+      console.error('Error fetching patient transactions:', error);
+      return { transactions: [], summary: { total: 0, paid: 0, pending: 0 } };
+    }
+  }
+
+  /**
+   * Buscar conversas/mensagens do paciente
+   */
+  async getPatientConversations(patientId: string, tenantId: string) {
+    try {
+      const { CrmDataSource } = await import('../../../database/data-source');
+      const { Conversation } = await import('../../chat/conversation.entity');
+      const { Message } = await import('../../chat/message.entity');
+
+      const conversationRepository = CrmDataSource.getRepository(Conversation);
+
+      // Buscar paciente
+      const patient = await this.findById(patientId, tenantId);
+      if (!patient) {
+        return [];
+      }
+
+      if (!patient.whatsapp) {
+        return [];
+      }
+
+      // Limpar número do WhatsApp
+      const phoneNumber = patient.whatsapp.replace(/\D/g, '');
+
+      // Buscar conversas do paciente (por telefone)
+      const conversations = await conversationRepository.find({
+        where: [
+          { phoneNumber },
+          { phoneNumber: `55${phoneNumber}` },
+          { phoneNumber: `+55${phoneNumber}` },
+        ],
+        relations: ['messages'],
+        order: { lastMessageAt: 'DESC' },
+        take: 10,
+      });
+
+      return conversations;
+    } catch (error) {
+      console.error('Error fetching patient conversations:', error);
+      return [];
+    }
+  }
 }

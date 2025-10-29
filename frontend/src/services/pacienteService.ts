@@ -219,6 +219,33 @@ class PacienteService {
 
     return data;
   }
+
+  /**
+   * Buscar agendamentos do paciente
+   */
+  async getAppointments(patientId: string): Promise<any[]> {
+    const response = await api.get(`/api/pacientes/${patientId}/agendamentos`);
+    return response.data;
+  }
+
+  /**
+   * Buscar transações financeiras do paciente
+   */
+  async getTransactions(patientId: string): Promise<{
+    transactions: any[];
+    summary: { total: number; paid: number; pending: number };
+  }> {
+    const response = await api.get(`/api/pacientes/${patientId}/transacoes`);
+    return response.data;
+  }
+
+  /**
+   * Buscar conversas/mensagens do paciente
+   */
+  async getConversations(patientId: string): Promise<any[]> {
+    const response = await api.get(`/api/pacientes/${patientId}/conversas`);
+    return response.data;
+  }
 }
 
 export default new PacienteService();

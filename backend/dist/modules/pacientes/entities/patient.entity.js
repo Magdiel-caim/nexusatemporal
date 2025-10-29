@@ -84,75 +84,75 @@ __decorate([
     __metadata("design:type", Object)
 ], Patient.prototype, "birthDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 14, nullable: true, unique: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 14, nullable: true, unique: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "cpf", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 20, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "rg", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 10, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 10, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "gender", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'skin_color', length: 50, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'skin_color', type: 'varchar', length: 50, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "skinColor", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 20, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "whatsapp", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'emergency_phone', length: 20, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'emergency_phone', type: 'varchar', length: 20, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "emergencyPhone", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 255, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "email", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'zip_code', length: 9, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'zip_code', type: 'varchar', length: 9, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "zipCode", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 255, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "street", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 20, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "number", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 100, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "complement", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 100, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "neighborhood", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 100, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "city", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 2, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 2, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "state", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 50, default: 'Brasil', nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, default: 'Brasil', nullable: true }),
     __metadata("design:type", String)
 ], Patient.prototype, "country", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'health_card', length: 50, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'health_card', type: 'varchar', length: 50, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "healthCard", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'health_insurance', length: 255, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'health_insurance', type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "healthInsurance", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'health_insurance_number', length: 100, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'health_insurance_number', type: 'varchar', length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "healthInsuranceNumber", void 0);
 __decorate([
@@ -160,7 +160,7 @@ __decorate([
     __metadata("design:type", Object)
 ], Patient.prototype, "healthInsuranceValidity", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'health_insurance_holder', length: 255, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'health_insurance_holder', type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "healthInsuranceHolder", void 0);
 __decorate([
@@ -168,19 +168,19 @@ __decorate([
     __metadata("design:type", Object)
 ], Patient.prototype, "profilePhotoUrl", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'profile_photo_s3_key', length: 500, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'profile_photo_s3_key', type: 'varchar', length: 500, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "profilePhotoS3Key", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 50, default: 'manual' }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, default: 'manual' }),
     __metadata("design:type", String)
 ], Patient.prototype, "source", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'source_id', length: 100, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'source_id', type: 'varchar', length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "sourceId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 20, default: 'active' }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20, default: 'active' }),
     (0, typeorm_1.Index)(),
     __metadata("design:type", String)
 ], Patient.prototype, "status", void 0);
@@ -189,7 +189,7 @@ __decorate([
     __metadata("design:type", Object)
 ], Patient.prototype, "notes", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'registration_number', length: 50, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'registration_number', type: 'varchar', length: 50, nullable: true }),
     __metadata("design:type", Object)
 ], Patient.prototype, "registrationNumber", void 0);
 __decorate([

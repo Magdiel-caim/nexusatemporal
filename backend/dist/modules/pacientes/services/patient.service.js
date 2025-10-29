@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PatientService = void 0;
 const patient_datasource_1 = require("../database/patient.datasource");
@@ -166,6 +199,133 @@ class PatientService {
         }
         const count = await query.getCount();
         return count > 0;
+    }
+    /**
+     * Buscar agendamentos do paciente
+     */
+    async getPatientAppointments(patientId, tenantId) {
+        try {
+            const { CrmDataSource } = await Promise.resolve().then(() => __importStar(require('../../../database/data-source')));
+            const { Appointment } = await Promise.resolve().then(() => __importStar(require('../../agenda/appointment.entity')));
+            const { Lead } = await Promise.resolve().then(() => __importStar(require('../../leads/lead.entity')));
+            const appointmentRepository = CrmDataSource.getRepository(Appointment);
+            const leadRepository = CrmDataSource.getRepository(Lead);
+            // Buscar paciente
+            const patient = await this.findById(patientId, tenantId);
+            if (!patient) {
+                return [];
+            }
+            // Buscar lead associado ao paciente (por WhatsApp)
+            let lead = null;
+            if (patient.whatsapp) {
+                const phoneNumber = patient.whatsapp.replace(/\D/g, '');
+                lead = await leadRepository.findOne({
+                    where: { whatsapp: phoneNumber, tenantId: tenantId },
+                });
+            }
+            if (!lead) {
+                return [];
+            }
+            // Buscar agendamentos do lead
+            const appointments = await appointmentRepository.find({
+                where: { leadId: lead.id },
+                relations: ['procedure', 'professional'],
+                order: { createdAt: 'DESC' },
+                take: 50,
+            });
+            return appointments;
+        }
+        catch (error) {
+            console.error('Error fetching patient appointments:', error);
+            return [];
+        }
+    }
+    /**
+     * Buscar transações financeiras do paciente
+     */
+    async getPatientTransactions(patientId, tenantId) {
+        try {
+            const { CrmDataSource } = await Promise.resolve().then(() => __importStar(require('../../../database/data-source')));
+            const { Transaction } = await Promise.resolve().then(() => __importStar(require('../../financeiro/transaction.entity')));
+            const { Lead } = await Promise.resolve().then(() => __importStar(require('../../leads/lead.entity')));
+            const transactionRepository = CrmDataSource.getRepository(Transaction);
+            const leadRepository = CrmDataSource.getRepository(Lead);
+            // Buscar paciente
+            const patient = await this.findById(patientId, tenantId);
+            if (!patient) {
+                return { transactions: [], summary: { total: 0, paid: 0, pending: 0 } };
+            }
+            // Buscar lead associado ao paciente (por WhatsApp)
+            let lead = null;
+            if (patient.whatsapp) {
+                const phoneNumber = patient.whatsapp.replace(/\D/g, '');
+                lead = await leadRepository.findOne({
+                    where: { whatsapp: phoneNumber, tenantId: tenantId },
+                });
+            }
+            if (!lead) {
+                return { transactions: [], summary: { total: 0, paid: 0, pending: 0 } };
+            }
+            // Buscar transações do lead
+            const transactions = await transactionRepository.find({
+                where: { leadId: lead.id, tenantId },
+                order: { createdAt: 'DESC' },
+                take: 100,
+            });
+            // Calcular resumo
+            const summary = transactions.reduce((acc, transaction) => {
+                acc.total += transaction.amount;
+                if (transaction.status === 'confirmada') {
+                    acc.paid += transaction.amount;
+                }
+                else if (transaction.status === 'pendente') {
+                    acc.pending += transaction.amount;
+                }
+                return acc;
+            }, { total: 0, paid: 0, pending: 0 });
+            return { transactions, summary };
+        }
+        catch (error) {
+            console.error('Error fetching patient transactions:', error);
+            return { transactions: [], summary: { total: 0, paid: 0, pending: 0 } };
+        }
+    }
+    /**
+     * Buscar conversas/mensagens do paciente
+     */
+    async getPatientConversations(patientId, tenantId) {
+        try {
+            const { CrmDataSource } = await Promise.resolve().then(() => __importStar(require('../../../database/data-source')));
+            const { Conversation } = await Promise.resolve().then(() => __importStar(require('../../chat/conversation.entity')));
+            const { Message } = await Promise.resolve().then(() => __importStar(require('../../chat/message.entity')));
+            const conversationRepository = CrmDataSource.getRepository(Conversation);
+            // Buscar paciente
+            const patient = await this.findById(patientId, tenantId);
+            if (!patient) {
+                return [];
+            }
+            if (!patient.whatsapp) {
+                return [];
+            }
+            // Limpar número do WhatsApp
+            const phoneNumber = patient.whatsapp.replace(/\D/g, '');
+            // Buscar conversas do paciente (por telefone)
+            const conversations = await conversationRepository.find({
+                where: [
+                    { phoneNumber },
+                    { phoneNumber: `55${phoneNumber}` },
+                    { phoneNumber: `+55${phoneNumber}` },
+                ],
+                relations: ['messages'],
+                order: { lastMessageAt: 'DESC' },
+                take: 10,
+            });
+            return conversations;
+        }
+        catch (error) {
+            console.error('Error fetching patient conversations:', error);
+            return [];
+        }
     }
 }
 exports.PatientService = PatientService;

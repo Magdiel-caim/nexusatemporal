@@ -75,7 +75,7 @@ __decorate([
     __metadata("design:type", Date)
 ], PatientMedicalRecord.prototype, "serviceDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 100, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], PatientMedicalRecord.prototype, "specialty", void 0);
 __decorate([
@@ -139,7 +139,7 @@ __decorate([
     __metadata("design:type", Object)
 ], PatientMedicalRecord.prototype, "signatureUrl", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'signature_s3_key', length: 500, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'signature_s3_key', type: 'varchar', length: 500, nullable: true }),
     __metadata("design:type", Object)
 ], PatientMedicalRecord.prototype, "signatureS3Key", void 0);
 __decorate([

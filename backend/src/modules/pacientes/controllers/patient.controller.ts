@@ -319,4 +319,58 @@ export class PatientController {
       res.status(500).json({ error: error.message });
     }
   };
+
+  /**
+   * GET /api/pacientes/:id/agendamentos
+   * Buscar agendamentos do paciente
+   */
+  getAppointments = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { tenantId } = req.user as any;
+
+      const appointments = await this.patientService.getPatientAppointments(id, tenantId);
+
+      res.json(appointments);
+    } catch (error: any) {
+      console.error('Error fetching appointments:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  /**
+   * GET /api/pacientes/:id/transacoes
+   * Buscar transações financeiras do paciente
+   */
+  getTransactions = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { tenantId } = req.user as any;
+
+      const transactions = await this.patientService.getPatientTransactions(id, tenantId);
+
+      res.json(transactions);
+    } catch (error: any) {
+      console.error('Error fetching transactions:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  /**
+   * GET /api/pacientes/:id/conversas
+   * Buscar conversas/mensagens do paciente
+   */
+  getConversations = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { tenantId } = req.user as any;
+
+      const conversations = await this.patientService.getPatientConversations(id, tenantId);
+
+      res.json(conversations);
+    } catch (error: any) {
+      console.error('Error fetching conversations:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
 }

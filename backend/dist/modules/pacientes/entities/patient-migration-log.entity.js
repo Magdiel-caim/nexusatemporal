@@ -38,11 +38,11 @@ __decorate([
     __metadata("design:type", Number)
 ], PatientMigrationLog.prototype, "batchNumber", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'source_system', length: 50 }),
+    (0, typeorm_1.Column)({ name: 'source_system', type: 'varchar', length: 50 }),
     __metadata("design:type", String)
 ], PatientMigrationLog.prototype, "sourceSystem", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'source_patient_id', length: 100, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'source_patient_id', type: 'varchar', length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], PatientMigrationLog.prototype, "sourcePatientId", void 0);
 __decorate([
@@ -50,7 +50,7 @@ __decorate([
     __metadata("design:type", Object)
 ], PatientMigrationLog.prototype, "targetPatientId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 20 }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20 }),
     __metadata("design:type", String)
 ], PatientMigrationLog.prototype, "status", void 0);
 __decorate([

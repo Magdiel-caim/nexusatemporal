@@ -57,11 +57,11 @@ __decorate([
     __metadata("design:type", Object)
 ], PatientImage.prototype, "medicalRecordId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 20 }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 20 }),
     __metadata("design:type", String)
 ], PatientImage.prototype, "type", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 50, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, nullable: true }),
     __metadata("design:type", Object)
 ], PatientImage.prototype, "category", void 0);
 __decorate([
@@ -69,7 +69,7 @@ __decorate([
     __metadata("design:type", String)
 ], PatientImage.prototype, "imageUrl", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 's3_key', length: 500 }),
+    (0, typeorm_1.Column)({ name: 's3_key', type: 'varchar', length: 500 }),
     __metadata("design:type", String)
 ], PatientImage.prototype, "s3Key", void 0);
 __decorate([
@@ -77,11 +77,11 @@ __decorate([
     __metadata("design:type", Object)
 ], PatientImage.prototype, "thumbnailUrl", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'thumbnail_s3_key', length: 500, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'thumbnail_s3_key', type: 'varchar', length: 500, nullable: true }),
     __metadata("design:type", Object)
 ], PatientImage.prototype, "thumbnailS3Key", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 255, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], PatientImage.prototype, "filename", void 0);
 __decorate([
@@ -89,7 +89,7 @@ __decorate([
     __metadata("design:type", Object)
 ], PatientImage.prototype, "fileSize", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'mime_type', length: 100, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'mime_type', type: 'varchar', length: 100, nullable: true }),
     __metadata("design:type", Object)
 ], PatientImage.prototype, "mimeType", void 0);
 __decorate([
@@ -105,7 +105,7 @@ __decorate([
     __metadata("design:type", Object)
 ], PatientImage.prototype, "description", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'procedure_name', length: 255, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'procedure_name', type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], PatientImage.prototype, "procedureName", void 0);
 __decorate([

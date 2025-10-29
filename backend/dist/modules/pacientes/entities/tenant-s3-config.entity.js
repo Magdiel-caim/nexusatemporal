@@ -29,7 +29,7 @@ __decorate([
     __metadata("design:type", String)
 ], TenantS3Config.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'tenant_id', unique: true }),
+    (0, typeorm_1.Column)({ name: 'tenant_id', type: 'varchar', length: 255, unique: true }),
     __metadata("design:type", String)
 ], TenantS3Config.prototype, "tenantId", void 0);
 __decorate([
@@ -45,15 +45,15 @@ __decorate([
     __metadata("design:type", String)
 ], TenantS3Config.prototype, "secretAccessKey", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'bucket_name' }),
+    (0, typeorm_1.Column)({ name: 'bucket_name', type: 'varchar', length: 255 }),
     __metadata("design:type", String)
 ], TenantS3Config.prototype, "bucketName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ default: 'us-east-1' }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 255, default: 'us-east-1' }),
     __metadata("design:type", String)
 ], TenantS3Config.prototype, "region", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'is_active', default: true }),
+    (0, typeorm_1.Column)({ name: 'is_active', type: 'boolean', default: true }),
     __metadata("design:type", Boolean)
 ], TenantS3Config.prototype, "isActive", void 0);
 __decorate([

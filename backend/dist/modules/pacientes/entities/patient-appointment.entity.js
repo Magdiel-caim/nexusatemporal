@@ -48,15 +48,15 @@ __decorate([
     __metadata("design:type", Object)
 ], PatientAppointment.prototype, "appointmentDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'professional_name', length: 255, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'professional_name', type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], PatientAppointment.prototype, "professionalName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'procedure_name', length: 255, nullable: true }),
+    (0, typeorm_1.Column)({ name: 'procedure_name', type: 'varchar', length: 255, nullable: true }),
     __metadata("design:type", Object)
 ], PatientAppointment.prototype, "procedureName", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ length: 50, nullable: true }),
+    (0, typeorm_1.Column)({ type: 'varchar', length: 50, nullable: true }),
     __metadata("design:type", Object)
 ], PatientAppointment.prototype, "status", void 0);
 __decorate([

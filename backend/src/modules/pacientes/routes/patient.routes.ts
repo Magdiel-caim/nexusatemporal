@@ -34,4 +34,9 @@ router.delete('/:id/imagens/:imageId', patientController.deleteImage);
 router.get('/:id/prontuarios', patientController.getMedicalRecords);
 router.post('/:id/prontuarios', patientController.createMedicalRecord);
 
+// ========== INTEGRAÇÕES COM OUTROS MÓDULOS ==========
+router.get('/:id/agendamentos', patientController.getAppointments);
+router.get('/:id/transacoes', patientController.getTransactions);
+router.get('/:id/conversas', patientController.getConversations);
+
 export default router;

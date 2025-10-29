@@ -80,15 +80,22 @@ const PORT = process.env.API_PORT || 3001;
 // Initialize databases and start server
 Promise.all([
     data_source_1.AppDataSource.initialize(),
-    data_source_1.CrmDataSource.initialize(),
-    patient_datasource_1.PatientDataSource.initialize()
+    data_source_1.CrmDataSource.initialize()
 ])
-    .then(([chatDb, crmDb, patientDb]) => {
+    .then(([chatDb, crmDb]) => {
     logger_1.logger.info('✅ Chat Database connected successfully (chat_messages, whatsapp_sessions)');
     logger_1.logger.info('✅ CRM Database connected successfully (leads, users, pipelines, etc)');
     logger_1.logger.info(`   CRM DB Host: ${crmDb.options.host}`);
-    logger_1.logger.info('✅ Patient Database connected successfully (patients, medical_records, images)');
-    logger_1.logger.info(`   Patient DB Host: ${patientDb.options.host}`);
+    // Initialize Patient Database (non-blocking)
+    patient_datasource_1.PatientDataSource.initialize()
+        .then((patientDb) => {
+        logger_1.logger.info('✅ Patient Database connected successfully (patients, medical_records, images)');
+        logger_1.logger.info(`   Patient DB Host: ${patientDb.options.host}`);
+    })
+        .catch((error) => {
+        logger_1.logger.error('⚠️  Patient Database connection failed (module will be unavailable):', error.message);
+        logger_1.logger.warn('   System will continue without Patients module');
+    });
     // ============================================
     // Inicializar WhatsApp Polling Service
     // ============================================
@@ -114,11 +121,15 @@ process.on('SIGTERM', () => {
     }
     httpServer.close(() => {
         logger_1.logger.info('HTTP server closed');
-        Promise.all([
+        const closeTasks = [
             data_source_1.AppDataSource.destroy(),
-            data_source_1.CrmDataSource.destroy(),
-            patient_datasource_1.PatientDataSource.destroy()
-        ]).then(() => {
+            data_source_1.CrmDataSource.destroy()
+        ];
+        // Only close PatientDataSource if it was initialized
+        if (patient_datasource_1.PatientDataSource.isInitialized) {
+            closeTasks.push(patient_datasource_1.PatientDataSource.destroy());
+        }
+        Promise.all(closeTasks).then(() => {
             logger_1.logger.info('All database connections closed');
             process.exit(0);
         });
