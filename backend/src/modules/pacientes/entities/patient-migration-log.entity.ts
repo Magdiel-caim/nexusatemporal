@@ -7,22 +7,22 @@ export class PatientMigrationLog {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'tenant_id' })
+  @Column({ name: 'tenant_id', type: 'varchar', length: 255 })
   tenantId: string;
 
   @Column({ name: 'batch_number', type: 'int' })
   batchNumber: number;
 
-  @Column({ name: 'source_system', length: 50 })
+  @Column({ name: 'source_system', type: 'varchar', length: 50 })
   sourceSystem: string;
 
-  @Column({ name: 'source_patient_id', length: 100, nullable: true })
+  @Column({ name: 'source_patient_id', type: 'varchar', length: 100, nullable: true })
   sourcePatientId: string | null;
 
   @Column({ name: 'target_patient_id', type: 'uuid', nullable: true })
   targetPatientId: string | null;
 
-  @Column({ length: 20 })
+  @Column({ type: 'varchar', length: 20 })
   status: string; // success/error/skipped
 
   @Column({ name: 'error_message', type: 'text', nullable: true })

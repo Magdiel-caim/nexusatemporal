@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import pacienteService, { Patient, PatientStats } from '@/services/pacienteService';
-import { Users, Plus, Search, Filter, FileText, User } from 'lucide-react';
+import { Users, Plus, Search, Filter, User, AlertCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function PacientesPage() {
@@ -13,6 +13,7 @@ export default function PacientesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPatients, setTotalPatients] = useState(0);
+  const [moduleUnavailable, setModuleUnavailable] = useState(false);
   const patientsPerPage = 50;
 
   useEffect(() => {
@@ -33,7 +34,14 @@ export default function PacientesPage() {
       setTotalPatients(response.total);
     } catch (error: any) {
       console.error('Erro ao carregar pacientes:', error);
-      toast.error(error.response?.data?.error || 'Erro ao carregar pacientes');
+      if (error.response?.status === 503) {
+        setModuleUnavailable(true);
+        toast.error(error.response?.data?.message || 'Módulo de Pacientes temporariamente indisponível', {
+          duration: 5000,
+        });
+      } else {
+        toast.error(error.response?.data?.error || 'Erro ao carregar pacientes');
+      }
     } finally {
       setLoading(false);
     }
@@ -43,8 +51,12 @@ export default function PacientesPage() {
     try {
       const statsData = await pacienteService.getStats();
       setStats(statsData);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao carregar estatísticas:', error);
+      // Silently fail stats if module is unavailable
+      if (error.response?.status !== 503) {
+        console.error('Stats error:', error);
+      }
     }
   };
 
@@ -93,6 +105,23 @@ export default function PacientesPage() {
           Novo Paciente
         </button>
       </div>
+
+      {/* Module Unavailable Alert */}
+      {moduleUnavailable && (
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
+            <div>
+              <h3 className="font-semibold text-yellow-800 dark:text-yellow-400">
+                Módulo de Pacientes Temporariamente Indisponível
+              </h3>
+              <p className="text-sm text-yellow-700 dark:text-yellow-500 mt-1">
+                O banco de dados de pacientes não está acessível no momento. Entre em contato com o administrador do sistema.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

@@ -14,6 +14,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
 const data_source_1 = require("./database/data-source");
+const patient_datasource_1 = require("./modules/pacientes/database/patient.datasource");
 const error_handler_1 = require("./shared/middleware/error-handler");
 const logger_1 = require("./shared/utils/logger");
 const routes_1 = __importDefault(require("./routes"));
@@ -79,12 +80,15 @@ const PORT = process.env.API_PORT || 3001;
 // Initialize databases and start server
 Promise.all([
     data_source_1.AppDataSource.initialize(),
-    data_source_1.CrmDataSource.initialize()
+    data_source_1.CrmDataSource.initialize(),
+    patient_datasource_1.PatientDataSource.initialize()
 ])
-    .then(([chatDb, crmDb]) => {
+    .then(([chatDb, crmDb, patientDb]) => {
     logger_1.logger.info('✅ Chat Database connected successfully (chat_messages, whatsapp_sessions)');
     logger_1.logger.info('✅ CRM Database connected successfully (leads, users, pipelines, etc)');
     logger_1.logger.info(`   CRM DB Host: ${crmDb.options.host}`);
+    logger_1.logger.info('✅ Patient Database connected successfully (patients, medical_records, images)');
+    logger_1.logger.info(`   Patient DB Host: ${patientDb.options.host}`);
     // ============================================
     // Inicializar WhatsApp Polling Service
     // ============================================
@@ -112,7 +116,8 @@ process.on('SIGTERM', () => {
         logger_1.logger.info('HTTP server closed');
         Promise.all([
             data_source_1.AppDataSource.destroy(),
-            data_source_1.CrmDataSource.destroy()
+            data_source_1.CrmDataSource.destroy(),
+            patient_datasource_1.PatientDataSource.destroy()
         ]).then(() => {
             logger_1.logger.info('All database connections closed');
             process.exit(0);

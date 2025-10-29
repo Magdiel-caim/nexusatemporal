@@ -22,37 +22,37 @@ export class PatientImage {
   @Column({ name: 'patient_id', type: 'uuid' })
   patientId: string;
 
-  @Column({ name: 'tenant_id' })
+  @Column({ name: 'tenant_id', type: 'varchar', length: 255 })
   tenantId: string;
 
   @Column({ name: 'medical_record_id', type: 'uuid', nullable: true })
   medicalRecordId: string | null;
 
-  @Column({ length: 20 })
+  @Column({ type: 'varchar', length: 20 })
   type: string; // before/after/profile/document/procedure
 
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   category: string | null;
 
   @Column({ name: 'image_url', type: 'text' })
   imageUrl: string;
 
-  @Column({ name: 's3_key', length: 500 })
+  @Column({ name: 's3_key', type: 'varchar', length: 500 })
   s3Key: string;
 
   @Column({ name: 'thumbnail_url', type: 'text', nullable: true })
   thumbnailUrl: string | null;
 
-  @Column({ name: 'thumbnail_s3_key', length: 500, nullable: true })
+  @Column({ name: 'thumbnail_s3_key', type: 'varchar', length: 500, nullable: true })
   thumbnailS3Key: string | null;
 
-  @Column({ length: 255, nullable: true })
+  @Column({ type: 'varchar', length: 255, nullable: true })
   filename: string | null;
 
   @Column({ name: 'file_size', type: 'int', nullable: true })
   fileSize: number | null;
 
-  @Column({ name: 'mime_type', length: 100, nullable: true })
+  @Column({ name: 'mime_type', type: 'varchar', length: 100, nullable: true })
   mimeType: string | null;
 
   @Column({ type: 'int', nullable: true })
@@ -64,7 +64,7 @@ export class PatientImage {
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
-  @Column({ name: 'procedure_name', length: 255, nullable: true })
+  @Column({ name: 'procedure_name', type: 'varchar', length: 255, nullable: true })
   procedureName: string | null;
 
   @Column({ name: 'taken_at', type: 'date', nullable: true })

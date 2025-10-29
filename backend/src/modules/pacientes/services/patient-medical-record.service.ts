@@ -1,3 +1,4 @@
+import { IsNull } from 'typeorm';
 import { PatientDataSource } from '../database/patient.datasource';
 import { PatientMedicalRecord } from '../entities/patient-medical-record.entity';
 
@@ -15,7 +16,7 @@ export class PatientMedicalRecordService {
 
   async findByPatient(patientId: string, tenantId: string): Promise<PatientMedicalRecord[]> {
     return await this.repository.find({
-      where: { patientId, tenantId, deletedAt: null },
+      where: { patientId, tenantId, deletedAt: IsNull() },
       order: { serviceDate: 'DESC' },
       relations: ['images'],
     });
@@ -23,7 +24,7 @@ export class PatientMedicalRecordService {
 
   async findById(id: string, tenantId: string): Promise<PatientMedicalRecord | null> {
     return await this.repository.findOne({
-      where: { id, tenantId, deletedAt: null },
+      where: { id, tenantId, deletedAt: IsNull() },
       relations: ['images', 'patient'],
     });
   }
@@ -51,7 +52,7 @@ export class PatientMedicalRecordService {
 
   async getLatest(patientId: string, tenantId: string): Promise<PatientMedicalRecord | null> {
     return await this.repository.findOne({
-      where: { patientId, tenantId, deletedAt: null },
+      where: { patientId, tenantId, deletedAt: IsNull() },
       order: { serviceDate: 'DESC' },
     });
   }

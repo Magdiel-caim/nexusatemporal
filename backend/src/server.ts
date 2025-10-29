@@ -88,15 +88,23 @@ const PORT = process.env.API_PORT || 3001;
 // Initialize databases and start server
 Promise.all([
   AppDataSource.initialize(),
-  CrmDataSource.initialize(),
-  PatientDataSource.initialize()
+  CrmDataSource.initialize()
 ])
-  .then(([chatDb, crmDb, patientDb]) => {
+  .then(([chatDb, crmDb]) => {
     logger.info('✅ Chat Database connected successfully (chat_messages, whatsapp_sessions)');
     logger.info('✅ CRM Database connected successfully (leads, users, pipelines, etc)');
     logger.info(`   CRM DB Host: ${(crmDb.options as any).host}`);
-    logger.info('✅ Patient Database connected successfully (patients, medical_records, images)');
-    logger.info(`   Patient DB Host: ${(patientDb.options as any).host}`);
+
+    // Initialize Patient Database (non-blocking)
+    PatientDataSource.initialize()
+      .then((patientDb) => {
+        logger.info('✅ Patient Database connected successfully (patients, medical_records, images)');
+        logger.info(`   Patient DB Host: ${(patientDb.options as any).host}`);
+      })
+      .catch((error) => {
+        logger.error('⚠️  Patient Database connection failed (module will be unavailable):', error.message);
+        logger.warn('   System will continue without Patients module');
+      });
 
     // ============================================
     // Inicializar WhatsApp Polling Service
@@ -127,11 +135,17 @@ process.on('SIGTERM', () => {
 
   httpServer.close(() => {
     logger.info('HTTP server closed');
-    Promise.all([
+    const closeTasks = [
       AppDataSource.destroy(),
-      CrmDataSource.destroy(),
-      PatientDataSource.destroy()
-    ]).then(() => {
+      CrmDataSource.destroy()
+    ];
+
+    // Only close PatientDataSource if it was initialized
+    if (PatientDataSource.isInitialized) {
+      closeTasks.push(PatientDataSource.destroy());
+    }
+
+    Promise.all(closeTasks).then(() => {
       logger.info('All database connections closed');
       process.exit(0);
     });

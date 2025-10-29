@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import { PatientController } from '../controllers/patient.controller';
 import { authenticate } from '../../../shared/middleware/auth.middleware';
+import { checkPatientDataSource } from '../middleware/check-datasource.middleware';
 
 const router = Router();
 const patientController = new PatientController();
 
-// Todas as rotas requerem autenticação
+// Todas as rotas requerem autenticação e banco de pacientes disponível
 router.use(authenticate);
+router.use(checkPatientDataSource);
 
 // ========== ESTATÍSTICAS ==========
 // Deve vir ANTES das rotas com :id para não capturar "stats" como ID
@@ -26,6 +28,7 @@ router.post(
   patientController.uploadImage
 );
 router.get('/:id/imagens', patientController.getImages);
+router.delete('/:id/imagens/:imageId', patientController.deleteImage);
 
 // ========== PRONTUÁRIOS DO PACIENTE ==========
 router.get('/:id/prontuarios', patientController.getMedicalRecords);

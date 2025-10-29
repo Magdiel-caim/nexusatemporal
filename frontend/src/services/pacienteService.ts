@@ -175,6 +175,13 @@ class PacienteService {
   }
 
   /**
+   * Deletar imagem do paciente
+   */
+  async deleteImage(patientId: string, imageId: string): Promise<void> {
+    await api.delete(`/pacientes/${patientId}/imagens/${imageId}`);
+  }
+
+  /**
    * Listar prontuários do paciente
    */
   async getMedicalRecords(patientId: string): Promise<PatientMedicalRecord[]> {

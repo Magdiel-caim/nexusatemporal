@@ -14,19 +14,19 @@ export class PatientAppointment {
   @Column({ name: 'appointment_id', type: 'uuid' })
   appointmentId: string;
 
-  @Column({ name: 'tenant_id' })
+  @Column({ name: 'tenant_id', type: 'varchar', length: 255 })
   tenantId: string;
 
   @Column({ name: 'appointment_date', type: 'timestamp', nullable: true })
   appointmentDate: Date | null;
 
-  @Column({ name: 'professional_name', length: 255, nullable: true })
+  @Column({ name: 'professional_name', type: 'varchar', length: 255, nullable: true })
   professionalName: string | null;
 
-  @Column({ name: 'procedure_name', length: 255, nullable: true })
+  @Column({ name: 'procedure_name', type: 'varchar', length: 255, nullable: true })
   procedureName: string | null;
 
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   status: string | null;
 
   @Column({ name: 'patient_notes', type: 'text', nullable: true })

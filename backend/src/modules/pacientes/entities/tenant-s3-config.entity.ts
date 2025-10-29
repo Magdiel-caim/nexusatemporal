@@ -6,10 +6,10 @@ export class TenantS3Config {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'tenant_id', unique: true })
+  @Column({ name: 'tenant_id', type: 'varchar', length: 255, unique: true })
   tenantId: string;
 
-  @Column()
+  @Column({ type: 'varchar', length: 255 })
   endpoint: string;
 
   @Column({ name: 'access_key_id', type: 'text' })
@@ -18,13 +18,13 @@ export class TenantS3Config {
   @Column({ name: 'secret_access_key', type: 'text' })
   secretAccessKey: string; // Criptografado
 
-  @Column({ name: 'bucket_name' })
+  @Column({ name: 'bucket_name', type: 'varchar', length: 255 })
   bucketName: string;
 
-  @Column({ default: 'us-east-1' })
+  @Column({ type: 'varchar', length: 255, default: 'us-east-1' })
   region: string;
 
-  @Column({ name: 'is_active', default: true })
+  @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
   @CreateDateColumn({ name: 'created_at' })

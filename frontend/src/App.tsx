@@ -13,6 +13,8 @@ import ProntuariosPage from './pages/ProntuariosPage';
 import FinanceiroPage from './pages/FinanceiroPage';
 import VendasPage from './pages/Vendas/VendasPage';
 import PacientesPage from './pages/PacientesPage';
+import PacienteFormPage from './pages/PacienteFormPage';
+import PacienteFichaPage from './pages/PacienteFichaPage';
 import EstoquePage from './pages/EstoquePage';
 import ConfiguracoesPage from './pages/ConfiguracoesPage';
 import IntegracoesPagamentosPage from './pages/IntegracoesPagamentosPage';
@@ -114,11 +116,31 @@ function App() {
             }
           />
           <Route
-            path="/pacientes/*"
+            path="/pacientes/novo"
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PacientesPage />
+                  <PacienteFormPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pacientes/:id"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PacienteFichaPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/pacientes/:id/editar"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <PacienteFormPage />
                 </MainLayout>
               </ProtectedRoute>
             }

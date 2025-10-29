@@ -1,3 +1,4 @@
+import { IsNull } from 'typeorm';
 import { PatientDataSource } from '../database/patient.datasource';
 import { PatientImage } from '../entities/patient-image.entity';
 import { S3StorageService } from './s3-storage.service';
@@ -12,9 +13,9 @@ export class PatientImageService {
   }
 
   async findByPatient(patientId: string, tenantId: string, type?: string): Promise<PatientImage[]> {
-    const where: any = { patientId, tenantId, deletedAt: null };
+    const where: any = { patientId, tenantId, deletedAt: IsNull() };
     if (type) where.type = type;
-    
+
     return await this.repository.find({
       where,
       order: { createdAt: 'DESC' },
@@ -23,7 +24,7 @@ export class PatientImageService {
 
   async findById(id: string, tenantId: string): Promise<PatientImage | null> {
     return await this.repository.findOne({
-      where: { id, tenantId, deletedAt: null },
+      where: { id, tenantId, deletedAt: IsNull() },
     });
   }
 

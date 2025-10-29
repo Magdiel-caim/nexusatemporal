@@ -24,14 +24,14 @@ export class PatientMedicalRecord {
   @Column({ name: 'patient_id', type: 'uuid' })
   patientId: string;
 
-  @Column({ name: 'tenant_id' })
+  @Column({ name: 'tenant_id', type: 'varchar', length: 255 })
   tenantId: string;
 
   // Data do atendimento
   @Column({ name: 'service_date', type: 'date' })
   serviceDate: Date;
 
-  @Column({ length: 100, nullable: true })
+  @Column({ type: 'varchar', length: 100, nullable: true })
   specialty: string | null;
 
   // Anamnese
@@ -85,7 +85,7 @@ export class PatientMedicalRecord {
   @Column({ name: 'signature_url', type: 'text', nullable: true })
   signatureUrl: string | null;
 
-  @Column({ name: 'signature_s3_key', length: 500, nullable: true })
+  @Column({ name: 'signature_s3_key', type: 'varchar', length: 500, nullable: true })
   signatureS3Key: string | null;
 
   @Column({ name: 'signed_at', type: 'timestamp', nullable: true })

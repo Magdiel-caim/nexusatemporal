@@ -147,6 +147,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, logout } = useAuthStore();
   const { theme } = useTheme();
 
+  // Debug: verificar se menu de Pacientes existe
+  console.log('🔍 DEBUG - Menu Items:', allMenuItems.map(item => item.label));
+
   // Filtrar menu items baseado no role do usuário
   const menuItems = useMemo(() => {
     const userRole = user?.role?.toLowerCase() || 'user';

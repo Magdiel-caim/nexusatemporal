@@ -17,7 +17,7 @@ export const PatientDataSource = new DataSource({
   host: process.env.PATIENT_DB_HOST || '72.60.139.52',
   port: parseInt(process.env.PATIENT_DB_PORT || '5432'),
   username: process.env.PATIENT_DB_USERNAME || 'nexus_pacientes_user',
-  password: process.env.PATIENT_DB_PASSWORD || 'Nexus@Pacientes2024!Secure',
+  password: process.env.PATIENT_DB_PASSWORD || 'NexusPacientes2024Secure',
   database: process.env.PATIENT_DB_DATABASE || 'nexus_pacientes',
   entities: [
     Patient,
@@ -30,7 +30,7 @@ export const PatientDataSource = new DataSource({
   ],
   synchronize: false, // Usar migrations
   logging: process.env.NODE_ENV === 'development',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: false, // Mesmo padrão do CrmDataSource
   extra: {
     max: 20, // Máximo de conexões no pool
     idleTimeoutMillis: 30000,

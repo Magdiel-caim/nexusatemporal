@@ -14,7 +14,7 @@ export class PatientTransaction {
   @Column({ name: 'transaction_id', type: 'uuid' })
   transactionId: string;
 
-  @Column({ name: 'tenant_id' })
+  @Column({ name: 'tenant_id', type: 'varchar', length: 255 })
   tenantId: string;
 
   @Column({ name: 'transaction_date', type: 'date', nullable: true })
@@ -23,16 +23,16 @@ export class PatientTransaction {
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: true })
   amount: number | null;
 
-  @Column({ length: 20, nullable: true })
+  @Column({ type: 'varchar', length: 20, nullable: true })
   type: string | null;
 
-  @Column({ length: 50, nullable: true })
+  @Column({ type: 'varchar', length: 50, nullable: true })
   category: string | null;
 
   @Column({ type: 'text', nullable: true })
   description: string | null;
 
-  @Column({ length: 20, nullable: true })
+  @Column({ type: 'varchar', length: 20, nullable: true })
   status: string | null;
 
   @CreateDateColumn({ name: 'created_at' })

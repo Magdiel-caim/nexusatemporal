@@ -238,6 +238,28 @@ export class PatientController {
   };
 
   /**
+   * DELETE /api/pacientes/:id/imagens/:imageId
+   * Deletar imagem do paciente
+   */
+  deleteImage = async (req: Request, res: Response) => {
+    try {
+      const { id: patientId, imageId } = req.params;
+      const { tenantId } = req.user as any;
+
+      const deleted = await this.imageService.delete(imageId, tenantId);
+
+      if (!deleted) {
+        return res.status(404).json({ error: 'Image not found' });
+      }
+
+      res.json({ success: true, message: 'Image deleted successfully' });
+    } catch (error: any) {
+      console.error('Error deleting image:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  /**
    * GET /api/pacientes/:id/prontuarios
    * Listar prontuários do paciente
    */
