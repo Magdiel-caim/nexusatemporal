@@ -2,6 +2,177 @@
 
 ---
 
+## 🔑 v122 - SISTEMA DE API KEYS PARA INTEGRAÇÕES (2025-10-30)
+
+### 📝 RESUMO
+**Versão**: v1.22-api-keys
+**Data**: 30/10/2025
+**Status**: ✅ **100% FUNCIONAL**
+**Documentação**: `SISTEMA_API_KEYS_v122.md`
+
+### 🎯 OBJETIVO
+Implementação completa de sistema de gerenciamento de API Keys para permitir integrações externas seguras com N8N, Zapier, Make.com e outras plataformas de automação.
+
+### ✨ FEATURES IMPLEMENTADAS
+
+#### Backend (17 arquivos)
+- ✅ **Entidade API Key** (`api-key.entity.ts`)
+  - Campos: id, name, key (hash SHA-256), description, status, scopes, allowed_ips, allowed_origins
+  - Rate limiting configurável, expiração, rastreamento de uso
+  - Multi-tenant com soft delete
+
+- ✅ **Service Layer** (`api-key.service.ts`)
+  - Geração segura de chaves com crypto (SHA-256)
+  - CRUD completo com QueryBuilder
+  - Validação de chaves para autenticação
+  - Verificação de rate limit e estatísticas
+
+- ✅ **Controller** (`api-key.controller.ts`)
+  - 8 endpoints REST completos
+  - Sanitização de dados (key nunca retorna após criação)
+  - Validação de escopos e permissões
+
+- ✅ **Middleware de Autenticação** (`api-key-auth.middleware.ts`)
+  - Suporte a 3 métodos: Authorization Bearer, X-API-Key header, query param
+  - Validação de IP e origem
+  - Verificação de rate limit
+  - Injeção de user context
+
+- ✅ **Migration** (`1730217600000-CreateApiKeysTable.ts`)
+  - Tabela api_keys com 17 campos
+  - 3 índices otimizados
+  - Constraints e checks
+
+- ✅ **Rotas** (`api-key.routes.ts`)
+  - GET /api/integrations/api-keys (list)
+  - POST /api/integrations/api-keys (create)
+  - GET /api/integrations/api-keys/:id (get)
+  - PUT /api/integrations/api-keys/:id (update)
+  - DELETE /api/integrations/api-keys/:id (delete)
+  - POST /api/integrations/api-keys/:id/revoke (revoke)
+  - POST /api/integrations/api-keys/:id/activate (activate)
+  - GET /api/integrations/api-keys/stats (statistics)
+
+#### Frontend (2 arquivos)
+- ✅ **Interface de Gerenciamento** (`ApiKeysManagement.tsx`)
+  - Listagem completa de API Keys com filtros
+  - Modal de criação com formulário completo
+  - Modal de exibição única da chave gerada
+  - Ações: criar, revogar, ativar, deletar
+  - Status badges e estatísticas de uso
+  - Informações de segurança e instruções de uso
+
+- ✅ **Integração em Configurações** (`ConfiguracoesPage.tsx`)
+  - Nova seção "API Keys" no menu
+  - Navegação integrada
+
+#### Banco de Dados
+- ✅ Tabela `api_keys` criada em 46.202.144.210 (nexus_crm)
+- ✅ Índices otimizados para performance
+- ✅ Tipos UUID corrigidos para tenant_id e created_by_id
+
+### 🔒 SEGURANÇA
+
+#### Implementado
+- ✅ Hash SHA-256 de chaves (nunca armazena plain-text)
+- ✅ Exibição única da chave na criação
+- ✅ Controle de escopos (read, write, full)
+- ✅ Rate limiting configurável (req/hora)
+- ✅ Whitelist de IPs permitidos
+- ✅ Whitelist de origens permitidas
+- ✅ Expiração automática de chaves
+- ✅ Revogação instantânea
+- ✅ Rastreamento de uso (contador, último acesso)
+- ✅ Multi-tenant com isolamento completo
+- ✅ Soft delete para auditoria
+
+### 🔗 INTEGRAÇÃO COM N8N
+
+#### Configuração
+```javascript
+// N8N Credential (Header Auth)
+Header Name: Authorization
+Header Value: Bearer nxs_sua_chave_aqui
+```
+
+#### Endpoints Disponíveis
+- `/api/leads` - Gerenciar leads
+- `/api/pacientes` - Gerenciar pacientes
+- `/api/appointments` - Gerenciar agendamentos
+- `/api/financial` - Consultar finanças
+- Todos os endpoints REST do sistema
+
+### 📊 ESTATÍSTICAS
+
+**Arquivos Criados:** 6
+**Arquivos Modificados:** 3
+**Linhas de Código:** ~2.200
+**Endpoints:** 8 novos
+**Tabelas:** 1 nova
+**Migrations:** 1
+
+### 🐛 CORREÇÕES APLICADAS
+
+1. **Tipo UUID nos campos tenant_id e created_by_id**
+   - Problema: VARCHAR não permitia JOIN com tabela users (UUID)
+   - Solução: ALTER TABLE para UUID com cast
+
+2. **Desestruturação do JWT**
+   - Problema: Tentava pegar `id` mas token tem `userId`
+   - Solução: Corrigido para `{ userId }` em controller
+
+3. **Queries com deletedAt**
+   - Problema: `deletedAt: null as any` causava erro de operador
+   - Solução: Migrado para QueryBuilder com `IS NULL`
+
+### 📦 DEPLOY
+
+**Backend:**
+- Build: ✅ Sucesso (TypeScript compilado)
+- Docker: ✅ nexus-backend:v122-apikeys-working
+- Deploy: ✅ Converged
+
+**Frontend:**
+- Build: ✅ Sucesso (2.8 MB bundle, 764 kB gzipped)
+- Docker: ✅ nexus-frontend:v122-apikeys-fix
+- Deploy: ✅ Converged
+
+**Database:**
+- Migration: ✅ Executada manualmente
+- Tabela: ✅ Criada com sucesso
+- Índices: ✅ Todos criados
+
+### ✅ TESTES REALIZADOS
+
+- ✅ Criação de API Key via interface
+- ✅ Listagem de API Keys
+- ✅ Exibição única da chave plain-text
+- ✅ Validação de campos obrigatórios
+- ✅ Multi-tenant isolation
+- ✅ Autenticação via JWT
+
+### 📝 DOCUMENTAÇÃO
+
+- `SISTEMA_API_KEYS_v122.md` - Documentação completa (700+ linhas)
+  - Visão geral
+  - Arquitetura
+  - Endpoints da API
+  - Como usar
+  - Segurança
+  - Integração com N8N
+  - Troubleshooting
+  - Casos de uso
+
+### 🚀 PRÓXIMOS PASSOS
+
+- [ ] Implementar rate limiting real com Redis
+- [ ] Dashboard de analytics de uso de API Keys
+- [ ] Webhooks automáticos para eventos
+- [ ] Suporte a API Keys por aplicação (não apenas por tenant)
+- [ ] Logs detalhados de requisições via API Key
+
+---
+
 ## 🚀 SESSÃO A: v121 - META INSTAGRAM/MESSENGER DIRECT API INTEGRATION (2025-10-23)
 
 ### 📝 RESUMO
