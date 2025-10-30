@@ -5,9 +5,10 @@
  */
 
 import React, { useState } from 'react';
-import { Settings, CreditCard, Bell, Users, Database, Shield, Palette, Bot } from 'lucide-react';
+import { Settings, CreditCard, Bell, Users, Database, Shield, Palette, Bot, Key } from 'lucide-react';
 import UsersManagement from '@/components/users/UsersManagement';
 import AIIntegrationsTab from '@/components/settings/AIIntegrationsTab';
+import ApiKeysManagement from '@/components/settings/ApiKeysManagement';
 
 interface ConfigSection {
   id: string;
@@ -25,6 +26,12 @@ const ConfiguracoesPage: React.FC = () => {
       label: 'Integrações',
       icon: <CreditCard className="w-5 h-5" />,
       description: 'Gateways de pagamento, APIs e serviços externos',
+    },
+    {
+      id: 'api-keys',
+      label: 'API Keys',
+      icon: <Key className="w-5 h-5" />,
+      description: 'Gerencie chaves de API para N8N e integrações externas',
     },
     {
       id: 'ai-integrations',
@@ -172,6 +179,9 @@ const ConfiguracoesPage: React.FC = () => {
             </div>
           </div>
         );
+
+      case 'api-keys':
+        return <ApiKeysManagement />;
 
       case 'ai-integrations':
         return <AIIntegrationsTab />;

@@ -16,6 +16,7 @@ import biRoutes from '@/modules/bi/bi.routes'; // BI Module - Business Intellige
 import marketingRoutes from '@/modules/marketing/marketing.routes'; // Marketing Module - Campaigns, Social Posts, Bulk Messages, Landing Pages, AI Assistant
 import metaRoutes from '@/modules/meta/meta.routes'; // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 import pacientesRoutes from '@/modules/pacientes/routes/patient.routes'; // Patient Management - Complete medical records, images, appointments
+import apiKeyRoutes from '@/modules/integrations/routes/api-key.routes'; // API Keys management for N8N and external integrations
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import configRoutes from '@/modules/config/config.routes';
@@ -49,6 +50,7 @@ router.use('/bi', biRoutes); // Business Intelligence - Dashboards, KPIs, Analyt
 router.use('/marketing', marketingRoutes); // Marketing Module - Campaigns, Social Media, Bulk Messages, Landing Pages, AI
 router.use('/meta', metaRoutes); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 router.use('/pacientes', pacientesRoutes); // Patient Management - Complete medical records, images, appointments
+router.use('/integrations/api-keys', apiKeyRoutes); // API Keys management for N8N and external integrations
 
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);
