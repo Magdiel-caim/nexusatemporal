@@ -30,6 +30,8 @@ export class LeadController {
         priority: req.query.priority as any,
         source: req.query.source as any,
         search: req.query.search as string,
+        phone: req.query.phone as string, // NOVO: Busca por telefone
+        email: req.query.email as string, // NOVO: Busca por email
         tags: req.query.tags ? (req.query.tags as string).split(',') : undefined,
         dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
         dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined,
@@ -38,6 +40,7 @@ export class LeadController {
       const leads = await this.leadService.getLeadsByTenant(tenantId, filters);
       res.json(leads);
     } catch (error: any) {
+      console.error('Error getting leads:', error);
       res.status(400).json({ error: error.message });
     }
   };

@@ -2,6 +2,165 @@
 
 ---
 
+## 🔌 v123 - API PÚBLICA PARA INTEGRAÇÕES N8N (2025-10-31)
+
+### 📝 RESUMO
+**Versão**: v1.23-public-api
+**Data**: 31/10/2025
+**Status**: ✅ **100% FUNCIONAL**
+**Imagens Docker**:
+- Backend: `nexus-backend:v122-with-public-api`
+- Frontend: `nexus-frontend:v122-apikeys-fix`
+
+### 🎯 OBJETIVO
+Implementação de rotas públicas de API para integração com N8N e outras ferramentas de automação, permitindo gerenciamento completo de leads via API externa com autenticação por API Key.
+
+### ✨ FEATURES IMPLEMENTADAS
+
+#### Backend (3 arquivos novos)
+- ✅ **Rotas Públicas de Leads** (`public-leads.routes.ts`)
+  - GET /api/public/leads - Listar leads com filtros avançados
+  - POST /api/public/leads - Criar novo lead
+  - GET /api/public/leads/:id - Buscar lead por ID
+  - PUT /api/public/leads/:id - Atualizar lead
+  - DELETE /api/public/leads/:id - Deletar lead (soft delete)
+  - POST /api/public/leads/:id/move - Mover lead entre estágios
+  - GET /api/public/leads/stats - Estatísticas de leads
+
+- ✅ **Autenticação via API Key**
+  - Middleware `authenticateApiKey` aplicado em todas as rotas
+  - Suporte a 3 métodos de autenticação:
+    - Header: `Authorization: Bearer nxs_xxxxx`
+    - Header: `X-API-Key: nxs_xxxxx`
+    - Query Param: `?api_key=nxs_xxxxx`
+
+- ✅ **Controle de Escopos**
+  - Middleware `requireApiKeyScope` para validação de permissões
+  - Escopos suportados: `read`, `write`, `full`
+  - Rotas GET requerem escopo `read` ou `full`
+  - Rotas POST/PUT/DELETE requerem escopo `write` ou `full`
+
+#### Filtros e Parâmetros de Busca
+- ✅ **Busca Geral** (`search`)
+  - Busca em: nome, email, telefone, empresa
+  - Remove caracteres especiais de números automaticamente
+
+- ✅ **Busca Específica por Telefone** (`phone`)
+  - Busca em: phone, phone2, whatsapp
+  - Limpeza automática de caracteres não-numéricos
+  - Uso recomendado para identificação única de leads
+
+- ✅ **Filtros Adicionais**
+  - `email` - Busca específica por email
+  - `stageId` - Filtrar por estágio (UUID)
+  - `status` - new | contacted | qualified | proposal | won | lost
+  - `priority` - low | medium | high
+  - `source` - website | referral | cold_call | social_media | other
+  - `dateFrom` / `dateTo` - Filtrar por data de criação
+
+### 🔗 INTEGRAÇÃO COM N8N
+
+#### Configuração HTTP Request Node
+```javascript
+// URL da API
+https://api.nexusatemporal.com.br/api/public/leads
+
+// Authentication
+Type: Generic Credential Type → Header Auth
+Header Name: Authorization
+Header Value: Bearer nxs_sua_chave_aqui
+
+// Query Parameters (Exemplo: Buscar por telefone)
+Name: phone
+Value: {{$json['Telefone do lead']}}
+```
+
+#### Exemplo de Busca
+```bash
+# Buscar lead por telefone
+GET https://api.nexusatemporal.com.br/api/public/leads?phone=5541987172172
+
+# Buscar por nome/email/empresa
+GET https://api.nexusatemporal.com.br/api/public/leads?search=João
+
+# Filtros combinados
+GET https://api.nexusatemporal.com.br/api/public/leads?status=new&priority=high
+```
+
+#### Exemplo de Criação de Lead
+```bash
+POST https://api.nexusatemporal.com.br/api/public/leads
+Content-Type: application/json
+Authorization: Bearer nxs_xxxxx
+
+{
+  "name": "João Silva",
+  "phone": "5541987654321",
+  "email": "joao@exemplo.com",
+  "stageId": "d0c77b7c-cd88-4c6b-bbcc-5ce1bfc49bad",
+  "source": "website",
+  "priority": "high",
+  "notes": "Lead vindo do N8N"
+}
+```
+
+### 🔧 AJUSTES TÉCNICOS
+
+#### Build e Deploy
+- ✅ Corrigido `.dockerignore` - removida pasta `dist` da exclusão
+- ✅ Compilação TypeScript completa com `tsc && tsc-alias`
+- ✅ Nova imagem Docker criada preservando todos os módulos existentes
+- ✅ Deploy sem quebrar funcionalidades anteriores
+
+#### Módulos Preservados
+- ✅ **Pacientes** - Mantido 100% funcional
+- ✅ **API Keys** - Mantido 100% funcional
+- ✅ **Todos os outros módulos** - Mantidos intactos
+
+### 🔑 API KEY DE TESTE CRIADA
+```
+nxs_5de9eb25a80b79e22e68c9e6aa6c03732f784d781336082eb2c5ce49e22658dc
+
+Nome: N8N API - Automações Everson
+Scopes: read, write, full
+Rate Limit: 1000 req/hora
+Status: active
+```
+
+### 🧪 TESTES REALIZADOS
+
+#### Busca por Telefone
+```bash
+✅ GET /api/public/leads?phone=41987172172
+Retorno: Lead "edivaldo duarte" encontrado com sucesso
+```
+
+#### Criação de Lead
+```bash
+✅ POST /api/public/leads
+Body: { "name": "Edvaldo Teste", "phone": "5541996116665", ... }
+Retorno: Lead criado com sucesso
+```
+
+#### Busca após Criação
+```bash
+✅ GET /api/public/leads?phone=5541996116665
+Retorno: Lead "Edvaldo Teste" encontrado
+```
+
+### 📊 IMPACTO
+- ✅ **Automação N8N** - 100% funcional
+- ✅ **Performance** - Queries otimizadas com índices
+- ✅ **Segurança** - Rate limiting + validação de escopos
+- ✅ **Compatibilidade** - Manteve 100% dos módulos anteriores
+
+### 🚀 PRÓXIMOS PASSOS
+- Criar rotas públicas para outros módulos (pacientes, agendamentos)
+- Implementar webhooks para eventos (lead.created, lead.updated)
+- Dashboard de monitoramento de uso da API
+
+---
+
 ## 🔑 v122 - SISTEMA DE API KEYS PARA INTEGRAÇÕES (2025-10-30)
 
 ### 📝 RESUMO

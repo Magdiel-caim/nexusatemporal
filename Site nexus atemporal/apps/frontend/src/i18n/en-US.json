@@ -1,0 +1,178 @@
+{
+  "header": {
+    "pricing": "Pricing",
+    "features": "Features",
+    "faq": "FAQ",
+    "contact": "Contact",
+    "login": "Log In",
+    "startTrial": "Start Free"
+  },
+  "hero": {
+    "title": "One Nexus Atemporal System",
+    "subtitle": "The complete platform for clinic and office management",
+    "description": "Simplify your management with AI, automations and multi-channel integration. All in one place.",
+    "cta": "Start 10-Day Trial",
+    "ctaSecondary": "View Plans",
+    "trialText": "10 days free • No credit card required • Cancel anytime • 30-day guarantee"
+  },
+  "benefits": {
+    "title": "Why choose Nexus?",
+    "subtitle": "Features that make a difference in your daily routine",
+    "aiPowered": {
+      "title": "Advanced AI",
+      "description": "Intelligent assistant that helps with management, data analysis and decision making"
+    },
+    "multiChannel": {
+      "title": "Multi-channel",
+      "description": "WhatsApp, Instagram, Facebook and Email integrated in a single system"
+    },
+    "automation": {
+      "title": "n8n Automation",
+      "description": "Custom workflows to automate processes and save time"
+    },
+    "analytics": {
+      "title": "Complete BI",
+      "description": "Dashboard with real-time metrics and advanced reports"
+    },
+    "security": {
+      "title": "Total Security",
+      "description": "Encrypted data, automatic backup and GDPR compliance"
+    },
+    "support": {
+      "title": "Premium Support",
+      "description": "Dedicated team ready to help when you need it"
+    }
+  },
+  "plans": {
+    "title": "Choose the Ideal Plan",
+    "subtitle": "Start with 10 days free. No credit card. Cancel anytime.",
+    "monthly": "Monthly",
+    "annually": "Annually",
+    "saveText": "Save 17%",
+    "perMonth": "/month",
+    "billed": "Billed",
+    "trial": "Start Free Trial",
+    "contact": "Contact Sales",
+    "essencial": {
+      "name": "Essential",
+      "description": "For starter clinics",
+      "price": "49",
+      "priceAnnual": "490",
+      "features": [
+        "1 user",
+        "100 active clients",
+        "200 appointments/month",
+        "1 professional",
+        "Basic dashboard",
+        "Lead Management",
+        "Basic schedule",
+        "Basic financial",
+        "1 payment gateway",
+        "Medical records",
+        "WhatsApp",
+        "Automations"
+      ]
+    },
+    "profissional": {
+      "name": "Professional",
+      "description": "For growing clinics",
+      "price": "116",
+      "priceAnnual": "1160",
+      "badge": "MOST POPULAR",
+      "features": [
+        "5 users",
+        "500 active clients",
+        "1,000 appointments/month",
+        "5 professionals",
+        "10 GB storage",
+        "Advanced dashboard",
+        "Electronic records",
+        "1 WhatsApp number",
+        "Complete financial",
+        "Inventory",
+        "5 n8n automations",
+        "Basic AI",
+        "2 gateways"
+      ]
+    },
+    "empresarial": {
+      "name": "Business",
+      "description": "For established clinics",
+      "price": "249",
+      "priceAnnual": "2490",
+      "features": [
+        "15 users",
+        "2,000 active clients",
+        "5,000 appointments/month",
+        "15 professionals",
+        "50 GB storage",
+        "Complete dashboard + AI",
+        "3 WhatsApp numbers",
+        "Everything from Professional +",
+        "Unlimited automations",
+        "Marketing (Mautic)",
+        "4 branches",
+        "Open API"
+      ]
+    },
+    "enterprise": {
+      "name": "Enterprise",
+      "description": "For clinic networks",
+      "price": "599",
+      "priceAnnual": "5990",
+      "features": [
+        "Unlimited users",
+        "Unlimited clients",
+        "Unlimited appointments",
+        "500 GB storage",
+        "Unlimited WhatsApp",
+        "Everything from Business +",
+        "Network management",
+        "Priority AI",
+        "Dedicated manager",
+        "Customizations",
+        "Complete White Label",
+        "Dedicated infrastructure"
+      ]
+    }
+  },
+  "testimonials": {
+    "title": "What our customers say",
+    "subtitle": "Over 500 clinics trust Nexus Atemporal"
+  },
+  "faq": {
+    "title": "Frequently Asked Questions",
+    "subtitle": "Get answers to your questions about the system"
+  },
+  "contact": {
+    "title": "Get in Touch",
+    "subtitle": "We're here to help",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "message": "Message",
+    "send": "Send Message"
+  },
+  "footer": {
+    "description": "Complete platform for clinic and office management",
+    "product": "Product",
+    "features": "Features",
+    "pricing": "Pricing",
+    "security": "Security",
+    "company": "Company",
+    "about": "About",
+    "blog": "Blog",
+    "careers": "Careers",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms of Use",
+    "cookies": "Cookies",
+    "rights": "All rights reserved"
+  },
+  "lgpd": {
+    "message": "We use cookies to improve your experience. By continuing to browse, you agree to our",
+    "policy": "Privacy Policy",
+    "accept": "Accept",
+    "manage": "Manage"
+  }
+}

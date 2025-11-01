@@ -4,7 +4,6 @@ exports.LeadService = void 0;
 const data_source_1 = require("../../database/data-source");
 const lead_entity_1 = require("./lead.entity");
 const activity_entity_1 = require("./activity.entity");
-const typeorm_1 = require("typeorm");
 const EventEmitterService_1 = require("../../services/EventEmitterService");
 const database_1 = require("../../modules/marketing/automation/database");
 class LeadService {
@@ -42,28 +41,55 @@ class LeadService {
         return this.getLeadById(savedLead.id, data.tenantId);
     }
     async getLeadsByTenant(tenantId, filters) {
-        const where = { tenantId, isActive: true };
-        if (filters?.stageId)
-            where.stageId = filters.stageId;
-        if (filters?.assignedToId)
-            where.assignedToId = filters.assignedToId;
-        if (filters?.status)
-            where.status = filters.status;
-        if (filters?.priority)
-            where.priority = filters.priority;
-        if (filters?.source)
-            where.source = filters.source;
+        const queryBuilder = this.leadRepository
+            .createQueryBuilder('lead')
+            .leftJoinAndSelect('lead.stage', 'stage')
+            .leftJoinAndSelect('lead.assignedTo', 'assignedTo')
+            .leftJoinAndSelect('lead.createdBy', 'createdBy')
+            .leftJoinAndSelect('lead.procedure', 'procedure')
+            .where('lead.tenantId = :tenantId', { tenantId })
+            .andWhere('lead.isActive = :isActive', { isActive: true });
+        if (filters?.stageId) {
+            queryBuilder.andWhere('lead.stageId = :stageId', { stageId: filters.stageId });
+        }
+        if (filters?.assignedToId) {
+            queryBuilder.andWhere('lead.assignedToId = :assignedToId', {
+                assignedToId: filters.assignedToId
+            });
+        }
+        if (filters?.status) {
+            queryBuilder.andWhere('lead.status = :status', { status: filters.status });
+        }
+        if (filters?.priority) {
+            queryBuilder.andWhere('lead.priority = :priority', { priority: filters.priority });
+        }
+        if (filters?.source) {
+            queryBuilder.andWhere('lead.source = :source', { source: filters.source });
+        }
+        // Busca por telefone (PRIORIDADE - ID único)
+        if (filters?.phone) {
+            const cleanPhone = filters.phone.replace(/\D/g, ''); // Remove tudo que não é número
+            queryBuilder.andWhere('(lead.phone LIKE :phone OR lead.phone2 LIKE :phone OR lead.whatsapp LIKE :phone)', { phone: `%${cleanPhone}%` });
+        }
+        // Busca por email
+        if (filters?.email) {
+            queryBuilder.andWhere('lead.email LIKE :email', {
+                email: `%${filters.email}%`
+            });
+        }
+        // Busca geral (nome, email, telefone)
         if (filters?.search) {
-            where.name = (0, typeorm_1.Like)(`%${filters.search}%`);
+            const cleanSearch = filters.search.replace(/\D/g, '');
+            queryBuilder.andWhere('(lead.name LIKE :search OR lead.email LIKE :search OR lead.phone LIKE :searchClean OR lead.phone2 LIKE :searchClean OR lead.whatsapp LIKE :searchClean OR lead.company LIKE :search)', { search: `%${filters.search}%`, searchClean: `%${cleanSearch}%` });
         }
         if (filters?.dateFrom && filters?.dateTo) {
-            where.createdAt = (0, typeorm_1.Between)(filters.dateFrom, filters.dateTo);
+            queryBuilder.andWhere('lead.createdAt BETWEEN :dateFrom AND :dateTo', {
+                dateFrom: filters.dateFrom,
+                dateTo: filters.dateTo,
+            });
         }
-        return this.leadRepository.find({
-            where,
-            relations: ['stage', 'assignedTo', 'createdBy', 'procedure'],
-            order: { createdAt: 'DESC' },
-        });
+        queryBuilder.orderBy('lead.createdAt', 'DESC');
+        return queryBuilder.getMany();
     }
     async getLeadById(id, tenantId) {
         return this.leadRepository.findOne({

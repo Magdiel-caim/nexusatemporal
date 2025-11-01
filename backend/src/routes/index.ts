@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from '@/modules/auth/auth.routes';
 import dataRoutes from '@/modules/config/data.routes';
 import leadsRoutes from '@/modules/leads/leads.routes';
+import publicLeadsRoutes from '@/modules/leads/public-leads.routes'; // Public API for external integrations (N8N, etc)
 import chatRoutes from '@/modules/chat/chat.routes';
 import appointmentRoutes from '@/modules/agenda/appointment.routes';
 import publicAppointmentRoutes from '@/modules/agenda/public-appointment.routes';
@@ -36,6 +37,7 @@ router.get('/health', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/data', dataRoutes); // Required /api/data endpoint
 router.use('/leads', leadsRoutes);
+router.use('/public/leads', publicLeadsRoutes); // Public API for external integrations (N8N, etc) - Requires API Key
 router.use('/chat', chatRoutes);
 router.use('/appointments', appointmentRoutes);
 router.use('/public/appointments', publicAppointmentRoutes); // Public API for external integrations

@@ -1,52 +1,80 @@
-version: '3.8'
-
-services:
-  website:
-    build:
-      context: ./website
-      dockerfile: Dockerfile
-    image: nexus-website:latest
-    networks:
-      - nexusatnet
-    environment:
-      - NODE_ENV=production
-      - NEXT_PUBLIC_APP_URL=https://app.nexusatemporal.com
-      - NEXT_PUBLIC_API_URL=https://api.nexusatemporal.com
-    deploy:
-      replicas: 1
-      update_config:
-        parallelism: 1
-        delay: 10s
-        failure_action: rollback
-        order: start-first
-      rollback_config:
-        parallelism: 1
-        delay: 5s
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-        window: 120s
-      labels:
-        # Traefik
-        - "traefik.enable=true"
-        - "traefik.docker.network=nexusatnet"
-
-        # HTTP Router
-        - "traefik.http.routers.nexus-website.rule=Host(`nexusatemporal.com`) || Host(`www.nexusatemporal.com`)"
-        - "traefik.http.routers.nexus-website.entrypoints=websecure"
-        - "traefik.http.routers.nexus-website.tls=true"
-        - "traefik.http.routers.nexus-website.tls.certresolver=letsencryptresolver"
-
-        # Service
-        - "traefik.http.services.nexus-website.loadbalancer.server.port=3000"
-
-        # Middleware - WWW redirect
-        - "traefik.http.middlewares.nexus-website-redirect.redirectregex.regex=^https://www.nexusatemporal.com/(.*)"
-        - "traefik.http.middlewares.nexus-website-redirect.redirectregex.replacement=https://nexusatemporal.com/$${1}"
-        - "traefik.http.middlewares.nexus-website-redirect.redirectregex.permanent=true"
-        - "traefik.http.routers.nexus-website.middlewares=nexus-website-redirect"
+version: "3.9"
 
 networks:
   nexusatnet:
     external: true
+
+services:
+  frontend:
+    build:
+      context: ./apps/frontend
+      dockerfile: Dockerfile
+    image: nexus-site-frontend:latest
+    networks:
+      - nexusatnet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=nexusatnet"
+        - "traefik.http.routers.nexus-site-frontend.rule=Host(`nexusatemporal.com`) || Host(`www.nexusatemporal.com`)"
+        - "traefik.http.routers.nexus-site-frontend.entrypoints=websecure"
+        - "traefik.http.routers.nexus-site-frontend.tls=true"
+        - "traefik.http.routers.nexus-site-frontend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.nexus-site-frontend.loadbalancer.server.port=80"
+        # Redirect www to non-www
+        - "traefik.http.middlewares.redirect-www.redirectregex.regex=^https://www\\.nexusatemporal\\.com/(.*)"
+        - "traefik.http.middlewares.redirect-www.redirectregex.replacement=https://nexusatemporal.com/$${1}"
+        - "traefik.http.middlewares.redirect-www.redirectregex.permanent=true"
+        - "traefik.http.routers.nexus-site-frontend.middlewares=redirect-www"
+
+  backend:
+    build:
+      context: ./apps/backend-site-api
+      dockerfile: Dockerfile
+    image: nexus-site-backend:latest
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+      - JWT_SECRET=${JWT_SECRET}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      - ASAAS_API_KEY=${ASAAS_API_KEY}
+      - ASAAS_WEBHOOK_TOKEN=${ASAAS_WEBHOOK_TOKEN}
+      - PAGSEGURO_TOKEN=${PAGSEGURO_TOKEN}
+      - PAGSEGURO_EMAIL=${PAGSEGURO_EMAIL}
+      - N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
+      - N8N_WEBHOOK_TOKEN=${N8N_WEBHOOK_TOKEN}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - ONE_NEXUS_API_URL=${ONE_NEXUS_API_URL}
+      - ONE_NEXUS_API_KEY=${ONE_NEXUS_API_KEY}
+      - CORS_ORIGIN=https://nexusatemporal.com
+    networks:
+      - nexusatnet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=nexusatnet"
+        - "traefik.http.routers.nexus-site-backend.rule=Host(`api.nexusatemporal.com`)"
+        - "traefik.http.routers.nexus-site-backend.entrypoints=websecure"
+        - "traefik.http.routers.nexus-site-backend.tls=true"
+        - "traefik.http.routers.nexus-site-backend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.nexus-site-backend.loadbalancer.server.port=3001"

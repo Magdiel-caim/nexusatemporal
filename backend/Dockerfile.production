@@ -1,0 +1,28 @@
+# Backend Dockerfile - Production Build
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy dist (already compiled)
+COPY dist ./dist
+
+# Copy necessary files
+COPY migrations ./migrations
+COPY scripts ./scripts
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Expose port
+EXPOSE 3001
+
+# Start with compiled code
+CMD ["node", "dist/server.js"]
