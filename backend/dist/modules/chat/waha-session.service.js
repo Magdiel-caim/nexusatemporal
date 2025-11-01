@@ -156,6 +156,12 @@ class WAHASessionService {
         }
     }
     /**
+     * Alias para listSessions (usado pelo controller)
+     */
+    async getAllSessions() {
+        return this.listSessions();
+    }
+    /**
      * Para uma sessão
      */
     async stopSession(sessionName) {

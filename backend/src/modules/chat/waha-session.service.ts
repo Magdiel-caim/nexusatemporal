@@ -202,6 +202,13 @@ export class WAHASessionService {
   }
 
   /**
+   * Alias para listSessions (usado pelo controller)
+   */
+  async getAllSessions(): Promise<WAHASession[]> {
+    return this.listSessions();
+  }
+
+  /**
    * Para uma sessão
    */
   async stopSession(sessionName: string): Promise<void> {

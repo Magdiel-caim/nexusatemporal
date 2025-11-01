@@ -104,37 +104,67 @@ class WAHASessionController {
     };
     /**
      * GET /api/chat/whatsapp/sessions
-     * Lista apenas as sessões criadas pelo sistema (do banco local)
-     * Enriquece com dados do WAHA quando disponíveis
+     * Lista sessões do banco + sessões "atemporal" da WAHA
      */
     listSessions = async (req, res) => {
         try {
-            // Buscar APENAS sessões do banco (criadas pelo usuário)
+            // 1. Buscar sessões do banco (criadas pelo usuário)
             const dbSessions = await this.sessionDBService.listSessions();
-            // Para cada sessão do banco, buscar status atualizado do WAHA
-            const combinedSessions = await Promise.all(dbSessions.map(async (dbSession) => {
+            // 2. Buscar TODAS as sessões do WAHA
+            let wahaSessions = [];
+            try {
+                wahaSessions = await this.wahaSessionService.getAllSessions();
+            }
+            catch (error) {
+                console.log('Could not fetch WAHA sessions:', error);
+            }
+            // 3. Filtrar sessões WAHA que contenham "atemporal" no pushName ou nome
+            const atemporalSessions = wahaSessions.filter((session) => {
+                const sessionName = (session.name || '').toLowerCase();
+                const pushName = (session.me?.pushName || '').toLowerCase();
+                return pushName.includes('atemporal') || sessionName.includes('atemporal');
+            });
+            console.log('📱 Sessões Atemporal encontradas na WAHA:', atemporalSessions.length);
+            // 4. Combinar sessões do banco com as do WAHA
+            const sessionMap = new Map();
+            // Adicionar sessões do banco
+            for (const dbSession of dbSessions) {
                 try {
                     // Tentar obter dados do WAHA para esta sessão
                     const wahaSession = await this.wahaSessionService.getSessionStatus(dbSession.session_name);
-                    return {
+                    sessionMap.set(dbSession.session_name, {
                         name: dbSession.session_name,
                         friendlyName: dbSession.friendly_name,
                         status: wahaSession.status || dbSession.status,
                         config: wahaSession.config || {},
                         me: wahaSession.me || null,
-                    };
+                    });
                 }
                 catch (error) {
                     // Se sessão não existe no WAHA, retornar apenas dados do banco
-                    return {
+                    sessionMap.set(dbSession.session_name, {
                         name: dbSession.session_name,
                         friendlyName: dbSession.friendly_name,
                         status: dbSession.status,
                         config: {},
                         me: null,
-                    };
+                    });
                 }
-            }));
+            }
+            // Adicionar sessões "atemporal" da WAHA (se não estiverem no banco)
+            for (const wahaSession of atemporalSessions) {
+                if (!sessionMap.has(wahaSession.name)) {
+                    console.log('✅ Adicionando sessão Atemporal da WAHA:', wahaSession.name);
+                    sessionMap.set(wahaSession.name, {
+                        name: wahaSession.name,
+                        friendlyName: wahaSession.me?.pushName || wahaSession.name,
+                        status: wahaSession.status,
+                        config: wahaSession.config || {},
+                        me: wahaSession.me || null,
+                    });
+                }
+            }
+            const combinedSessions = Array.from(sessionMap.values());
             res.json({
                 success: true,
                 sessions: combinedSessions,
