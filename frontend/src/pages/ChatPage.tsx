@@ -13,6 +13,7 @@ import {
   Settings,
   PanelRightClose,
   PanelRightOpen,
+  MessageSquare,
 } from 'lucide-react';
 import chatService, { Conversation, Message, QuickReply } from '../services/chatService';
 import toast from 'react-hot-toast';
@@ -28,8 +29,10 @@ import ChannelSelector from '../components/chat/ChannelSelector';
 import ConversationDetailsPanel from '../components/chat/ConversationDetailsPanel';
 import QuickReplyManager from '../components/chat/QuickReplyManager';
 import TypingIndicator from '../components/chat/TypingIndicator';
+import ChatwootEmbed from '../components/chat/ChatwootEmbed';
 
 const ChatPage: React.FC = () => {
+  const [useChatwoot, setUseChatwoot] = useState(false); // Toggle entre chat nativo e Chatwoot
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -629,14 +632,48 @@ const ChatPage: React.FC = () => {
         </div>
       )}
 
-      <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
-      {/* Left Panel - Conversations List */}
-      <div className="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative">
-        {/* Header - FIXED */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700 fixed top-0 w-96 bg-white dark:bg-gray-800 z-50">
-          <h1 className="text-xl font-bold text-gray-800 dark:text-white mb-3">Chat</h1>
+      {/* Chatwoot Mode - Full Screen */}
+      {useChatwoot ? (
+        <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+          {/* Header with Toggle */}
+          <div className="p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+              <MessageSquare className="h-6 w-6" />
+              Chat - Chatwoot
+            </h1>
+            <button
+              onClick={() => setUseChatwoot(false)}
+              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium flex items-center gap-2"
+            >
+              <Smartphone className="h-4 w-4" />
+              Voltar ao Chat Nativo
+            </button>
+          </div>
+          {/* Chatwoot Embed */}
+          <div className="flex-1 overflow-hidden">
+            <ChatwootEmbed />
+          </div>
+        </div>
+      ) : (
+        /* Native Chat Mode */
+        <div className="h-screen flex bg-gray-50 dark:bg-gray-900">
+          {/* Left Panel - Conversations List */}
+          <div className="w-96 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative">
+            {/* Header - FIXED */}
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 fixed top-0 w-96 bg-white dark:bg-gray-800 z-50">
+              <div className="flex items-center justify-between mb-3">
+                <h1 className="text-xl font-bold text-gray-800 dark:text-white">Chat</h1>
+                <button
+                  onClick={() => setUseChatwoot(true)}
+                  className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium flex items-center gap-1"
+                  title="Alternar para Chatwoot"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  Chatwoot
+                </button>
+              </div>
 
-          {/* Search */}
+              {/* Search */}
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-gray-500" />
             <input
@@ -1020,19 +1057,20 @@ const ChatPage: React.FC = () => {
         </div>
       )}
 
-      {/* Right Panel - Conversation Details */}
-      {selectedConversation && showRightPanel && (
-        <ConversationDetailsPanel
-          conversation={selectedConversation}
-          onUpdate={() => {
-            loadConversations();
-            if (selectedConversation) {
-              loadMessages(selectedConversation.id);
-            }
-          }}
-        />
+          {/* Right Panel - Conversation Details */}
+          {selectedConversation && showRightPanel && (
+            <ConversationDetailsPanel
+              conversation={selectedConversation}
+              onUpdate={() => {
+                loadConversations();
+                if (selectedConversation) {
+                  loadMessages(selectedConversation.id);
+                }
+              }}
+            />
+          )}
+        </div>
       )}
-      </div>
 
       {/* Media Preview Modal */}
       {selectedFile && (
