@@ -66,7 +66,7 @@ services:
 
   # Backend API
   backend:
-    image: nexus-backend:v122-with-public-api
+    image: nexus-backend:v124-chat-restored
     environment:
       - NODE_ENV=production
       - DB_HOST=46.202.144.210
@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v122-apikeys-fix
+    image: nexus-frontend:v124-chat-restored
     networks:
       - nexusatnet
     deploy:
@@ -125,4 +125,4 @@ services:
         - "traefik.http.routers.nexusfrontend.rule=Host(`one.nexusatemporal.com.br`)"
         - "traefik.http.routers.nexusfrontend.entrypoints=websecure"
         - "traefik.http.routers.nexusfrontend.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=3000"
+        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=80"

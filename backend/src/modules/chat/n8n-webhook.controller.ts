@@ -328,42 +328,49 @@ export class N8NWebhookController {
   /**
    * Lista mensagens de uma sessão (com filtro opcional de phoneNumber)
    * GET /api/chat/n8n/messages/:sessionName?phoneNumber=xxx
+   *
+   * REFATORADO: Agora usa TypeORM em vez de queries SQL diretas
    */
   async getMessages(req: Request, res: Response) {
     try {
       const { sessionName } = req.params;
-      const { limit = 50, offset = 0, phoneNumber } = req.query;
+      const { phoneNumber } = req.query;
 
-      let query = `SELECT
-          id,
-          session_name as "sessionName",
-          phone_number as "phoneNumber",
-          contact_name as "contactName",
-          direction,
-          message_type as "messageType",
-          content,
-          media_url as "mediaUrl",
-          status,
-          created_at as "createdAt"
-        FROM chat_messages
-        WHERE session_name = $1`;
-
-      const params: any[] = [sessionName];
-
-      // Se phoneNumber for fornecido, adicionar ao filtro
-      if (phoneNumber) {
-        query += ` AND phone_number = $${params.length + 1}`;
-        params.push(phoneNumber);
+      if (!phoneNumber) {
+        return res.status(400).json({
+          success: false,
+          error: 'phoneNumber query parameter is required',
+        });
       }
 
-      query += ` ORDER BY created_at ASC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-      params.push(limit, offset);
+      // Buscar ou criar conversa
+      const conversation = await this.chatService.findOrCreateConversation({
+        phoneNumber: phoneNumber as string,
+        contactName: phoneNumber as string,
+        whatsappInstanceId: sessionName,
+      });
 
-      const messages = await AppDataSource.query(query, params);
+      // Buscar mensagens da conversa usando TypeORM
+      const messages = await this.chatService.getMessagesByConversation(conversation.id);
+
+      // Transformar para formato esperado pelo frontend
+      const formattedMessages = messages.map((msg) => ({
+        id: msg.id,
+        sessionName: conversation.whatsappInstanceId,
+        phoneNumber: conversation.phoneNumber,
+        contactName: conversation.contactName,
+        direction: msg.direction,
+        messageType: msg.type,
+        content: msg.content || '',
+        mediaUrl: msg.attachments && msg.attachments.length > 0 ? msg.attachments[0].fileUrl : undefined,
+        status: msg.status,
+        createdAt: msg.createdAt,
+        attachments: msg.attachments || [],
+      }));
 
       res.json({
         success: true,
-        data: messages, // Já está em ordem cronológica (ASC)
+        data: formattedMessages,
       });
     } catch (error: any) {
       console.error('❌ Erro ao buscar mensagens:', error);
@@ -378,51 +385,30 @@ export class N8NWebhookController {
    * Lista todas as conversas (sessões com última mensagem)
    * GET /api/chat/conversations
    *
-   * IMPORTANTE: Lista apenas conversas de sessões criadas pelo sistema (tabela whatsapp_sessions)
-   * Ignora mensagens de sessões externas (ex: Chatwoot)
+   * REFATORADO: Agora usa TypeORM em vez de queries SQL diretas
    */
   async getConversations(req: Request, res: Response) {
     try {
-      const conversations = await AppDataSource.query(`
-        WITH latest_messages AS (
-          SELECT DISTINCT ON (cm.session_name, cm.phone_number)
-            cm.session_name,
-            cm.phone_number,
-            cm.contact_name,
-            cm.content,
-            cm.created_at
-          FROM chat_messages cm
-          INNER JOIN whatsapp_sessions ws ON cm.session_name = ws.session_name
-          ORDER BY cm.session_name, cm.phone_number, cm.created_at DESC
-        ),
-        unread_counts AS (
-          SELECT
-            cm.session_name,
-            cm.phone_number,
-            COUNT(*) FILTER (WHERE cm.is_read = false AND cm.direction = 'incoming') as unread_count
-          FROM chat_messages cm
-          INNER JOIN whatsapp_sessions ws ON cm.session_name = ws.session_name
-          GROUP BY cm.session_name, cm.phone_number
-        )
-        SELECT
-          lm.session_name as "sessionName",
-          lm.phone_number as "phoneNumber",
-          lm.contact_name as "contactName",
-          lm.content as "lastMessage",
-          lm.created_at as "lastMessageAt",
-          COALESCE(uc.unread_count, 0) as "unreadCount",
-          CASE
-            WHEN lm.phone_number LIKE '%@g.us' THEN 'group'
-            ELSE 'individual'
-          END as "chatType"
-        FROM latest_messages lm
-        LEFT JOIN unread_counts uc ON lm.session_name = uc.session_name AND lm.phone_number = uc.phone_number
-        ORDER BY lm.created_at DESC
-      `);
+      // Usar ChatService para buscar conversas com TypeORM
+      const conversations = await this.chatService.getConversations();
+
+      // Transformar para formato esperado pelo frontend
+      const formattedConversations = conversations.map((conv) => ({
+        id: conv.id,
+        sessionName: conv.whatsappInstanceId || 'default',
+        phoneNumber: conv.phoneNumber,
+        contactName: conv.contactName,
+        lastMessage: conv.lastMessagePreview || '',
+        lastMessageAt: conv.lastMessageAt,
+        unreadCount: conv.unreadCount || 0,
+        chatType: conv.phoneNumber.includes('@g.us') ? 'group' : 'individual',
+        status: conv.status,
+        tags: conv.tags || [],
+      }));
 
       res.json({
         success: true,
-        data: conversations,
+        data: formattedConversations,
       });
     } catch (error: any) {
       console.error('❌ Erro ao buscar conversas:', error);
@@ -436,6 +422,8 @@ export class N8NWebhookController {
   /**
    * Marca todas as mensagens de uma conversa como lidas
    * POST /api/chat/n8n/messages/:sessionName/mark-read?phoneNumber=xxx
+   *
+   * REFATORADO: Agora usa TypeORM
    */
   async markAsRead(req: Request, res: Response) {
     try {
@@ -449,15 +437,15 @@ export class N8NWebhookController {
         });
       }
 
-      await AppDataSource.query(
-        `UPDATE chat_messages
-         SET is_read = true
-         WHERE session_name = $1
-         AND phone_number = $2
-         AND direction = 'incoming'
-         AND is_read = false`,
-        [sessionName, phoneNumber]
-      );
+      // Buscar conversa
+      const conversation = await this.chatService.findOrCreateConversation({
+        phoneNumber: phoneNumber as string,
+        contactName: phoneNumber as string,
+        whatsappInstanceId: sessionName,
+      });
+
+      // Marcar como lida usando TypeORM
+      await this.chatService.markAsRead(conversation.id);
 
       res.json({
         success: true,
@@ -475,27 +463,20 @@ export class N8NWebhookController {
   /**
    * Deleta uma mensagem específica
    * DELETE /api/chat/n8n/messages/:messageId
+   *
+   * REFATORADO: Agora usa TypeORM
    */
   async deleteMessage(req: Request, res: Response) {
     try {
       const { messageId } = req.params;
 
-      const result = await AppDataSource.query(
-        `DELETE FROM chat_messages WHERE id = $1 RETURNING id`,
-        [messageId]
-      );
-
-      if (result.length === 0) {
-        return res.status(404).json({
-          success: false,
-          error: 'Message not found',
-        });
-      }
+      // Deletar usando ChatService (TypeORM)
+      await this.chatService.deleteMessage(messageId);
 
       res.json({
         success: true,
         message: 'Message deleted successfully',
-        id: result[0].id,
+        id: messageId,
       });
     } catch (error: any) {
       console.error('❌ Erro ao deletar mensagem:', error);
@@ -509,6 +490,8 @@ export class N8NWebhookController {
   /**
    * Envia mensagem via WhatsApp
    * POST /api/chat/n8n/send-message
+   *
+   * REFATORADO: Agora usa TypeORM
    */
   async sendMessage(req: Request, res: Response) {
     try {
@@ -551,36 +534,21 @@ export class N8NWebhookController {
       const wahaData = (await wahaResponse.json()) as WAHAResponse;
       console.log('✅ Mensagem enviada via WAHA:', wahaData.id);
 
-      // Salvar no banco
-      const result = await AppDataSource.query(
-        `INSERT INTO chat_messages (
-          session_name,
-          phone_number,
-          contact_name,
-          direction,
-          message_type,
-          content,
-          waha_message_id,
-          status,
-          created_at,
-          is_read
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-        RETURNING *`,
-        [
-          sessionName,
-          phoneNumber,
-          phoneNumber, // contactName
-          'outgoing',
-          'text',
-          content,
-          wahaData.id,
-          'sent',
-          new Date(),
-          true, // outgoing sempre lida
-        ]
-      );
+      // Buscar ou criar conversa
+      const conversation = await this.chatService.findOrCreateConversation({
+        phoneNumber,
+        contactName: phoneNumber,
+        whatsappInstanceId: sessionName,
+      });
 
-      const savedMessage = result[0];
+      // Salvar mensagem usando TypeORM
+      const savedMessage = await this.chatService.createMessage({
+        conversationId: conversation.id,
+        direction: 'outgoing',
+        type: 'text',
+        content,
+        whatsappMessageId: wahaData.id,
+      });
 
       console.log('✅ Mensagem salva no banco:', savedMessage.id);
 
@@ -589,13 +557,14 @@ export class N8NWebhookController {
       if (io) {
         io.emit('chat:new-message', {
           id: savedMessage.id,
-          sessionName: savedMessage.session_name,
-          phoneNumber: savedMessage.phone_number,
-          contactName: savedMessage.contact_name,
+          conversationId: conversation.id,
+          sessionName: sessionName,
+          phoneNumber: phoneNumber,
+          contactName: conversation.contactName,
           direction: savedMessage.direction,
-          messageType: savedMessage.message_type,
+          messageType: savedMessage.type,
           content: savedMessage.content,
-          createdAt: savedMessage.created_at,
+          createdAt: savedMessage.createdAt,
         });
         console.log('🔊 Mensagem emitida via WebSocket');
       }
@@ -604,13 +573,14 @@ export class N8NWebhookController {
         success: true,
         data: {
           id: savedMessage.id,
-          sessionName: savedMessage.session_name,
-          phoneNumber: savedMessage.phone_number,
+          conversationId: conversation.id,
+          sessionName: sessionName,
+          phoneNumber: phoneNumber,
           direction: savedMessage.direction,
-          messageType: savedMessage.message_type,
+          messageType: savedMessage.type,
           content: savedMessage.content,
           status: savedMessage.status,
-          createdAt: savedMessage.created_at,
+          createdAt: savedMessage.createdAt,
         },
       });
     } catch (error: any) {
@@ -741,54 +711,49 @@ export class N8NWebhookController {
       const wahaData = (await wahaResponse.json()) as WAHAResponse;
       console.log('✅ Mídia enviada via WAHA:', wahaData.id);
 
-      // Salvar no banco
-      const result = await AppDataSource.query(
-        `INSERT INTO chat_messages (
-          session_name,
-          phone_number,
-          contact_name,
-          direction,
-          message_type,
-          content,
-          media_url,
-          waha_message_id,
-          status,
-          created_at,
-          is_read
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-        RETURNING *`,
-        [
-          sessionName,
-          phoneNumber,
-          phoneNumber, // contactName
-          'outgoing',
-          messageType,
-          caption || '',
-          fileUrl,
-          wahaData.id,
-          'sent',
-          new Date(),
-          true, // outgoing sempre lida
-        ]
+      // Buscar ou criar conversa
+      const conversation = await this.chatService.findOrCreateConversation({
+        phoneNumber,
+        contactName: phoneNumber,
+        whatsappInstanceId: sessionName,
+      });
+
+      // Salvar mensagem com mídia usando TypeORM
+      // Detectar tipo de mídia para criar attachment
+      const actualMediaType = messageType === 'ptt' ? 'audio' : messageType;
+
+      const savedMessage = await this.chatService.createMessageWithAttachment(
+        {
+          conversationId: conversation.id,
+          direction: 'outgoing',
+          type: actualMediaType as 'audio' | 'image' | 'video' | 'document',
+          content: caption || '',
+          whatsappMessageId: wahaData.id,
+        },
+        {
+          fileName: `${sessionName}_${Date.now()}.${messageType}`,
+          fileUrl: fileUrl,
+          mimeType: 'application/octet-stream', // WAHA retorna mimetype correto no webhook
+        }
       );
 
-      const savedMessage = result[0];
-
-      console.log('✅ Mídia salva no banco:', savedMessage.id);
+      console.log('✅ Mídia salva no banco:', savedMessage?.id);
 
       // Emitir via WebSocket
       const io = req.app.get('io');
       if (io) {
         io.emit('chat:new-message', {
-          id: savedMessage.id,
-          sessionName: savedMessage.session_name,
-          phoneNumber: savedMessage.phone_number,
-          contactName: savedMessage.contact_name,
-          direction: savedMessage.direction,
-          messageType: savedMessage.message_type,
-          content: savedMessage.content,
-          mediaUrl: savedMessage.media_url,
-          createdAt: savedMessage.created_at,
+          id: savedMessage?.id,
+          conversationId: conversation.id,
+          sessionName: sessionName,
+          phoneNumber: phoneNumber,
+          contactName: conversation.contactName,
+          direction: savedMessage?.direction,
+          messageType: messageType,
+          content: caption || '',
+          mediaUrl: fileUrl,
+          attachments: savedMessage?.attachments || [],
+          createdAt: savedMessage?.createdAt,
         });
         console.log('🔊 Mídia emitida via WebSocket');
       }
@@ -796,15 +761,17 @@ export class N8NWebhookController {
       res.json({
         success: true,
         data: {
-          id: savedMessage.id,
-          sessionName: savedMessage.session_name,
-          phoneNumber: savedMessage.phone_number,
-          direction: savedMessage.direction,
-          messageType: savedMessage.message_type,
-          content: savedMessage.content,
-          mediaUrl: savedMessage.media_url,
-          status: savedMessage.status,
-          createdAt: savedMessage.created_at,
+          id: savedMessage?.id,
+          conversationId: conversation.id,
+          sessionName: sessionName,
+          phoneNumber: phoneNumber,
+          direction: savedMessage?.direction,
+          messageType: messageType,
+          content: caption || '',
+          mediaUrl: fileUrl,
+          status: savedMessage?.status,
+          createdAt: savedMessage?.createdAt,
+          attachments: savedMessage?.attachments || [],
         },
       });
     } catch (error: any) {
