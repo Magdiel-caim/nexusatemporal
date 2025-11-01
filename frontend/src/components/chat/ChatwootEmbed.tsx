@@ -91,7 +91,7 @@ const ChatwootEmbed: React.FC<ChatwootEmbedProps> = ({ className = '' }) => {
         className="w-full h-full border-0"
         title="Chatwoot"
         allow="microphone; camera; fullscreen"
-        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"
+        sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads allow-top-navigation allow-top-navigation-by-user-activation"
         onLoad={handleIframeLoad}
         onError={handleIframeError}
       />
