@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v126-chatwoot
+    image: nexus-frontend:v126.1-chatwoot-login-fix
     networks:
       - nexusatnet
     deploy:
