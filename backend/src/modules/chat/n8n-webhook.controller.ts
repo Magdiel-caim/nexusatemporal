@@ -877,11 +877,30 @@ export class N8NWebhookController {
         }
       }
 
-      // Nome do contato
-      const contactName =
-        payload._data?.Info?.PushName ||
-        payload._data?.notifyName ||
-        phoneNumber;
+      // Nome do contato - extrair de forma mais robusta
+      let contactName = phoneNumber; // fallback padrão
+
+      // Tentar extrair o nome de várias fontes possíveis do WAHA
+      if (payload._data?.notifyName && typeof payload._data.notifyName === 'string' && payload._data.notifyName.trim()) {
+        contactName = payload._data.notifyName.trim();
+      } else if (payload._data?.Info?.PushName && typeof payload._data.Info.PushName === 'string' && payload._data.Info.PushName.trim()) {
+        contactName = payload._data.Info.PushName.trim();
+      } else if (wahaPayload.me?.pushName && typeof wahaPayload.me.pushName === 'string' && wahaPayload.me.pushName.trim()) {
+        contactName = wahaPayload.me.pushName.trim();
+      }
+
+      // Validar se o nome não é um código estranho (não deve ter apenas números/símbolos)
+      // Se o nome extraído for igual ao phoneNumber ou contiver apenas dígitos, usar phoneNumber
+      if (contactName === phoneNumber || /^\d+$/.test(contactName)) {
+        contactName = phoneNumber;
+      }
+
+      console.log('📝 Nome do contato extraído:', {
+        phoneNumber,
+        contactName,
+        notifyName: payload._data?.notifyName,
+        pushName: payload._data?.Info?.PushName,
+      });
 
       // Tipo de mensagem
       const messageType = payload.type || 'text';

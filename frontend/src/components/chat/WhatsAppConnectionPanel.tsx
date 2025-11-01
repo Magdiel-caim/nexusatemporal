@@ -64,10 +64,18 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
     try {
       const { data } = await api.get('/chat/whatsapp/sessions');
 
-      // Separar sessões ativas e inativas
-      const active = data.sessions.filter((s: any) => s.status === 'WORKING');
+      // FILTRAR: Mostrar APENAS a sessão "atemporal"
+      const atemporalSessionFilter = (s: any) => {
+        // Verificar se o nome da sessão ou friendlyName contém "atemporal" (case insensitive)
+        const sessionName = (s.name || '').toLowerCase();
+        const friendlyName = (s.friendlyName || '').toLowerCase();
+        return sessionName.includes('atemporal') || friendlyName.includes('atemporal');
+      };
+
+      // Separar sessões ativas e inativas (apenas atemporal)
+      const active = data.sessions.filter((s: any) => s.status === 'WORKING' && atemporalSessionFilter(s));
       const inactive = data.sessions.filter((s: any) =>
-        s.status !== 'WORKING' && s.status !== 'SCAN_QR_CODE'
+        (s.status !== 'WORKING' && s.status !== 'SCAN_QR_CODE') && atemporalSessionFilter(s)
       );
 
       setConnectedSessions(active);
