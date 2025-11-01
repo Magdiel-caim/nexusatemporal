@@ -29,13 +29,8 @@ const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onCh
       setIsLoading(true);
       const data = await chatService.getChannels();
 
-      // FILTRAR: Mostrar APENAS canais que contenham "atemporal" no nome
-      const atemporalChannels = data.filter((channel: WhatsAppChannel) => {
-        const sessionName = (channel.sessionName || '').toLowerCase();
-        return sessionName.includes('atemporal');
-      });
-
-      setChannels(atemporalChannels);
+      // Backend já filtra e retorna apenas canais "atemporal"
+      setChannels(data);
     } catch (error) {
       console.error('Erro ao carregar canais:', error);
     } finally {
