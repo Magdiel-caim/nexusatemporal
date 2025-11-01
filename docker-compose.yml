@@ -66,7 +66,7 @@ services:
 
   # Backend API
   backend:
-    image: nexus-backend:v124-chat-restored
+    image: nexus-backend:v125-chat-fixes
     environment:
       - NODE_ENV=production
       - DB_HOST=46.202.144.210
@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v124-chat-restored
+    image: nexus-frontend:v125-chat-fixes
     networks:
       - nexusatnet
     deploy:
