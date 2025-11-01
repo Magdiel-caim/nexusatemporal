@@ -66,7 +66,7 @@ services:
 
   # Backend API
   backend:
-    image: nexus-backend:v120.6-restored
+    image: nexus-backend:v122-with-public-api
     environment:
       - NODE_ENV=production
       - DB_HOST=46.202.144.210
@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v120.6-routes-fixed
+    image: nexus-frontend:v122-apikeys-fix
     networks:
       - nexusatnet
     deploy:

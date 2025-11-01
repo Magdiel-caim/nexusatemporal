@@ -30,6 +30,8 @@ class LeadController {
                 priority: req.query.priority,
                 source: req.query.source,
                 search: req.query.search,
+                phone: req.query.phone, // NOVO: Busca por telefone
+                email: req.query.email, // NOVO: Busca por email
                 tags: req.query.tags ? req.query.tags.split(',') : undefined,
                 dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom) : undefined,
                 dateTo: req.query.dateTo ? new Date(req.query.dateTo) : undefined,
@@ -38,6 +40,7 @@ class LeadController {
             res.json(leads);
         }
         catch (error) {
+            console.error('Error getting leads:', error);
             res.status(400).json({ error: error.message });
         }
     };

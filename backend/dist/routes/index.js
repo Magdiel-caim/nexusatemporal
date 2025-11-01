@@ -7,6 +7,7 @@ const express_1 = require("express");
 const auth_routes_1 = __importDefault(require("../modules/auth/auth.routes"));
 const data_routes_1 = __importDefault(require("../modules/config/data.routes"));
 const leads_routes_1 = __importDefault(require("../modules/leads/leads.routes"));
+const public_leads_routes_1 = __importDefault(require("../modules/leads/public-leads.routes")); // Public API for external integrations (N8N, etc)
 const chat_routes_1 = __importDefault(require("../modules/chat/chat.routes"));
 const appointment_routes_1 = __importDefault(require("../modules/agenda/appointment.routes"));
 const public_appointment_routes_1 = __importDefault(require("../modules/agenda/public-appointment.routes"));
@@ -38,6 +39,7 @@ router.get('/health', (req, res) => {
 router.use('/auth', auth_routes_1.default);
 router.use('/data', data_routes_1.default); // Required /api/data endpoint
 router.use('/leads', leads_routes_1.default);
+router.use('/public/leads', public_leads_routes_1.default); // Public API for external integrations (N8N, etc) - Requires API Key
 router.use('/chat', chat_routes_1.default);
 router.use('/appointments', appointment_routes_1.default);
 router.use('/public/appointments', public_appointment_routes_1.default); // Public API for external integrations
