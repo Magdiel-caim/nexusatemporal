@@ -909,13 +909,66 @@ export class N8NWebhookController {
       const content = payload.body || '';
 
       // URL de mídia (se houver)
-      // IMPORTANTE: Ignorar base64 - apenas N8N processa mídias e faz upload no S3
       let mediaUrl = payload._data?.mediaUrl || null;
+      let processedMediaInfo: { fileUrl: string; fileName: string; fileSize: number; mimeType: string } | null = null;
 
-      // Se mediaUrl for base64, definir como null (N8N processará e fará upload no S3)
-      if (mediaUrl && mediaUrl.startsWith('data:')) {
-        console.log('🔄 Base64 detectado - será processado pelo N8N workflow');
-        mediaUrl = null;
+      // Se mediaUrl for base64, fazer upload no S3
+      if (mediaUrl && mediaUrl.startsWith('data:') && payload.hasMedia) {
+        console.log('📷 Base64 detectado - fazendo upload no S3...');
+
+        try {
+          // Usar MediaUploadService para fazer upload do base64
+          const base64Data = mediaUrl.replace(/^data:.+;base64,/, '');
+          const buffer = Buffer.from(base64Data, 'base64');
+
+          // Detectar mimetype do base64
+          const mimetypeMatch = mediaUrl.match(/^data:([^;]+);base64,/);
+          const mimetype = mimetypeMatch ? mimetypeMatch[1] : 'application/octet-stream';
+
+          // Determinar extensão
+          let extension = 'bin';
+          if (messageType === 'image') extension = 'jpg';
+          else if (messageType === 'video') extension = 'mp4';
+          else if (messageType === 'audio' || messageType === 'ptt') extension = 'ogg';
+          else if (messageType === 'sticker') extension = 'webp';
+          else if (messageType === 'document') extension = 'pdf';
+
+          // Upload no S3
+          const { uploadFile } = await import('@/integrations/idrive/s3-client');
+          const timestamp_str = new Date().toISOString().replace(/[:.]/g, '-');
+          const s3Key = `whatsapp/${session}/${timestamp_str}-${payload.id}.${extension}`;
+
+          console.log('☁️ Fazendo upload no S3:', s3Key);
+
+          const s3Url = await uploadFile(
+            s3Key,
+            buffer,
+            mimetype,
+            {
+              source: 'whatsapp',
+              session: session,
+              type: messageType,
+              messageId: payload.id,
+              phoneNumber: phoneNumber,
+            }
+          );
+
+          console.log('✅ Upload S3 concluído:', s3Url);
+
+          processedMediaInfo = {
+            fileUrl: s3Url,
+            fileName: `${session}_${Date.now()}.${extension}`,
+            fileSize: buffer.length,
+            mimeType: mimetype,
+          };
+
+          // Atualizar mediaUrl para a URL do S3
+          mediaUrl = s3Url;
+        } catch (error: any) {
+          console.error('❌ Erro ao fazer upload de mídia base64 no S3:', error.message);
+          // Continuar sem bloquear - mensagem será salva sem mídia
+          mediaUrl = null;
+        }
       }
 
       // Direção (incoming ou outgoing)
@@ -944,7 +997,7 @@ export class N8NWebhookController {
       logger.info('[WAHA Webhook] Conversa encontrada/criada:', conversation.id);
 
       // 2. Determinar se tem mídia para criar attachment
-      const hasMedia = mediaUrl && mediaUrl.trim() !== '' && !mediaUrl.startsWith('data:');
+      const hasMedia = (mediaUrl && mediaUrl.trim() !== '' && !mediaUrl.startsWith('data:')) || processedMediaInfo;
       const isMediaType = ['audio', 'image', 'video', 'document', 'ptt', 'sticker'].includes(messageType);
 
       let savedMessage: any = null;
@@ -956,6 +1009,14 @@ export class N8NWebhookController {
         const actualMediaType = messageType === 'ptt' || messageType === 'sticker'
           ? (messageType === 'ptt' ? 'audio' : 'image')
           : messageType;
+
+        // Usar processedMediaInfo se disponível (upload S3 de base64), senão usar dados do payload
+        const attachmentInfo = processedMediaInfo || (mediaUrl ? {
+          fileName: `${session}_${Date.now()}.${messageType}`,
+          fileUrl: mediaUrl,
+          mimeType: (payload._data as any)?.mimetype || undefined,
+          fileSize: (payload._data as any)?.size || undefined,
+        } : undefined);
 
         savedMessage = await this.chatService.createMessageWithAttachment(
           {
@@ -969,14 +1030,10 @@ export class N8NWebhookController {
               status: 'received',
               rawPayload: wahaPayload,
               isGroup: isGroup,
+              uploadedToS3: !!processedMediaInfo,
             },
           },
-          mediaUrl ? {
-            fileName: `${session}_${Date.now()}.${messageType}`,
-            fileUrl: mediaUrl,
-            mimeType: (payload._data as any)?.mimetype || undefined,
-            fileSize: (payload._data as any)?.size || undefined,
-          } : undefined
+          attachmentInfo
         );
       } else {
         // Mensagem de texto ou sem mídia processável
