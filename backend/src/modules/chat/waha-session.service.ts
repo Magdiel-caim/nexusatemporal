@@ -305,4 +305,98 @@ export class WAHASessionService {
       console.log('Could not update conversation status (table may not exist):', convError.message);
     }
   }
+
+  // ===== CONVERSATIONS & MESSAGES =====
+
+  /**
+   * Busca conversas (chats) de uma sessão WhatsApp
+   */
+  async getConversations(sessionName: string): Promise<any[]> {
+    try {
+      const response = await axios.get(
+        `${this.wahaUrl}/api/${sessionName}/chats`,
+        { headers: this.getHeaders() }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error getting conversations from WAHA:', error.response?.data || error.message);
+      throw new Error(`Failed to get conversations: ${error.response?.data?.message || error.message}`);
+    }
+  }
+
+  /**
+   * Busca mensagens de um chat específico
+   */
+  async getMessages(sessionName: string, chatId: string, limit: number = 100): Promise<any[]> {
+    try {
+      const response = await axios.get(
+        `${this.wahaUrl}/api/${sessionName}/chats/${chatId}/messages`,
+        {
+          headers: this.getHeaders(),
+          params: { limit }
+        }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error getting messages from WAHA:', error.response?.data || error.message);
+      throw new Error(`Failed to get messages: ${error.response?.data?.message || error.message}`);
+    }
+  }
+
+  /**
+   * Envia uma mensagem de texto
+   */
+  async sendTextMessage(sessionName: string, chatId: string, text: string): Promise<any> {
+    try {
+      const response = await axios.post(
+        `${this.wahaUrl}/api/sendText`,
+        {
+          session: sessionName,
+          chatId: chatId,
+          text: text,
+        },
+        { headers: this.getHeaders() }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error sending text message:', error.response?.data || error.message);
+      throw new Error(`Failed to send message: ${error.response?.data?.message || error.message}`);
+    }
+  }
+
+  /**
+   * Deleta uma mensagem (revoga para todos)
+   */
+  async deleteMessage(sessionName: string, chatId: string, messageId: string): Promise<void> {
+    try {
+      await axios.delete(
+        `${this.wahaUrl}/api/${sessionName}/chats/${chatId}/messages/${messageId}`,
+        { headers: this.getHeaders() }
+      );
+    } catch (error: any) {
+      console.error('Error deleting message:', error.response?.data || error.message);
+      throw new Error(`Failed to delete message: ${error.response?.data?.message || error.message}`);
+    }
+  }
+
+  /**
+   * Edita uma mensagem
+   */
+  async editMessage(sessionName: string, chatId: string, messageId: string, newText: string): Promise<any> {
+    try {
+      const response = await axios.patch(
+        `${this.wahaUrl}/api/${sessionName}/chats/${chatId}/messages/${messageId}`,
+        { text: newText },
+        { headers: this.getHeaders() }
+      );
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Error editing message:', error.response?.data || error.message);
+      throw new Error(`Failed to edit message: ${error.response?.data?.message || error.message}`);
+    }
+  }
 }

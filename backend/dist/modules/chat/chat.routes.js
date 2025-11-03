@@ -88,6 +88,10 @@ router.get('/whatsapp/sessions', wahaSessionController.listSessions);
 router.post('/whatsapp/sessions/:sessionName/stop', wahaSessionController.stopSession);
 router.post('/whatsapp/sessions/:sessionName/logout', wahaSessionController.logoutSession);
 router.delete('/whatsapp/sessions/:sessionName', wahaSessionController.deleteSession);
+// WhatsApp Messages via WAHA (NEW)
+router.post('/whatsapp/send', chatController.sendWhatsAppMessage);
+router.delete('/whatsapp/messages/:messageId', chatController.deleteWhatsAppMessage);
+router.patch('/whatsapp/messages/:messageId', chatController.editWhatsAppMessage);
 // Legacy WhatsApp session management (mantido para compatibilidade)
 router.get('/whatsapp/sessions/legacy/:instanceId', whatsappController.getSessionStatus);
 router.post('/whatsapp/sessions/legacy/:instanceId/start', whatsappController.startSession);

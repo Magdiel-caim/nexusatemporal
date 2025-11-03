@@ -4,6 +4,7 @@ import chatService from '../../services/chatService';
 
 interface WhatsAppChannel {
   sessionName: string;
+  friendlyName?: string; // ✨ Nome amigável (ex: "Atemporal")
   phoneNumber: string;
   status: string;
   conversationCount: number;
@@ -120,7 +121,7 @@ const ChannelSelector: React.FC<ChannelSelectorProps> = ({ selectedChannel, onCh
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {getStatusIcon(channel.status)}
-                    <span className="truncate">{formatSessionName(channel.sessionName)}</span>
+                    <span className="truncate">{channel.friendlyName || formatSessionName(channel.sessionName)}</span>
                     {channel.unreadCount > 0 && (
                       <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full">
                         {channel.unreadCount}

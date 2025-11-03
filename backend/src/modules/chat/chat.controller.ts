@@ -1,10 +1,12 @@
 import { Request, Response } from 'express';
 import { ChatService } from './chat.service';
 import { WhatsAppService } from './whatsapp.service';
+import { WAHASessionService } from './waha-session.service';
 
 export class ChatController {
   private chatService = new ChatService();
   private whatsappService = new WhatsAppService();
+  private wahaService = new WAHASessionService();
 
   /**
    * Helper: Garante que uma conversa existe no banco para conversas WhatsApp
@@ -55,10 +57,28 @@ export class ChatController {
 
   getConversations = async (req: Request, res: Response) => {
     try {
-      // TODO: Implement normal conversations when needed
-      // For now, return empty array (WhatsApp conversations are handled by n8n-webhook.controller)
-      res.json([]);
+      const { sessionName } = req.query;
+
+      console.log('[getConversations] Buscando conversas do BANCO...', { sessionName });
+
+      // ⚠️ IMPORTANTE: NÃO buscar do WAHA (histórico antigo)
+      // Apenas retornar conversas que já foram salvas via WEBHOOK
+      // Isso garante que apenas NOVAS mensagens apareçam no sistema
+
+      // Buscar conversas do banco de dados (apenas as que vieram via webhook)
+      const filters: any = {};
+
+      if (sessionName) {
+        filters.whatsappInstanceId = sessionName;
+      }
+
+      const conversations = await this.chatService.getConversations(filters);
+
+      console.log(`[getConversations] ${conversations.length} conversas encontradas no banco`);
+
+      res.json(conversations);
     } catch (error: any) {
+      console.error('[getConversations] Erro:', error);
       res.status(400).json({ error: error.message });
     }
   };
@@ -161,9 +181,27 @@ export class ChatController {
   getMessages = async (req: Request, res: Response) => {
     try {
       const { conversationId } = req.params;
+      const { sessionName, chatId } = req.query;
+
+      console.log('[getMessages] Buscando mensagens...', { conversationId, sessionName, chatId });
+
+      // Se tiver sessionName e chatId, buscar do WAHA diretamente
+      if (sessionName && chatId) {
+        const messages = await this.wahaService.getMessages(
+          sessionName as string,
+          chatId as string,
+          100
+        );
+        console.log(`[getMessages] ${messages.length} mensagens encontradas no WAHA`);
+        res.json(messages);
+        return;
+      }
+
+      // Caso contrário, buscar do banco local
       const messages = await this.chatService.getMessagesByConversation(conversationId);
       res.json(messages);
     } catch (error: any) {
+      console.error('[getMessages] Erro:', error);
       res.status(400).json({ error: error.message });
     }
   };
@@ -205,6 +243,83 @@ export class ChatController {
       res.status(201).json(updatedMessage);
     } catch (error: any) {
       console.error('Error sending message:', error);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  /**
+   * Envia mensagem WhatsApp via WAHA
+   * POST /api/chat/whatsapp/send
+   */
+  sendWhatsAppMessage = async (req: Request, res: Response) => {
+    try {
+      const { sessionName, chatId, text } = req.body;
+
+      console.log('[sendWhatsAppMessage] Enviando mensagem...', { sessionName, chatId });
+
+      if (!sessionName || !chatId || !text) {
+        return res.status(400).json({ error: 'sessionName, chatId and text are required' });
+      }
+
+      // Enviar via WAHA
+      const result = await this.wahaService.sendTextMessage(sessionName, chatId, text);
+      console.log('[sendWhatsAppMessage] Mensagem enviada com sucesso');
+
+      res.status(201).json(result);
+    } catch (error: any) {
+      console.error('[sendWhatsAppMessage] Erro:', error);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  /**
+   * Deleta mensagem WhatsApp via WAHA
+   * DELETE /api/chat/whatsapp/messages/:messageId
+   */
+  deleteWhatsAppMessage = async (req: Request, res: Response) => {
+    try {
+      const { messageId } = req.params;
+      const { sessionName, chatId } = req.body;
+
+      console.log('[deleteWhatsAppMessage] Deletando mensagem...', { messageId, sessionName, chatId });
+
+      if (!sessionName || !chatId) {
+        return res.status(400).json({ error: 'sessionName and chatId are required' });
+      }
+
+      // Deletar via WAHA
+      await this.wahaService.deleteMessage(sessionName, chatId, messageId);
+      console.log('[deleteWhatsAppMessage] Mensagem deletada com sucesso');
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('[deleteWhatsAppMessage] Erro:', error);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  /**
+   * Edita mensagem WhatsApp via WAHA
+   * PATCH /api/chat/whatsapp/messages/:messageId
+   */
+  editWhatsAppMessage = async (req: Request, res: Response) => {
+    try {
+      const { messageId } = req.params;
+      const { sessionName, chatId, text } = req.body;
+
+      console.log('[editWhatsAppMessage] Editando mensagem...', { messageId, sessionName, chatId });
+
+      if (!sessionName || !chatId || !text) {
+        return res.status(400).json({ error: 'sessionName, chatId and text are required' });
+      }
+
+      // Editar via WAHA
+      const result = await this.wahaService.editMessage(sessionName, chatId, messageId, text);
+      console.log('[editWhatsAppMessage] Mensagem editada com sucesso');
+
+      res.json(result);
+    } catch (error: any) {
+      console.error('[editWhatsAppMessage] Erro:', error);
       res.status(400).json({ error: error.message });
     }
   };
@@ -530,12 +645,21 @@ export class ChatController {
       const sessions = await response.json() as any[];
       console.log(`[Channels] ${sessions.length} sessões encontradas no WAHA`);
 
+      // 🔍 Filtrar apenas sessões "Atemporal"
+      const atemporalSessions = sessions.filter((session) => {
+        const sessionName = (session.name || '').toLowerCase();
+        const pushName = (session.me?.pushName || '').toLowerCase();
+        return pushName.includes('atemporal') || sessionName.includes('atemporal');
+      });
+
+      console.log(`[Channels] ${atemporalSessions.length} sessões Atemporal filtradas`);
+
       // Importar AppDataSource para queries
       const { AppDataSource } = await import('@/database/data-source');
 
-      // 2. Para cada sessão, contar conversas
+      // 2. Para cada sessão Atemporal, contar conversas
       const channels = await Promise.all(
-        sessions.map(async (session: any) => {
+        atemporalSessions.map(async (session: any) => {
           try {
             // Contar conversas únicas (chat_id) desta sessão em whatsapp_messages
             const countResult = await AppDataSource.query(
@@ -569,6 +693,7 @@ export class ChatController {
 
             return {
               sessionName: session.name,
+              friendlyName: session.me?.pushName || session.name, // ✨ Nome amigável (ex: "Atemporal")
               phoneNumber: session.config?.phoneNumber || session.me?.id || 'N/A',
               status: session.status, // WORKING, FAILED, STARTING, STOPPED, etc.
               conversationCount,
@@ -578,6 +703,7 @@ export class ChatController {
             console.error(`[Channels] Erro ao processar sessão ${session.name}:`, error.message);
             return {
               sessionName: session.name,
+              friendlyName: session.me?.pushName || session.name, // ✨ Nome amigável (ex: "Atemporal")
               phoneNumber: session.config?.phoneNumber || 'N/A',
               status: session.status,
               conversationCount: 0,

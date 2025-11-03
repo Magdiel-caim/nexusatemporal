@@ -3,14 +3,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files from frontend directory
-COPY frontend/package*.json ./
+# Copy package files
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
 # Copy frontend source code
-COPY frontend/ .
+COPY . .
 
 # Expose Vite dev server port
 EXPOSE 3000

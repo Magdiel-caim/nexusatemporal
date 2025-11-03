@@ -19,11 +19,19 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
   const [currentSessionName, setCurrentSessionName] = useState<string | null>(null);
   const [connectedSessions, setConnectedSessions] = useState<any[]>([]);
   const [disconnectedSessions, setDisconnectedSessions] = useState<any[]>([]);
+  const [selectedActiveSession, setSelectedActiveSession] = useState<any | null>(null); // ✨ Sessão ativa selecionada
 
   // Carregar sessões conectadas ao montar
   useEffect(() => {
     loadConnectedSessions();
   }, []);
+
+  // ✨ Pré-preencher nome quando selecionar sessão ativa
+  useEffect(() => {
+    if (selectedActiveSession) {
+      setSessionName(selectedActiveSession.friendlyName || selectedActiveSession.name);
+    }
+  }, [selectedActiveSession]);
 
   // Listen para atualizações de status via WebSocket
   useEffect(() => {
@@ -307,8 +315,17 @@ const WhatsAppConnectionPanel: React.FC<WhatsAppConnectionPanelProps> = ({ socke
             Conexões Ativas
           </h3>
           {connectedSessions.map((session) => (
-            <div key={session.name} className="flex items-center justify-between py-2">
-              <span className="text-green-700 dark:text-green-400 font-medium">{session.friendlyName || session.name}</span>
+            <div key={session.name} className={`flex items-center justify-between py-2 px-3 rounded-lg transition-colors ${selectedActiveSession?.name === session.name ? 'bg-green-100 dark:bg-green-800/30' : 'hover:bg-green-100/50 dark:hover:bg-green-800/20'}`}>
+              <button
+                onClick={() => setSelectedActiveSession(session)}
+                className="text-green-700 dark:text-green-400 font-medium text-left flex-1 cursor-pointer hover:underline"
+                title="Clique para usar esta conexão"
+              >
+                {session.friendlyName || session.name}
+                {selectedActiveSession?.name === session.name && (
+                  <span className="ml-2 text-xs text-green-600 dark:text-green-400">✓ Selecionada</span>
+                )}
+              </button>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleDisconnect(session)}
