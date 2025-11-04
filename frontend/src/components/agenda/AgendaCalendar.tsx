@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import CalendarView from './CalendarView';
 import TimeSlotPicker from './TimeSlotPicker';
+import AppointmentDetailsModal from './AppointmentDetailsModal';
+import PatientSearchInput from './PatientSearchInput';
 import appointmentService, { Appointment } from '@/services/appointmentService';
 import { leadsService } from '@/services/leadsService';
 import { X, Plus, Calendar as CalendarIcon } from 'lucide-react';
@@ -13,8 +15,10 @@ interface AgendaCalendarProps {
 
 const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh }) => {
   const [showNewAppointmentModal, setShowNewAppointmentModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
+  const [selectedPatientName, setSelectedPatientName] = useState('');
   const [occupiedSlots, setOccupiedSlots] = useState<string[]>([]);
-  const [leads, setLeads] = useState<any[]>([]);
   const [procedures, setProcedures] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
@@ -32,7 +36,6 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
   });
 
   useEffect(() => {
-    loadLeads();
     loadProcedures();
   }, []);
 
@@ -41,15 +44,6 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
       loadOccupiedSlots();
     }
   }, [formData.scheduledDate, formData.location]);
-
-  const loadLeads = async () => {
-    try {
-      const data = await leadsService.getLeads();
-      setLeads(data);
-    } catch (error) {
-      console.error('Erro ao carregar leads:', error);
-    }
-  };
 
   const loadProcedures = async () => {
     try {
@@ -90,8 +84,11 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
   };
 
   const handleSelectEvent = (event: any) => {
-    // Pode abrir modal de detalhes ou edição
-    console.log('Evento selecionado:', event);
+    // Abrir modal de detalhes do agendamento
+    if (event.resource) {
+      setSelectedAppointment(event.resource);
+      setShowDetailsModal(true);
+    }
   };
 
   const handleNavigate = (_date: Date) => {
@@ -157,6 +154,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
         returnFrequency: 30,
         notes: '',
       });
+      setSelectedPatientName('');
     } catch (error: any) {
       toast.error('Erro ao criar agendamento: ' + (error.response?.data?.message || error.message));
     }
@@ -188,6 +186,18 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
         />
       </div>
 
+      {/* Modal de Detalhes do Agendamento */}
+      {showDetailsModal && selectedAppointment && (
+        <AppointmentDetailsModal
+          appointment={selectedAppointment}
+          onClose={() => {
+            setShowDetailsModal(false);
+            setSelectedAppointment(null);
+          }}
+          onRefresh={onRefresh}
+        />
+      )}
+
       {/* Modal de Novo Agendamento */}
       {showNewAppointmentModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 dark:bg-opacity-70 flex items-center justify-center z-50 p-4">
@@ -211,19 +221,15 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                         Paciente *
                       </label>
-                      <select
-                        required
+                      <PatientSearchInput
                         value={formData.leadId}
-                        onChange={(e) => setFormData({ ...formData, leadId: e.target.value })}
-                        className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"
-                      >
-                        <option value="">Selecione um paciente</option>
-                        {leads.map((lead) => (
-                          <option key={lead.id} value={lead.id}>
-                            {lead.name} - {lead.phone}
-                          </option>
-                        ))}
-                      </select>
+                        selectedPatientName={selectedPatientName}
+                        onChange={(patientId, patientData) => {
+                          setFormData({ ...formData, leadId: patientId });
+                          setSelectedPatientName(patientData.name);
+                        }}
+                        placeholder="Buscar por nome, CPF ou RG..."
+                      />
                     </div>
 
                     <div>
@@ -252,6 +258,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                       <input
                         type="date"
                         required
+                        min={new Date().toISOString().split('T')[0]}
                         value={formData.scheduledDate}
                         onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"

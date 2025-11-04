@@ -635,17 +635,43 @@ const AgendaPage: React.FC = () => {
                       </button>
                     )}
 
-                    {appointment.status === 'aguardando_pagamento' && (
+                    {/* Botão de confirmação de pagamento - apenas para gestão */}
+                    {canDelete && appointment.status === 'aguardando_pagamento' && (
                       <button
-                        onClick={() => {
+                        onClick={async () => {
                           const proof = prompt('Link do comprovante:');
                           if (proof) {
-                            appointmentService.confirmPayment(appointment.id, proof, 'pix').then(loadAppointments);
+                            try {
+                              await appointmentService.confirmPayment(appointment.id, proof, 'pix');
+                              toast.success('Pagamento confirmado!');
+                              loadAppointments();
+                            } catch (error: any) {
+                              toast.error('Erro ao confirmar pagamento');
+                            }
                           }
                         }}
                         className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
                       >
-                        Confirmar Pgto
+                        Confirmar Pagamento
+                      </button>
+                    )}
+
+                    {/* Botão de confirmação de agendamento - apenas para gestão após pagamento confirmado */}
+                    {canDelete && (appointment.status === 'pagamento_confirmado' || appointment.status === 'aguardando_confirmacao') && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await appointmentService.confirm(appointment.id, true);
+                            toast.success('Agendamento confirmado!');
+                            loadAppointments();
+                          } catch (error: any) {
+                            toast.error('Erro ao confirmar agendamento');
+                          }
+                        }}
+                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 flex items-center gap-1"
+                      >
+                        <CheckCircle size={14} />
+                        Confirmar Agendamento
                       </button>
                     )}
 
@@ -749,6 +775,7 @@ const AgendaPage: React.FC = () => {
                     <input
                       type="date"
                       required
+                      min={new Date().toISOString().split('T')[0]}
                       value={formData.scheduledDate}
                       onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
                       className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"

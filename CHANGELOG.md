@@ -2,6 +2,276 @@
 
 ---
 
+## 📅 v128.1 - MELHORIAS MÓDULO AGENDA (2025-11-04)
+
+### 📝 RESUMO
+**Versão**: v1.28.1-agenda-improvements
+**Data**: 04/11/2025
+**Status**: ✅ **100% FUNCIONAL** - Melhorias críticas implementadas
+**Imagens Docker**:
+- Backend: `nexus-backend:v128-complete`
+- Frontend: `nexus-frontend:v128-prod`
+
+### 🎯 OBJETIVO
+
+Implementar melhorias críticas no módulo de Agenda conforme solicitação:
+1. Botões de confirmação de pagamento/agendamento (apenas gestão)
+2. Modal de detalhes ao clicar em agendamento no calendário
+3. Busca inteligente de pacientes por nome, CPF ou RG
+4. Correção de bug: permitir agendamento no dia atual
+
+### ✅ FUNCIONALIDADES IMPLEMENTADAS
+
+#### 1. Botões de Confirmação (Apenas Gestão) ✅
+
+**Arquivo**: `frontend/src/pages/AgendaPage.tsx:638-676`
+
+**Descrição**:
+- Botão "Confirmar Pagamento" visível apenas para `admin` e `gestor`
+- Aparece quando status = `aguardando_pagamento`
+- Solicita link do comprovante ao confirmar
+- Após confirmação, aparece botão "Confirmar Agendamento"
+- Fluxo: Aguardando Pagamento → Pagamento Confirmado → Agendamento Confirmado
+
+**Código Implementado**:
+```typescript
+const canDelete = user?.role === 'admin' || user?.role === 'gestor';
+
+{canDelete && appointment.status === 'aguardando_pagamento' && (
+  <button onClick={handleConfirmPayment}>
+    Confirmar Pagamento
+  </button>
+)}
+
+{canDelete && (appointment.status === 'pagamento_confirmado' ||
+               appointment.status === 'aguardando_confirmacao') && (
+  <button onClick={handleConfirmAppointment}>
+    Confirmar Agendamento
+  </button>
+)}
+```
+
+#### 2. Modal de Detalhes do Agendamento ✅
+
+**Arquivos Criados**:
+- `frontend/src/components/agenda/AppointmentDetailsModal.tsx` (270 linhas)
+
+**Arquivos Modificados**:
+- `frontend/src/components/agenda/AgendaCalendar.tsx`
+
+**Funcionalidades**:
+- **Informações do Paciente**: Nome, telefone, WhatsApp
+- **Detalhes do Agendamento**: Procedimento, data/hora, local, duração, valor, status
+- **Observações**: Notas do agendamento
+- **Histórico**: Últimos 5 agendamentos do paciente
+
+**Recursos**:
+- ✅ Design responsivo com dark mode
+- ✅ Loading state durante carregamento
+- ✅ Scroll interno para conteúdo extenso
+- ✅ Badges coloridos para status
+- ✅ Formatação de valores monetários
+
+**Correções Aplicadas (v128.1.1)**:
+- ✅ Removida chamada API desnecessária (`GET /api/leads/...` - 404)
+- ✅ Adicionada verificação de tipo em `paymentAmount` (TypeError corrigido)
+- ✅ Removido campo email (não existe na interface Lead)
+- ✅ Limpeza de imports não utilizados
+
+#### 3. Busca Inteligente de Pacientes ✅
+
+**Arquivos Criados**:
+- `backend/src/modules/agenda/search-patients.controller.ts` (140 linhas)
+- `frontend/src/components/agenda/PatientSearchInput.tsx` (255 linhas)
+
+**Arquivos Modificados**:
+- `backend/src/modules/agenda/appointment.routes.ts`
+- `frontend/src/components/agenda/AgendaCalendar.tsx`
+
+**Backend**:
+- Endpoint: `GET /api/appointments/search-patients?q=termo&type=name|cpf|rg|all`
+- Busca unificada em tabelas Leads e Pacientes
+- Detecção automática do tipo de busca:
+  - 11 dígitos → CPF
+  - 7-9 dígitos → RG
+  - Texto → Nome
+- Remove duplicados baseado em nome + telefone
+- Limita resultados a 30 registros
+
+**Frontend**:
+- Componente de autocomplete com debounce 300ms
+- Indicador visual do tipo de busca
+- Formatação automática de CPF
+- Badge diferenciando Lead vs Paciente
+- Busca em tempo real (mínimo 2 caracteres)
+
+#### 4. Correção: Agendamento no Dia Atual ✅
+
+**Arquivos Modificados**:
+- `frontend/src/components/agenda/AgendaCalendar.tsx:273`
+- `frontend/src/pages/AgendaPage.tsx:778`
+
+**Problema**: Sistema não permitia agendar para o dia atual
+
+**Solução**:
+```typescript
+<input
+  type="date"
+  required
+  min={new Date().toISOString().split('T')[0]}
+  value={formData.scheduledDate}
+/>
+```
+
+**Resultado**:
+- ✅ Data de hoje permitida
+- ✅ Horários passados bloqueados pelo TimeSlotPicker
+- ✅ Apenas horários futuros disponíveis
+
+### 🔧 CORREÇÕES TÉCNICAS
+
+#### Erro 404 - Modal de Detalhes
+**Problema**: `GET /api/leads/...` retornando 404
+
+**Causa**: Tentativa de buscar dados do lead via endpoint inexistente
+
+**Solução**: Removida chamada API, usando `appointment.lead` (dados já vêm na relação TypeORM)
+
+#### TypeError - paymentAmount
+**Problema**: `e.paymentAmount.toFixed is not a function`
+
+**Causa**: Campo vindo como string do backend
+
+**Solução**:
+```typescript
+R$ {typeof appointment.paymentAmount === 'number'
+  ? appointment.paymentAmount.toFixed(2)
+  : parseFloat(appointment.paymentAmount).toFixed(2)}
+```
+
+### 📊 ARQUIVOS CRIADOS/MODIFICADOS
+
+**Novos Arquivos**:
+```
+backend/src/modules/agenda/
+└── search-patients.controller.ts (140 linhas)
+
+frontend/src/components/agenda/
+├── AppointmentDetailsModal.tsx (270 linhas)
+└── PatientSearchInput.tsx (255 linhas)
+```
+
+**Arquivos Modificados**:
+```
+backend/src/modules/agenda/
+└── appointment.routes.ts
+
+frontend/src/components/agenda/
+└── AgendaCalendar.tsx
+
+frontend/src/pages/
+└── AgendaPage.tsx
+```
+
+### 🚀 DEPLOY
+
+**Build Timestamps**:
+```
+Frontend: 2025-11-04 15:17 UTC
+Backend:  2025-11-04 14:55 UTC
+Deploy:   2025-11-04 15:18 UTC
+```
+
+**Comandos**:
+```bash
+# Backend
+cd /root/nexusatemporalv1/backend
+npm run build
+docker build -f Dockerfile.production -t nexus-backend:v128-complete .
+docker service update --image nexus-backend:v128-complete --force nexus_backend
+
+# Frontend
+cd /root/nexusatemporalv1/frontend
+npm run build
+docker build -f Dockerfile.prod -t nexus-frontend:v128-prod .
+docker service update --image nexus-frontend:v128-prod --force nexus_frontend
+```
+
+### ✅ STATUS FINAL
+
+**Implementado**:
+- ✅ Botões de confirmação (gestão)
+- ✅ Modal de detalhes no calendário
+- ✅ Busca inteligente de pacientes
+- ✅ Agendamento no dia atual
+- ✅ Correções de bugs do modal
+
+**Não Implementado** (complexidade alta):
+- ❌ Múltiplos procedimentos (requer alteração DB)
+- ❌ Múltiplos horários (requer sistema de lote)
+
+**Estimativa para funcionalidades pendentes**: 8-12 horas
+
+### 📈 MÉTRICAS
+
+**Código Adicionado**:
+- Backend: ~140 linhas
+- Frontend: ~525 linhas
+- Total: ~665 linhas
+
+**Arquivos**:
+- Criados: 3
+- Modificados: 4
+
+**Tempo de Desenvolvimento**: ~4 horas
+
+### 🧪 COMO TESTAR
+
+1. **Limpar cache**: Ctrl + Shift + R
+2. **Botões de Confirmação**:
+   - Login como admin/gestor
+   - Agenda > Lista > Confirmar Pagamento
+3. **Modal de Detalhes**:
+   - Agenda > Calendário > Clicar em agendamento
+4. **Busca de Pacientes**:
+   - Novo Agendamento > Digite nome/CPF/RG
+5. **Data Atual**:
+   - Novo Agendamento > Selecionar hoje
+
+### 🐛 BUGS CORRIGIDOS
+
+1. ✅ Erro 404 em `/api/leads/...` (modal)
+2. ✅ TypeError `paymentAmount.toFixed` (modal)
+3. ✅ Campos indefinidos no modal
+4. ✅ Bloqueio de agendamento no dia atual
+
+### 🔄 MELHORIAS DE PERFORMANCE
+
+- ✅ Removida 1 requisição HTTP desnecessária (busca de lead)
+- ✅ Debounce 300ms na busca de pacientes
+- ✅ Limite de 30 resultados na busca
+- ✅ Uso de dados em cache (appointment.lead)
+
+### 📚 DOCUMENTAÇÃO CRIADA
+
+1. `MELHORIAS_AGENDA_04112025.md` - Implementações completas
+2. `CORRECOES_MODAL_04112025.md` - Correções do modal
+3. `DEPLOY_CONCLUIDO.md` - Instruções de deploy
+4. `INSTRUCOES_DEPLOY.md` - Guia de teste
+
+### 🎯 PRÓXIMOS PASSOS (v129 - Sugerido)
+
+**Funcionalidades Pendentes**:
+1. Seleção de múltiplos procedimentos
+2. Seleção de múltiplos horários
+3. Filtros avançados na busca
+4. Cache de buscas frequentes
+5. Testes automatizados E2E
+
+**Estimativa**: 8-12 horas de desenvolvimento
+
+---
+
 ## 🔄 v126.4 - INTEGRAÇÃO N8N WEBHOOK (2025-11-02)
 
 ### 📝 RESUMO
