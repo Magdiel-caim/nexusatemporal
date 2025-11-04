@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import appointmentController from './appointment.controller';
+import searchPatientsController from './search-patients.controller';
 import { authenticate } from '../../shared/middleware/auth.middleware';
 
 const router = Router();
@@ -12,7 +13,8 @@ router.post('/', appointmentController.create.bind(appointmentController));
 router.get('/', appointmentController.findAll.bind(appointmentController));
 router.get('/today', appointmentController.findToday.bind(appointmentController));
 
-// Rotas de disponibilidade e slots (devem vir antes de /:id para não conflitar)
+// Rotas de busca e disponibilidade (devem vir antes de /:id para não conflitar)
+router.get('/search-patients', searchPatientsController.searchPatients.bind(searchPatientsController));
 router.post('/check-availability', appointmentController.checkAvailability.bind(appointmentController));
 router.get('/occupied-slots', appointmentController.getOccupiedSlots.bind(appointmentController));
 router.get('/available-slots', appointmentController.getAvailableSlots.bind(appointmentController));
