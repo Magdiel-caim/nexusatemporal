@@ -117,8 +117,8 @@ __decorate([
     __metadata("design:type", Object)
 ], PatientImage.prototype, "pairedImageId", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'uploaded_by', type: 'uuid' }),
-    __metadata("design:type", String)
+    (0, typeorm_1.Column)({ name: 'uploaded_by', type: 'uuid', nullable: true }),
+    __metadata("design:type", Object)
 ], PatientImage.prototype, "uploadedBy", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),

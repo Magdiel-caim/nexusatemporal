@@ -165,7 +165,7 @@ export class TransactionService {
     id: string,
     tenantId: string,
     data: {
-      paymentDate: Date;
+      paymentDate: string | Date;
       paymentMethod?: PaymentMethod;
       approvedById: string;
     }
@@ -180,11 +180,16 @@ export class TransactionService {
       throw new Error('Transação já confirmada');
     }
 
+    // Convert paymentDate to Date if it's a string
+    const paymentDate = typeof data.paymentDate === 'string'
+      ? new Date(data.paymentDate)
+      : data.paymentDate;
+
     await this.transactionRepository.update(
       { id, tenantId },
       {
         status: TransactionStatus.CONFIRMADA,
-        paymentDate: data.paymentDate,
+        paymentDate,
         paymentMethod: data.paymentMethod || transaction.paymentMethod,
         approvedById: data.approvedById,
         approvedAt: new Date(),

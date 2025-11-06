@@ -6,25 +6,96 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.S3StorageService = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
-const patient_datasource_1 = require("../database/patient.datasource");
+const data_source_1 = require("../../../database/data-source");
 const tenant_s3_config_entity_1 = require("../entities/tenant-s3-config.entity");
 const crypto_1 = __importDefault(require("crypto"));
 class S3StorageService {
     clients = new Map();
-    configRepository = patient_datasource_1.PatientDataSource.getRepository(tenant_s3_config_entity_1.TenantS3Config);
+    /**
+     * Obtém o repository de forma lazy (só quando necessário)
+     */
+    getConfigRepository() {
+        console.log('[DEBUG S3] getConfigRepository chamado');
+        console.log('[DEBUG S3] CrmDataSource.isInitialized:', data_source_1.CrmDataSource.isInitialized);
+        if (!data_source_1.CrmDataSource.isInitialized) {
+            console.log('[DEBUG S3] ERRO: CrmDataSource não está inicializado!');
+            throw new Error('CrmDataSource não está inicializado');
+        }
+        console.log('[DEBUG S3] Obtendo repository para TenantS3Config...');
+        const repo = data_source_1.CrmDataSource.getRepository(tenant_s3_config_entity_1.TenantS3Config);
+        console.log('[DEBUG S3] Repository obtido:', !!repo);
+        return repo;
+    }
     /**
      * Obtém cliente S3 para um tenant específico
      */
     async getClient(tenantId) {
+        console.log('[DEBUG S3] === INÍCIO getClient ===');
+        console.log('[DEBUG S3] Tenant ID:', tenantId);
+        console.log('[DEBUG S3] CrmDataSource exists:', !!data_source_1.CrmDataSource);
+        console.log('[DEBUG S3] CrmDataSource.isInitialized:', data_source_1.CrmDataSource.isInitialized);
         // Verificar cache
         if (this.clients.has(tenantId)) {
+            console.log('[DEBUG S3] Retornando cliente do cache');
             return this.clients.get(tenantId);
         }
+        console.log('[DEBUG S3] Cliente não está no cache, buscando config...');
+        // Tentar buscar via query RAW primeiro para debug
+        // Buscar especificamente o bucket "imagensdepaciente" para imagens de pacientes
+        const rawResult = await data_source_1.CrmDataSource.query('SELECT * FROM tenant_s3_configs WHERE tenant_id = $1 AND bucket_name = $2 AND is_active = true LIMIT 1', [tenantId, 'imagensdepaciente']);
+        console.log('[DEBUG S3] Raw query result:', rawResult.length > 0 ? 'FOUND' : 'NOT FOUND');
+        if (rawResult.length > 0) {
+            console.log('[DEBUG S3] Raw config:', rawResult[0]);
+        }
+        const configRepository = this.getConfigRepository();
+        console.log('[DEBUG S3] Repository table:', configRepository.metadata.tableName);
         // Buscar configuração do banco
-        const config = await this.configRepository.findOne({
-            where: { tenantId, isActive: true },
+        // Buscar especificamente o bucket "imagensdepaciente" para imagens de pacientes
+        const config = await configRepository.findOne({
+            where: { tenantId, bucketName: 'imagensdepaciente', isActive: true },
         });
+        console.log('[DEBUG S3] Config encontrada:', config ? 'SIM' : 'NÃO');
+        if (config) {
+            console.log('[DEBUG S3] Config details:', { id: config.id, tenantId: config.tenantId, bucket: config.bucketName });
+        }
         if (!config) {
+            // Tentar buscar todas as configs para debug
+            const allConfigs = await configRepository.find();
+            console.log('[DEBUG S3] Total configs no banco:', allConfigs.length);
+            console.log('[DEBUG S3] Configs disponíveis:', allConfigs.map(c => ({ tenant: c.tenantId, active: c.isActive })));
+            // Se temos resultado raw mas não pelo repository, usar o raw
+            if (rawResult.length > 0) {
+                console.log('[DEBUG S3] Usando resultado RAW pois repository falhou');
+                const raw = rawResult[0];
+                // Criar objeto TenantS3Config manualmente
+                const manualConfig = {
+                    id: raw.id,
+                    tenantId: raw.tenant_id,
+                    endpoint: raw.endpoint,
+                    accessKeyId: raw.access_key_id,
+                    secretAccessKey: raw.secret_access_key,
+                    bucketName: raw.bucket_name,
+                    region: raw.region,
+                    isActive: raw.is_active,
+                    createdAt: raw.created_at,
+                    updatedAt: raw.updated_at,
+                };
+                // Descriptografar credenciais
+                const accessKeyId = this.decrypt(manualConfig.accessKeyId);
+                const secretAccessKey = this.decrypt(manualConfig.secretAccessKey);
+                // Criar cliente S3
+                const client = new client_s3_1.S3Client({
+                    endpoint: `https://${manualConfig.endpoint}`,
+                    region: manualConfig.region,
+                    credentials: {
+                        accessKeyId,
+                        secretAccessKey,
+                    },
+                    forcePathStyle: true,
+                });
+                this.clients.set(tenantId, client);
+                return client;
+            }
             throw new Error(`Configuração S3 não encontrada para tenant: ${tenantId}`);
         }
         // Descriptografar credenciais (se necessário)
@@ -138,8 +209,10 @@ class S3StorageService {
      * Obtém configuração S3 do tenant
      */
     async getConfig(tenantId) {
-        const config = await this.configRepository.findOne({
-            where: { tenantId, isActive: true },
+        const configRepository = this.getConfigRepository();
+        // Buscar especificamente o bucket "imagensdepaciente" para imagens de pacientes
+        const config = await configRepository.findOne({
+            where: { tenantId, bucketName: 'imagensdepaciente', isActive: true },
         });
         if (!config) {
             throw new Error(`Configuração S3 não encontrada para tenant: ${tenantId}`);

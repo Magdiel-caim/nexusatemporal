@@ -137,10 +137,13 @@ export class PatientService {
    * Atualizar paciente
    */
   async update(id: string, tenantId: string, data: Partial<Patient>): Promise<Patient | null> {
+    // Remove relationship properties that cannot be updated via repository.update()
+    const { medicalRecords, images, appointments, transactions, ...updateData } = data as any;
+
     await this.repository.update(
       { id, tenantId },
       {
-        ...data,
+        ...updateData,
         updatedAt: new Date(),
       }
     );
@@ -190,17 +193,16 @@ export class PatientService {
 
   /**
    * Atualizar foto de perfil
+   * IMPORTANTE: Não salvamos signedUrl pois ela expira. Apenas s3Key.
    */
   async updateProfilePhoto(
     id: string,
     tenantId: string,
-    photoUrl: string,
     s3Key: string
   ): Promise<Patient | null> {
     await this.repository.update(
       { id, tenantId },
       {
-        profilePhotoUrl: photoUrl,
         profilePhotoS3Key: s3Key,
       }
     );

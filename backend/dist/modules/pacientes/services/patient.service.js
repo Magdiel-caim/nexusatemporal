@@ -123,8 +123,10 @@ class PatientService {
      * Atualizar paciente
      */
     async update(id, tenantId, data) {
+        // Remove relationship properties that cannot be updated via repository.update()
+        const { medicalRecords, images, appointments, transactions, ...updateData } = data;
         await this.repository.update({ id, tenantId }, {
-            ...data,
+            ...updateData,
             updatedAt: new Date(),
         });
         return await this.findById(id, tenantId);
@@ -165,10 +167,10 @@ class PatientService {
     }
     /**
      * Atualizar foto de perfil
+     * IMPORTANTE: Não salvamos signedUrl pois ela expira. Apenas s3Key.
      */
-    async updateProfilePhoto(id, tenantId, photoUrl, s3Key) {
+    async updateProfilePhoto(id, tenantId, s3Key) {
         await this.repository.update({ id, tenantId }, {
-            profilePhotoUrl: photoUrl,
             profilePhotoS3Key: s3Key,
         });
         return await this.findById(id, tenantId);

@@ -47,6 +47,21 @@ class PatientController {
                 limit: limit ? parseInt(limit) : 50,
                 offset: offset ? parseInt(offset) : 0,
             });
+            // Gerar signed URLs para fotos de perfil
+            if (result.patients && result.patients.length > 0) {
+                await Promise.all(result.patients.map(async (patient) => {
+                    if (patient.profilePhotoS3Key) {
+                        try {
+                            patient.profilePhotoUrl = await this.s3Service.getSignedUrl(tenantId, patient.profilePhotoS3Key, 86400 // 24 horas
+                            );
+                        }
+                        catch (error) {
+                            console.error(`Error generating signed URL for patient ${patient.id}:`, error);
+                            patient.profilePhotoUrl = null;
+                        }
+                    }
+                }));
+            }
             res.json(result);
         }
         catch (error) {
@@ -65,6 +80,18 @@ class PatientController {
             const patient = await this.patientService.findByIdComplete(id, tenantId);
             if (!patient) {
                 return res.status(404).json({ error: 'Paciente não encontrado' });
+            }
+            // Gerar signed URL para foto de perfil se existir s3Key
+            if (patient.profilePhotoS3Key) {
+                try {
+                    patient.profilePhotoUrl = await this.s3Service.getSignedUrl(tenantId, patient.profilePhotoS3Key, 86400 // 24 horas
+                    );
+                }
+                catch (error) {
+                    console.error('Error generating signed URL for profile photo:', error);
+                    // Continua sem a foto se houver erro
+                    patient.profilePhotoUrl = null;
+                }
             }
             res.json(patient);
         }
@@ -153,11 +180,16 @@ class PatientController {
     uploadImage = async (req, res) => {
         try {
             const { id: patientId } = req.params;
-            const { tenantId, id: userId } = req.user;
+            const user = req.user;
+            const tenantId = user.tenantId;
+            const userId = user.id || user.userId || user.sub;
             const { type, category, description, procedureName } = req.body;
             const file = req.file;
             if (!file) {
                 return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+            }
+            if (!userId) {
+                return res.status(401).json({ error: 'Usuário não autenticado' });
             }
             // Upload para S3
             const uploadResult = await this.s3Service.uploadPatientImage(tenantId, patientId, file.buffer, file.originalname, type || 'document');
@@ -176,6 +208,10 @@ class PatientController {
                 procedureName,
                 uploadedBy: userId,
             });
+            // Se for foto de perfil, atualizar o paciente
+            if (type === 'profile') {
+                await this.patientService.updateProfilePhoto(patientId, tenantId, uploadResult.s3Key);
+            }
             res.status(201).json(image);
         }
         catch (error) {

@@ -74,6 +74,10 @@ class TransactionController {
         try {
             const { id } = req.params;
             const { tenantId, id: userId } = req.user;
+            console.log('[DEBUG] confirmTransaction - id:', id);
+            console.log('[DEBUG] confirmTransaction - tenantId:', tenantId);
+            console.log('[DEBUG] confirmTransaction - userId:', userId);
+            console.log('[DEBUG] confirmTransaction - req.body:', req.body);
             const transaction = await this.transactionService.confirmTransaction(id, tenantId, {
                 ...req.body,
                 approvedById: userId,
@@ -81,6 +85,8 @@ class TransactionController {
             res.json(transaction);
         }
         catch (error) {
+            console.error('[ERROR] confirmTransaction failed:', error.message);
+            console.error('[ERROR] Stack:', error.stack);
             res.status(400).json({ error: error.message });
         }
     };

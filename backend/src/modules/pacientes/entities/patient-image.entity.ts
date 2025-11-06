@@ -73,8 +73,8 @@ export class PatientImage {
   @Column({ name: 'paired_image_id', type: 'uuid', nullable: true })
   pairedImageId: string | null;
 
-  @Column({ name: 'uploaded_by', type: 'uuid' })
-  uploadedBy: string;
+  @Column({ name: 'uploaded_by', type: 'uuid', nullable: true })
+  uploadedBy: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

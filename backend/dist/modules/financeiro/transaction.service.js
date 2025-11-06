@@ -101,9 +101,13 @@ class TransactionService {
         if (transaction.status === transaction_entity_1.TransactionStatus.CONFIRMADA) {
             throw new Error('Transação já confirmada');
         }
+        // Convert paymentDate to Date if it's a string
+        const paymentDate = typeof data.paymentDate === 'string'
+            ? new Date(data.paymentDate)
+            : data.paymentDate;
         await this.transactionRepository.update({ id, tenantId }, {
             status: transaction_entity_1.TransactionStatus.CONFIRMADA,
-            paymentDate: data.paymentDate,
+            paymentDate,
             paymentMethod: data.paymentMethod || transaction.paymentMethod,
             approvedById: data.approvedById,
             approvedAt: new Date(),
