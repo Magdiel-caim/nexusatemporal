@@ -6,7 +6,7 @@ export class PurchaseOrderController {
 
   createPurchaseOrder = async (req: Request, res: Response) => {
     try {
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const purchaseOrder = await this.purchaseOrderService.createPurchaseOrder({
         ...req.body,
         tenantId,
@@ -68,7 +68,7 @@ export class PurchaseOrderController {
   approvePurchaseOrder = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const order = await this.purchaseOrderService.approvePurchaseOrder(id, tenantId, userId);
       res.json(order);
     } catch (error: any) {
@@ -101,7 +101,7 @@ export class PurchaseOrderController {
   receivePurchaseOrder = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const order = await this.purchaseOrderService.receivePurchaseOrder(id, tenantId, {
         ...req.body,
         receivedById: userId,
@@ -115,7 +115,7 @@ export class PurchaseOrderController {
   cancelPurchaseOrder = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const { cancelReason } = req.body;
       const order = await this.purchaseOrderService.cancelPurchaseOrder(id, tenantId, {
         canceledById: userId,

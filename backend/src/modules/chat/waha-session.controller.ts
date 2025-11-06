@@ -14,7 +14,7 @@ export class WAHASessionController {
   createSession = async (req: Request, res: Response) => {
     try {
       const { sessionName } = req.body;
-      const { id: userId } = req.user as any;
+      const { userId } = req.user as any;
 
       if (!sessionName) {
         return res.status(400).json({ error: 'Session name is required' });

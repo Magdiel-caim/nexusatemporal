@@ -160,7 +160,7 @@ export class VendasController {
    */
   createVenda = async (req: Request, res: Response) => {
     try {
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
 
       const venda = await this.vendasService.createVenda({
         ...req.body,

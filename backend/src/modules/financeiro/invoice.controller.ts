@@ -6,7 +6,7 @@ export class InvoiceController {
 
   createInvoice = async (req: Request, res: Response) => {
     try {
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const invoice = await this.invoiceService.createInvoice({
         ...req.body,
         tenantId,

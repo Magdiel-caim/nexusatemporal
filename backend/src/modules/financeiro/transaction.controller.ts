@@ -6,7 +6,7 @@ export class TransactionController {
 
   createTransaction = async (req: Request, res: Response) => {
     try {
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const transaction = await this.transactionService.createTransaction({
         ...req.body,
         tenantId,
@@ -65,7 +65,7 @@ export class TransactionController {
   updateTransaction = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const transaction = await this.transactionService.updateTransaction(
         id,
         tenantId,
@@ -81,7 +81,7 @@ export class TransactionController {
   confirmTransaction = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
 
       console.log('[DEBUG] confirmTransaction - id:', id);
       console.log('[DEBUG] confirmTransaction - tenantId:', tenantId);
@@ -107,7 +107,7 @@ export class TransactionController {
   cancelTransaction = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const { reason } = req.body;
       const transaction = await this.transactionService.cancelTransaction(
         id,
@@ -124,7 +124,7 @@ export class TransactionController {
   reverseTransaction = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const { reason } = req.body;
       const transaction = await this.transactionService.reverseTransaction(
         id,
@@ -151,7 +151,7 @@ export class TransactionController {
 
   createInstallmentTransactions = async (req: Request, res: Response) => {
     try {
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const transactions = await this.transactionService.createInstallmentTransactions({
         ...req.body,
         tenantId,

@@ -6,7 +6,7 @@ export class CashFlowController {
 
   openCashFlow = async (req: Request, res: Response) => {
     try {
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const cashFlow = await this.cashFlowService.openCashFlow({
         ...req.body,
         tenantId,
@@ -22,7 +22,7 @@ export class CashFlowController {
   closeCashFlow = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tenantId, id: userId } = req.user as any;
+      const { tenantId, userId } = req.user as any;
       const cashFlow = await this.cashFlowService.closeCashFlow({
         ...req.body,
         id,
