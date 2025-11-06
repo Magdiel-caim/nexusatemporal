@@ -85,11 +85,11 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
                 onChange={(e) => setFormData({ ...formData, type: e.target.value as MovementType })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
               >
-                <option value="ENTRADA">Entrada</option>
-                <option value="SAIDA">Saída</option>
-                <option value="AJUSTE">Ajuste</option>
-                <option value="DEVOLUCAO">Devolução</option>
-                <option value="PERDA">Perda</option>
+                <option value="entrada">Entrada</option>
+                <option value="saida">Saída</option>
+                <option value="ajuste">Ajuste</option>
+                <option value="devolucao">Devolução</option>
+                <option value="perda">Perda</option>
               </select>
             </div>
 
@@ -101,16 +101,15 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
                 onChange={(e) => setFormData({ ...formData, reason: e.target.value as MovementReason })}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
               >
-                <option value="COMPRA">Compra</option>
-                <option value="PROCEDIMENTO">Procedimento</option>
-                <option value="VENDA">Venda</option>
-                <option value="AJUSTE_INVENTARIO">Ajuste de Inventário</option>
-                <option value="DEVOLUCAO_FORNECEDOR">Devolução Fornecedor</option>
-                <option value="DEVOLUCAO_CLIENTE">Devolução Cliente</option>
-                <option value="PERDA">Perda</option>
-                <option value="VENCIMENTO">Vencimento</option>
-                <option value="DANO">Dano</option>
-                <option value="OUTRO">Outro</option>
+                <option value="compra">Compra</option>
+                <option value="procedimento">Procedimento</option>
+                <option value="ajuste_inventario">Ajuste de Inventário</option>
+                <option value="devolucao_fornecedor">Devolução Fornecedor</option>
+                <option value="devolucao_cliente">Devolução Cliente</option>
+                <option value="perda">Perda</option>
+                <option value="vencimento">Vencimento</option>
+                <option value="dano">Dano</option>
+                <option value="outro">Outro</option>
               </select>
             </div>
           </div>

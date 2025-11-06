@@ -55,24 +55,34 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
   ]);
 
   const [conversationHistory, setConversationHistory] = useState<Conversation[]>([]);
+  const [recentConversations, setRecentConversations] = useState<Conversation[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingRecent, setLoadingRecent] = useState(false);
   const [newAttributeKey, setNewAttributeKey] = useState('');
   const [newAttributeValue, setNewAttributeValue] = useState('');
-  const [selectedPriority, setSelectedPriority] = useState<string>('normal');
+  const [selectedPriority, setSelectedPriority] = useState<'low' | 'medium' | 'high' | null>('medium');
   const [showTagManager, setShowTagManager] = useState(false);
+  const [showAddParticipant, setShowAddParticipant] = useState(false);
+  const [participants, setParticipants] = useState<string[]>(conversation.participants || []);
 
   const customAttributes = conversation.metadata?.customAttributes || {};
-  const priority = conversation.metadata?.priority || 'normal';
+  const priority = conversation.priority || 'medium';
 
   useEffect(() => {
     setSelectedPriority(priority);
   }, [priority]);
 
   useEffect(() => {
-    if (sections.find(s => s.id === 'history')?.isOpen) {
+    const historySection = sections.find(s => s.id === 'history');
+    if (historySection?.isOpen) {
       loadHistory();
+      loadRecentConversations();
     }
   }, [sections]);
+
+  useEffect(() => {
+    setParticipants(conversation.participants || []);
+  }, [conversation.participants]);
 
   const toggleSection = (sectionId: string) => {
     setSections((prev) =>
@@ -92,6 +102,82 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
       console.error('Erro ao carregar histórico:', error);
     } finally {
       setLoadingHistory(false);
+    }
+  };
+
+  const loadRecentConversations = async () => {
+    try {
+      setLoadingRecent(true);
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br'}/api/chat/conversations/recent/${conversation.phoneNumber}?hours=6`,
+        {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+      if (response.ok) {
+        const recent = await response.json();
+        setRecentConversations(recent.filter((c: Conversation) => c.id !== conversation.id));
+      }
+    } catch (error) {
+      console.error('Erro ao carregar conversas recentes:', error);
+    } finally {
+      setLoadingRecent(false);
+    }
+  };
+
+  const handleAddParticipant = async (userId: string, userName: string) => {
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br'}/api/chat/conversations/${conversation.id}/participants`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({ userId, userName }),
+        }
+      );
+
+      if (response.ok) {
+        const updated = await response.json();
+        setParticipants(updated.participants || []);
+        toast.success(`${userName} adicionado como participante`);
+        onUpdate?.();
+      }
+    } catch (error) {
+      console.error('Erro ao adicionar participante:', error);
+      toast.error('Erro ao adicionar participante');
+    }
+  };
+
+  const handleRemoveParticipant = async (userId: string, userName: string) => {
+    if (!confirm(`Remover ${userName} da conversa?`)) return;
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || 'https://api.nexusatemporal.com.br'}/api/chat/conversations/${conversation.id}/participants`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+          body: JSON.stringify({ userId, userName }),
+        }
+      );
+
+      if (response.ok) {
+        const updated = await response.json();
+        setParticipants(updated.participants || []);
+        toast.success(`${userName} removido da conversa`);
+        onUpdate?.();
+      }
+    } catch (error) {
+      console.error('Erro ao remover participante:', error);
+      toast.error('Erro ao remover participante');
     }
   };
 
@@ -135,7 +221,7 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
     }
   };
 
-  const handlePriorityChange = async (newPriority: 'low' | 'normal' | 'high' | 'urgent') => {
+  const handlePriorityChange = async (newPriority: 'low' | 'medium' | 'high' | null) => {
     try {
       await chatService.setPriority(conversation.id, newPriority);
       setSelectedPriority(newPriority);
@@ -173,23 +259,23 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
     }
   };
 
-  const getPriorityColor = (priority: string) => {
+  const getPriorityColor = (priority: string | null) => {
     switch (priority) {
-      case 'urgent': return 'text-red-700 bg-red-50';
-      case 'high': return 'text-orange-700 bg-orange-50';
-      case 'normal': return 'text-blue-700 bg-blue-50';
+      case 'high': return 'text-red-700 bg-red-50';
+      case 'medium': return 'text-orange-700 bg-orange-50';
       case 'low': return 'text-gray-700 bg-gray-50';
+      case null: return 'text-gray-500 bg-gray-100';
       default: return 'text-blue-700 bg-blue-50';
     }
   };
 
-  const getPriorityLabel = (priority: string) => {
+  const getPriorityLabel = (priority: string | null) => {
     switch (priority) {
-      case 'urgent': return 'Urgente';
       case 'high': return 'Alta';
-      case 'normal': return 'Normal';
+      case 'medium': return 'Média';
       case 'low': return 'Baixa';
-      default: return 'Normal';
+      case null: return 'Sem prioridade';
+      default: return 'Média';
     }
   };
 
@@ -199,7 +285,7 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
       <div className="px-3">
         <label className="text-xs text-gray-500 dark:text-gray-400 mb-2 block">Prioridade</label>
         <div className="grid grid-cols-2 gap-2">
-          {['low', 'normal', 'high', 'urgent'].map((p) => (
+          {['low', 'medium', 'high', null].map((p) => (
             <button
               key={p}
               onClick={() => handlePriorityChange(p as any)}
@@ -381,45 +467,6 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
     </div>
   );
 
-  const renderHistory = () => (
-    <div className="space-y-2 px-3">
-      <p className="text-xs text-gray-500 dark:text-gray-400">Histórico de conversas com este contato</p>
-      {loadingHistory ? (
-        <p className="text-sm text-gray-600 dark:text-gray-400">Carregando...</p>
-      ) : conversationHistory.length > 0 ? (
-        <div className="space-y-2">
-          {conversationHistory.map((conv) => (
-            <div key={conv.id} className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
-              <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                  conv.status === 'closed' ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300' :
-                  conv.status === 'archived' ? 'bg-yellow-100 text-yellow-700' :
-                  'bg-green-100 text-green-700'
-                }`}>
-                  {conv.status === 'closed' ? 'Fechada' :
-                   conv.status === 'archived' ? 'Arquivada' :
-                   'Ativa'}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {format(new Date(conv.createdAt), 'dd/MM/yyyy')}
-                </span>
-              </div>
-              {conv.lastMessagePreview && (
-                <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
-                  {conv.lastMessagePreview}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      ) : (
-        <div className="text-sm text-gray-600 dark:text-gray-400">
-          <p>Nenhuma conversa anterior encontrada</p>
-        </div>
-      )}
-    </div>
-  );
-
   const renderTags = () => (
     <div className="px-3">
       <TagSelector
@@ -441,28 +488,167 @@ const ConversationDetailsPanel: React.FC<ConversationDetailsPanelProps> = ({
     </div>
   );
 
+  const renderHistory = () => (
+    <div className="space-y-3 px-3">
+      {/* Conversas Recentes (últimas 6 horas) */}
+      <div>
+        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Últimas 6 horas</p>
+        {loadingRecent ? (
+          <p className="text-sm text-gray-600 dark:text-gray-400">Carregando...</p>
+        ) : recentConversations.length > 0 ? (
+          <div className="space-y-2">
+            {recentConversations.map((conv) => (
+              <div key={conv.id} className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                    {format(new Date(conv.lastMessageAt || conv.createdAt), 'HH:mm', { locale: ptBR })}
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    conv.status === 'closed' ? 'bg-gray-200 text-gray-700' :
+                    conv.status === 'archived' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-green-100 text-green-700'
+                  }`}>
+                    {conv.status === 'closed' ? 'Fechada' :
+                     conv.status === 'archived' ? 'Arquivada' :
+                     'Ativa'}
+                  </span>
+                </div>
+                {conv.lastMessagePreview && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                    {conv.lastMessagePreview}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500 dark:text-gray-400">Nenhuma conversa recente</p>
+        )}
+      </div>
+
+      {/* Histórico Completo */}
+      <div>
+        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Histórico completo</p>
+        {loadingHistory ? (
+          <p className="text-sm text-gray-600 dark:text-gray-400">Carregando...</p>
+        ) : conversationHistory.length > 0 ? (
+          <div className="space-y-2">
+            {conversationHistory.map((conv) => (
+              <div key={conv.id} className="p-2 bg-gray-50 dark:bg-gray-700 rounded">
+                <div className="flex items-center justify-between mb-1">
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                    conv.status === 'closed' ? 'bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300' :
+                    conv.status === 'archived' ? 'bg-yellow-100 text-yellow-700' :
+                    'bg-green-100 text-green-700'
+                  }`}>
+                    {conv.status === 'closed' ? 'Fechada' :
+                     conv.status === 'archived' ? 'Arquivada' :
+                     'Ativa'}
+                  </span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {format(new Date(conv.createdAt), 'dd/MM/yyyy')}
+                  </span>
+                </div>
+                {conv.lastMessagePreview && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                    {conv.lastMessagePreview}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-xs text-gray-500 dark:text-gray-400">Nenhuma conversa anterior</p>
+        )}
+      </div>
+    </div>
+  );
+
   const renderParticipants = () => (
-    <div className="space-y-2 px-3">
+    <div className="space-y-3 px-3">
+      <p className="text-xs text-gray-500 dark:text-gray-400">Pessoas envolvidas nesta conversa</p>
+
+      {/* Cliente */}
       <div className="flex items-center gap-2 text-sm">
         <div className="w-8 h-8 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
           <span className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
             {conversation.contactName.charAt(0).toUpperCase()}
           </span>
         </div>
-        <div>
+        <div className="flex-1">
           <p className="font-medium text-gray-700 dark:text-gray-300">{conversation.contactName}</p>
           <p className="text-xs text-gray-500 dark:text-gray-400">Cliente</p>
         </div>
       </div>
+
+      {/* Atendente Principal */}
       {conversation.assignedUserId && (
-        <div className="flex items-center gap-2 text-sm mt-2">
+        <div className="flex items-center gap-2 text-sm">
           <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
-            <Users className="h-4 w-4 text-green-700 dark:text-green-300" />
+            <UserPlus className="h-4 w-4 text-green-700 dark:text-green-300" />
           </div>
-          <div>
-            <p className="font-medium text-gray-700 dark:text-gray-300">Atendente</p>
+          <div className="flex-1">
+            <p className="font-medium text-gray-700 dark:text-gray-300">Atendente Principal</p>
             <p className="text-xs text-gray-500 dark:text-gray-400">ID: {conversation.assignedUserId}</p>
           </div>
+        </div>
+      )}
+
+      {/* Outros Participantes */}
+      {participants && participants.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-gray-700 dark:text-gray-300">Outros Participantes</p>
+          {participants.map((participantId) => (
+            <div key={participantId} className="flex items-center gap-2 text-sm">
+              <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
+                <Users className="h-4 w-4 text-blue-700 dark:text-blue-300" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs text-gray-600 dark:text-gray-400">ID: {participantId}</p>
+              </div>
+              <button
+                onClick={() => handleRemoveParticipant(participantId, `Participante ${participantId}`)}
+                className="p-1 hover:bg-red-100 dark:hover:bg-red-900 rounded text-red-600"
+                title="Remover participante"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Botão Adicionar Participante */}
+      <button
+        onClick={() => setShowAddParticipant(!showAddParticipant)}
+        className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800 rounded-lg transition-colors"
+      >
+        <Plus className="h-3 w-3" />
+        Adicionar Participante
+      </button>
+
+      {/* Modal/Form Adicionar Participante (simplificado) */}
+      {showAddParticipant && (
+        <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded">
+          <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            Digite o ID do usuário para adicionar:
+          </p>
+          <input
+            type="text"
+            placeholder="ID do usuário"
+            className="w-full px-2 py-1.5 text-xs border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded mb-2"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const userId = (e.target as HTMLInputElement).value;
+                if (userId) {
+                  handleAddParticipant(userId, `Usuário ${userId}`);
+                  (e.target as HTMLInputElement).value = '';
+                  setShowAddParticipant(false);
+                }
+              }
+            }}
+          />
+          <p className="text-xs text-gray-400">Pressione Enter para adicionar</p>
         </div>
       )}
     </div>

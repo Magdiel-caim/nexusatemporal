@@ -140,6 +140,19 @@ export class PaymentGatewayController {
           message: 'Connection successful',
           balance: balance,
         });
+      } else if (gateway === 'pagbank') {
+        const pagbankService = await this.service.getPagBankService(tenantId);
+
+        // Test by listing customers (lightweight operation)
+        const customers = await pagbankService.listCustomers({ limit: 1 });
+
+        res.json({
+          success: true,
+          message: 'PagBank connection successful',
+          gateway: 'pagbank',
+          environment: 'sandbox',
+          customersCount: customers?.customers?.length || 0,
+        });
       } else {
         res.status(400).json({ error: 'Gateway not supported yet' });
       }
@@ -149,6 +162,228 @@ export class PaymentGatewayController {
         success: false,
         error: error.message,
       });
+    }
+  };
+
+  // ==========================================
+  // PAGBANK TEST ENDPOINTS
+  // ==========================================
+
+  /**
+   * Run PagBank integration tests
+   * POST /api/payment-gateway/test/pagbank/full
+   */
+  testPagBankIntegration = async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user?.tenantId || 'test-environment';
+      const pagbankService = await this.service.getPagBankService(tenantId, 'sandbox');
+
+      const results: any[] = [];
+
+      // Test 1: Create test customer
+      try {
+        const customer = await pagbankService.createCustomer({
+          name: 'Cliente Teste API',
+          email: `teste-${Date.now()}@example.com`,
+          tax_id: '12345678909',
+          phones: [{
+            country: '55',
+            area: '11',
+            number: '999999999',
+            type: 'MOBILE'
+          }]
+        });
+
+        results.push({
+          test: 'Create Customer',
+          status: 'PASSED',
+          data: { customerId: customer.id }
+        });
+      } catch (error: any) {
+        results.push({
+          test: 'Create Customer',
+          status: 'FAILED',
+          error: error.message
+        });
+      }
+
+      // Test 2: Create PIX order
+      try {
+        const order = await pagbankService.createOrder({
+          reference_id: `TEST-${Date.now()}`,
+          customer: {
+            name: 'Cliente Teste PIX',
+            email: 'pix@example.com',
+            tax_id: '12345678909'
+          },
+          items: [{
+            name: 'Produto Teste',
+            quantity: 1,
+            unit_amount: 10000 // R$ 100,00
+          }],
+          charges: [{
+            description: 'Teste de pagamento PIX',
+            amount: {
+              value: 10000,
+              currency: 'BRL'
+            },
+            payment_method: {
+              type: 'PIX'
+            }
+          }]
+        });
+
+        results.push({
+          test: 'Create PIX Order',
+          status: 'PASSED',
+          data: {
+            orderId: order.id,
+            chargeId: order.charges?.[0]?.id
+          }
+        });
+      } catch (error: any) {
+        results.push({
+          test: 'Create PIX Order',
+          status: 'FAILED',
+          error: error.message
+        });
+      }
+
+      // Test 3: Create checkout
+      try {
+        const checkout = await pagbankService.createCheckout({
+          reference_id: `CHECKOUT-${Date.now()}`,
+          items: [{
+            name: 'Produto Checkout',
+            quantity: 1,
+            unit_amount: 5000
+          }],
+          payment_methods: [
+            { type: 'PIX' },
+            { type: 'CREDIT_CARD' }
+          ]
+        });
+
+        results.push({
+          test: 'Create Checkout',
+          status: 'PASSED',
+          data: {
+            checkoutId: checkout.id,
+            paymentLink: checkout.links?.find((l: any) => l.rel === 'PAY')?.href
+          }
+        });
+      } catch (error: any) {
+        results.push({
+          test: 'Create Checkout',
+          status: 'FAILED',
+          error: error.message
+        });
+      }
+
+      const passed = results.filter(r => r.status === 'PASSED').length;
+      const failed = results.filter(r => r.status === 'FAILED').length;
+
+      res.json({
+        summary: {
+          total: results.length,
+          passed,
+          failed,
+          successRate: `${((passed / results.length) * 100).toFixed(1)}%`
+        },
+        results,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error: any) {
+      console.error('Error running PagBank tests:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  /**
+   * Create test PIX payment
+   * POST /api/payment-gateway/test/pagbank/pix
+   */
+  createTestPixPayment = async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user?.tenantId || 'test-environment';
+      const { amount, description } = req.body;
+
+      const pagbankService = await this.service.getPagBankService(tenantId, 'sandbox');
+
+      const order = await pagbankService.createOrder({
+        reference_id: `PIX-TEST-${Date.now()}`,
+        customer: {
+          name: 'Cliente Teste PIX',
+          email: 'pix-test@example.com',
+          tax_id: '12345678909'
+        },
+        items: [{
+          name: description || 'Produto Teste PIX',
+          quantity: 1,
+          unit_amount: amount || 10000
+        }],
+        charges: [{
+          description: description || 'Pagamento PIX de teste',
+          amount: {
+            value: amount || 10000,
+            currency: 'BRL'
+          },
+          payment_method: {
+            type: 'PIX'
+          }
+        }]
+      });
+
+      // Get QR Code if charge was created
+      let qrCode = null;
+      if (order.charges?.[0]?.id) {
+        try {
+          qrCode = await pagbankService.getPixQrCode(order.charges[0].id);
+        } catch (error) {
+          console.warn('Could not get QR Code:', error);
+        }
+      }
+
+      res.json({
+        success: true,
+        orderId: order.id,
+        chargeId: order.charges?.[0]?.id,
+        status: order.charges?.[0]?.status,
+        amount: amount || 10000,
+        qrCode,
+        order
+      });
+
+    } catch (error: any) {
+      console.error('Error creating test PIX payment:', error);
+      res.status(500).json({
+        success: false,
+        error: error.message
+      });
+    }
+  };
+
+  /**
+   * List test orders
+   * GET /api/payment-gateway/test/pagbank/orders
+   */
+  listTestOrders = async (req: Request, res: Response) => {
+    try {
+      const tenantId = req.user?.tenantId || 'test-environment';
+      const pagbankService = await this.service.getPagBankService(tenantId, 'sandbox');
+
+      // Note: PagBank doesn't have a direct list orders endpoint
+      // This would need to be tracked in our database
+
+      res.json({
+        message: 'List orders functionality needs to be implemented with local database tracking',
+        note: 'PagBank API does not provide a list orders endpoint. Orders should be tracked in payment_charges table.'
+      });
+
+    } catch (error: any) {
+      console.error('Error listing test orders:', error);
+      res.status(500).json({ error: error.message });
     }
   };
 

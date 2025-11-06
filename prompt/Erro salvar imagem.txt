@@ -1,0 +1,459 @@
+ 🔍 DEBUG - Menu Items: Array(14)
+ 🔍 DEBUG - Menu Items: Array(14)
+ The specified value "NaN" cannot be parsed, or is out of range.
+set @ react-vendor-B1IcTyqJ.js:29
+su @ react-vendor-B1IcTyqJ.js:29
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+Yd @ react-vendor-B1IcTyqJ.js:32
+Ct @ react-vendor-B1IcTyqJ.js:32
+ts @ react-vendor-B1IcTyqJ.js:32
+gt @ react-vendor-B1IcTyqJ.js:30
+Mt @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+ The specified value "NaN" cannot be parsed, or is out of range.
+set @ react-vendor-B1IcTyqJ.js:29
+su @ react-vendor-B1IcTyqJ.js:29
+mu @ react-vendor-B1IcTyqJ.js:32
+io @ react-vendor-B1IcTyqJ.js:29
+$s @ react-vendor-B1IcTyqJ.js:29
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+ The specified value "NaN" cannot be parsed, or is out of range.
+set @ react-vendor-B1IcTyqJ.js:29
+su @ react-vendor-B1IcTyqJ.js:29
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+ze @ react-vendor-B1IcTyqJ.js:32
+cc @ react-vendor-B1IcTyqJ.js:32
+Yd @ react-vendor-B1IcTyqJ.js:32
+Ct @ react-vendor-B1IcTyqJ.js:32
+ts @ react-vendor-B1IcTyqJ.js:32
+gt @ react-vendor-B1IcTyqJ.js:30
+Mt @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+ The specified value "NaN" cannot be parsed, or is out of range.
+set @ react-vendor-B1IcTyqJ.js:29
+su @ react-vendor-B1IcTyqJ.js:29
+mu @ react-vendor-B1IcTyqJ.js:32
+io @ react-vendor-B1IcTyqJ.js:29
+$s @ react-vendor-B1IcTyqJ.js:29
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+api.nexusatemporal.com.br/api/stock/movements:1  Failed to load resource: the server responded with a status of 400 ()
+ 🔍 DEBUG - Menu Items: Array(14)
+ [Dashboard] Role do usuário: owner
+ [Dashboard] Acesso financeiro: true
+ [Dashboard] Acesso estoque: true
+ [Dashboard] Carregando dados financeiros...
+ [Dashboard] Carregando dados financeiros para role: owner
+ [Dashboard] Buscando transações de 2025-11-01 até 2025-11-30
+ [Dashboard] Carregando dados de estoque...
+ [Dashboard] Carregando dados de estoque para role: owner
+ [Dashboard] Resposta de produtos: Object
+ [Dashboard] Produtos com estoque baixo: 7
+ [Dashboard] Total de transações: 3
+ [Dashboard] Contas a pagar: 0 | Contas a receber: 0
+ [Dashboard] Receitas: 10300 | Despesas: 5000
+ [Dashboard] Resposta de alertas: Object
+ [Dashboard] Alertas ativos: 0
+ [Dashboard] Dados extras carregados com sucesso
+ [Dashboard] Role do usuário: owner
+ [Dashboard] Acesso financeiro: true
+ [Dashboard] Acesso estoque: true
+ [Dashboard] Carregando dados financeiros...
+ [Dashboard] Carregando dados financeiros para role: owner
+ [Dashboard] Buscando transações de 2025-11-01 até 2025-11-30
+ [Dashboard] Carregando dados de estoque...
+ [Dashboard] Carregando dados de estoque para role: owner
+ [Dashboard] Total de transações: 3
+ [Dashboard] Contas a pagar: 0 | Contas a receber: 0
+ [Dashboard] Receitas: 10300 | Despesas: 5000
+ [Dashboard] Resposta de produtos: Object
+index-G-GKuo5F.js:2 [Dashboard] Produtos com estoque baixo: 7
+index-G-GKuo5F.js:2 [Dashboard] Resposta de alertas: Object
+index-G-GKuo5F.js:2 [Dashboard] Alertas ativos: 0
+index-G-GKuo5F.js:2 [Dashboard] Dados extras carregados com sucesso
+index-G-GKuo5F.js:2 [Dashboard] Role do usuário: owner
+index-G-GKuo5F.js:2 [Dashboard] Acesso financeiro: true
+index-G-GKuo5F.js:2 [Dashboard] Acesso estoque: true
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Buscando transações de 2025-11-01 até 2025-11-30
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Total de transações: 3
+index-G-GKuo5F.js:2 [Dashboard] Contas a pagar: 0 | Contas a receber: 0
+index-G-GKuo5F.js:2 [Dashboard] Receitas: 10300 | Despesas: 5000
+index-G-GKuo5F.js:2 [Dashboard] Resposta de produtos: Object
+index-G-GKuo5F.js:2 [Dashboard] Produtos com estoque baixo: 7
+index-G-GKuo5F.js:2 [Dashboard] Resposta de alertas: Object
+index-G-GKuo5F.js:2 [Dashboard] Alertas ativos: 0
+index-G-GKuo5F.js:2 [Dashboard] Dados extras carregados com sucesso
+index-G-GKuo5F.js:2 [Dashboard] Role do usuário: owner
+index-G-GKuo5F.js:2 [Dashboard] Acesso financeiro: true
+index-G-GKuo5F.js:2 [Dashboard] Acesso estoque: true
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Buscando transações de 2025-11-01 até 2025-11-30
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Resposta de produtos: Object
+index-G-GKuo5F.js:2 [Dashboard] Produtos com estoque baixo: 7
+index-G-GKuo5F.js:2 [Dashboard] Total de transações: 3
+index-G-GKuo5F.js:2 [Dashboard] Contas a pagar: 0 | Contas a receber: 0
+index-G-GKuo5F.js:2 [Dashboard] Receitas: 10300 | Despesas: 5000
+index-G-GKuo5F.js:2 [Dashboard] Resposta de alertas: Object
+index-G-GKuo5F.js:2 [Dashboard] Alertas ativos: 0
+index-G-GKuo5F.js:2 [Dashboard] Dados extras carregados com sucesso
+index-G-GKuo5F.js:2 [Dashboard] Role do usuário: owner
+index-G-GKuo5F.js:2 [Dashboard] Acesso financeiro: true
+index-G-GKuo5F.js:2 [Dashboard] Acesso estoque: true
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Buscando transações de 2025-11-01 até 2025-11-30
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Resposta de produtos: Object
+index-G-GKuo5F.js:2 [Dashboard] Produtos com estoque baixo: 7
+index-G-GKuo5F.js:2 [Dashboard] Total de transações: 3
+index-G-GKuo5F.js:2 [Dashboard] Contas a pagar: 0 | Contas a receber: 0
+index-G-GKuo5F.js:2 [Dashboard] Receitas: 10300 | Despesas: 5000
+index-G-GKuo5F.js:2 [Dashboard] Resposta de alertas: Object
+index-G-GKuo5F.js:2 [Dashboard] Alertas ativos: 0
+index-G-GKuo5F.js:2 [Dashboard] Dados extras carregados com sucesso
+index-G-GKuo5F.js:2 [Dashboard] Role do usuário: owner
+index-G-GKuo5F.js:2 [Dashboard] Acesso financeiro: true
+index-G-GKuo5F.js:2 [Dashboard] Acesso estoque: true
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Buscando transações de 2025-11-01 até 2025-11-30
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Resposta de produtos: Object
+index-G-GKuo5F.js:2 [Dashboard] Produtos com estoque baixo: 7
+index-G-GKuo5F.js:2 [Dashboard] Total de transações: 3
+index-G-GKuo5F.js:2 [Dashboard] Contas a pagar: 0 | Contas a receber: 0
+index-G-GKuo5F.js:2 [Dashboard] Receitas: 10300 | Despesas: 5000
+index-G-GKuo5F.js:2 [Dashboard] Resposta de alertas: Object
+index-G-GKuo5F.js:2 [Dashboard] Alertas ativos: 0
+index-G-GKuo5F.js:2 [Dashboard] Dados extras carregados com sucesso
+index-G-GKuo5F.js:2 [Dashboard] Role do usuário: owner
+index-G-GKuo5F.js:2 [Dashboard] Acesso financeiro: true
+index-G-GKuo5F.js:2 [Dashboard] Acesso estoque: true
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Buscando transações de 2025-11-01 até 2025-11-30
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Resposta de produtos: Object
+index-G-GKuo5F.js:2 [Dashboard] Produtos com estoque baixo: 7
+index-G-GKuo5F.js:2 [Dashboard] Total de transações: 3
+index-G-GKuo5F.js:2 [Dashboard] Contas a pagar: 0 | Contas a receber: 0
+index-G-GKuo5F.js:2 [Dashboard] Receitas: 10300 | Despesas: 5000
+index-G-GKuo5F.js:2 [Dashboard] Resposta de alertas: Object
+index-G-GKuo5F.js:2 [Dashboard] Alertas ativos: 0
+index-G-GKuo5F.js:2 [Dashboard] Dados extras carregados com sucesso
+index-G-GKuo5F.js:2 [Dashboard] Role do usuário: owner
+index-G-GKuo5F.js:2 [Dashboard] Acesso financeiro: true
+index-G-GKuo5F.js:2 [Dashboard] Acesso estoque: true
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados financeiros para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Buscando transações de 2025-11-01 até 2025-11-30
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque...
+index-G-GKuo5F.js:2 [Dashboard] Carregando dados de estoque para role: owner
+index-G-GKuo5F.js:2 [Dashboard] Resposta de produtos: Object
+index-G-GKuo5F.js:2 [Dashboard] Produtos com estoque baixo: 7
+index-G-GKuo5F.js:2 [Dashboard] Total de transações: 3
+index-G-GKuo5F.js:2 [Dashboard] Contas a pagar: 0 | Contas a receber: 0
+index-G-GKuo5F.js:2 [Dashboard] Receitas: 10300 | Despesas: 5000
+index-G-GKuo5F.js:2 [Dashboard] Resposta de alertas: Object
+index-G-GKuo5F.js:2 [Dashboard] Alertas ativos: 0
+index-G-GKuo5F.js:2 [Dashboard] Dados extras carregados com sucesso
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: Array(14)
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: Array(14)
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: Array(14)
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: Array(14)
+api.nexusatemporal.com.br/api/pacientes/28a5cfda-3948-4444-8640-a9a1aa549180/imagens:1  Failed to load resource: the server responded with a status of 500 ()
+index-G-GKuo5F.js:321 Erro ao fazer upload: O
+A @ index-G-GKuo5F.js:321
+data-vendor-CPXAi296.js:27  POST https://api.nexusatemporal.com.br/api/pacientes/28a5cfda-3948-4444-8640-a9a1aa549180/imagens 500 (Internal Server Error)
+(anonymous) @ data-vendor-CPXAi296.js:27
+xhr @ data-vendor-CPXAi296.js:27
+Vs @ data-vendor-CPXAi296.js:29
+Promise.then
+_request @ data-vendor-CPXAi296.js:30
+request @ data-vendor-CPXAi296.js:29
+(anonymous) @ data-vendor-CPXAi296.js:30
+(anonymous) @ data-vendor-CPXAi296.js:25
+uploadImage @ index-G-GKuo5F.js:321
+A @ index-G-GKuo5F.js:321
+df @ react-vendor-B1IcTyqJ.js:29
+hf @ react-vendor-B1IcTyqJ.js:29
+mf @ react-vendor-B1IcTyqJ.js:29
+_o @ react-vendor-B1IcTyqJ.js:29
+ga @ react-vendor-B1IcTyqJ.js:29
+(anonymous) @ react-vendor-B1IcTyqJ.js:29
+ji @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+index-G-GKuo5F.js:321 Erro ao fazer upload: O {message: 'Request failed with status code 500', name: 'AxiosError', code: 'ERR_BAD_RESPONSE', config: {…}, request: XMLHttpRequest, …}
+A @ index-G-GKuo5F.js:321
+await in A
+df @ react-vendor-B1IcTyqJ.js:29
+hf @ react-vendor-B1IcTyqJ.js:29
+mf @ react-vendor-B1IcTyqJ.js:29
+_o @ react-vendor-B1IcTyqJ.js:29
+ga @ react-vendor-B1IcTyqJ.js:29
+(anonymous) @ react-vendor-B1IcTyqJ.js:29
+ji @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+data-vendor-CPXAi296.js:27  PUT https://api.nexusatemporal.com.br/api/pacientes/28a5cfda-3948-4444-8640-a9a1aa549180 500 (Internal Server Error)
+(anonymous) @ data-vendor-CPXAi296.js:27
+xhr @ data-vendor-CPXAi296.js:27
+Vs @ data-vendor-CPXAi296.js:29
+Promise.then
+_request @ data-vendor-CPXAi296.js:30
+request @ data-vendor-CPXAi296.js:29
+(anonymous) @ data-vendor-CPXAi296.js:30
+(anonymous) @ data-vendor-CPXAi296.js:25
+update @ index-G-GKuo5F.js:321
+A @ index-G-GKuo5F.js:321
+df @ react-vendor-B1IcTyqJ.js:29
+hf @ react-vendor-B1IcTyqJ.js:29
+mf @ react-vendor-B1IcTyqJ.js:29
+_o @ react-vendor-B1IcTyqJ.js:29
+ga @ react-vendor-B1IcTyqJ.js:29
+(anonymous) @ react-vendor-B1IcTyqJ.js:29
+ji @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+index-G-GKuo5F.js:321 Erro ao salvar paciente: O {message: 'Request failed with status code 500', name: 'AxiosError', code: 'ERR_BAD_RESPONSE', config: {…}, request: XMLHttpRequest, …}
+A @ index-G-GKuo5F.js:321
+await in A
+df @ react-vendor-B1IcTyqJ.js:29
+hf @ react-vendor-B1IcTyqJ.js:29
+mf @ react-vendor-B1IcTyqJ.js:29
+_o @ react-vendor-B1IcTyqJ.js:29
+ga @ react-vendor-B1IcTyqJ.js:29
+(anonymous) @ react-vendor-B1IcTyqJ.js:29
+ji @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+data-vendor-CPXAi296.js:27  POST https://api.nexusatemporal.com.br/api/pacientes/28a5cfda-3948-4444-8640-a9a1aa549180/imagens 500 (Internal Server Error)
+(anonymous) @ data-vendor-CPXAi296.js:27
+xhr @ data-vendor-CPXAi296.js:27
+Vs @ data-vendor-CPXAi296.js:29
+Promise.then
+_request @ data-vendor-CPXAi296.js:30
+request @ data-vendor-CPXAi296.js:29
+(anonymous) @ data-vendor-CPXAi296.js:30
+(anonymous) @ data-vendor-CPXAi296.js:25
+uploadImage @ index-G-GKuo5F.js:321
+A @ index-G-GKuo5F.js:321
+df @ react-vendor-B1IcTyqJ.js:29
+hf @ react-vendor-B1IcTyqJ.js:29
+mf @ react-vendor-B1IcTyqJ.js:29
+_o @ react-vendor-B1IcTyqJ.js:29
+ga @ react-vendor-B1IcTyqJ.js:29
+(anonymous) @ react-vendor-B1IcTyqJ.js:29
+ji @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+index-G-GKuo5F.js:321 Erro ao fazer upload: O {message: 'Request failed with status code 500', name: 'AxiosError', code: 'ERR_BAD_RESPONSE', config: {…}, request: XMLHttpRequest, …}
+A @ index-G-GKuo5F.js:321
+await in A
+df @ react-vendor-B1IcTyqJ.js:29
+hf @ react-vendor-B1IcTyqJ.js:29
+mf @ react-vendor-B1IcTyqJ.js:29
+_o @ react-vendor-B1IcTyqJ.js:29
+ga @ react-vendor-B1IcTyqJ.js:29
+(anonymous) @ react-vendor-B1IcTyqJ.js:29
+ji @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+index-G-GKuo5F.js:563 🔍 DEBUG - Menu Items: (14) ['Dashboard', 'Leads', 'Chat', 'Agenda', 'Prontuários', 'Pacientes', 'Financeiro', 'Vendas', 'Estoque', 'Colaboração', 'BI & Analytics', 'Redes Sociais', 'Marketing', 'Configurações']
+data-vendor-CPXAi296.js:27  POST https://api.nexusatemporal.com.br/api/pacientes/28a5cfda-3948-4444-8640-a9a1aa549180/imagens 500 (Internal Server Error)
+(anonymous) @ data-vendor-CPXAi296.js:27
+xhr @ data-vendor-CPXAi296.js:27
+Vs @ data-vendor-CPXAi296.js:29
+Promise.then
+_request @ data-vendor-CPXAi296.js:30
+request @ data-vendor-CPXAi296.js:29
+(anonymous) @ data-vendor-CPXAi296.js:30
+(anonymous) @ data-vendor-CPXAi296.js:25
+uploadImage @ index-G-GKuo5F.js:321
+A @ index-G-GKuo5F.js:321
+df @ react-vendor-B1IcTyqJ.js:29
+hf @ react-vendor-B1IcTyqJ.js:29
+mf @ react-vendor-B1IcTyqJ.js:29
+_o @ react-vendor-B1IcTyqJ.js:29
+ga @ react-vendor-B1IcTyqJ.js:29
+(anonymous) @ react-vendor-B1IcTyqJ.js:29
+ji @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29
+index-G-GKuo5F.js:321 Erro ao fazer upload: O {message: 'Request failed with status code 500', name: 'AxiosError', code: 'ERR_BAD_RESPONSE', config: {…}, request: XMLHttpRequest, …}
+A @ index-G-GKuo5F.js:321
+await in A
+df @ react-vendor-B1IcTyqJ.js:29
+hf @ react-vendor-B1IcTyqJ.js:29
+mf @ react-vendor-B1IcTyqJ.js:29
+_o @ react-vendor-B1IcTyqJ.js:29
+ga @ react-vendor-B1IcTyqJ.js:29
+(anonymous) @ react-vendor-B1IcTyqJ.js:29
+ji @ react-vendor-B1IcTyqJ.js:32
+Ws @ react-vendor-B1IcTyqJ.js:29
+Hl @ react-vendor-B1IcTyqJ.js:29
+fi @ react-vendor-B1IcTyqJ.js:29
+Rf @ react-vendor-B1IcTyqJ.js:29

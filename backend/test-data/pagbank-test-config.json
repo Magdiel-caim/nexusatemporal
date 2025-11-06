@@ -1,0 +1,31 @@
+{
+  "environment": "sandbox",
+  "tenantId": "test-environment",
+  "email": "magdielk20@hotmail.com",
+  "apiKeyPreview": "$aact_hmlg...",
+  "baseUrl": "https://sandbox.api.pagseguro.com",
+  "webhooksConfigured": true,
+  "testCards": {
+    "visa_approved": {
+      "number": "4111111111111111",
+      "cvv": "123",
+      "expiry": "12/2030",
+      "holder": "TESTE APROVADO"
+    },
+    "mastercard_approved": {
+      "number": "5555555555554444",
+      "cvv": "123",
+      "expiry": "12/2030",
+      "holder": "TESTE APROVADO"
+    },
+    "visa_declined": {
+      "number": "4000000000000002",
+      "cvv": "123",
+      "expiry": "12/2030",
+      "holder": "TESTE RECUSADO"
+    }
+  },
+  "testCPF": "123.456.789-09",
+  "testPhone": "11999999999",
+  "createdAt": "2025-11-05T02:43:38.460Z"
+}

@@ -25,7 +25,16 @@ let Conversation = class Conversation {
     lastMessageAt;
     lastMessagePreview;
     tags;
+    // TEMPORARIAMENTE REMOVIDO - Colunas existem no DB mas TypeORM não sincroniza em produção
+    // Reativar quando configurar migrations corretamente
+    // @Column({ type: 'boolean', default: false, nullable: true })
+    // archived?: boolean;
+    // @Column({ type: 'enum', enum: ['low', 'medium', 'high'], nullable: true })
+    // priority?: 'low' | 'medium' | 'high';
     metadata; // Dados adicionais flexíveis
+    // ===== NOVOS CAMPOS v128 =====
+    participants; // IDs dos participantes (atendentes) na conversa
+    activityLog; // Histórico de atividades da conversa
     createdAt;
     updatedAt;
     messages;
@@ -87,6 +96,14 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
     __metadata("design:type", Object)
 ], Conversation.prototype, "metadata", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'simple-array', nullable: true }),
+    __metadata("design:type", Array)
+], Conversation.prototype, "participants", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),
+    __metadata("design:type", Array)
+], Conversation.prototype, "activityLog", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)({ name: 'created_at' }),
     __metadata("design:type", Date)

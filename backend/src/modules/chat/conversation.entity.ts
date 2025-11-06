@@ -52,8 +52,30 @@ export class Conversation {
   @Column({ type: 'simple-array', nullable: true })
   tags?: string[];
 
+  // TEMPORARIAMENTE REMOVIDO - Colunas existem no DB mas TypeORM não sincroniza em produção
+  // Reativar quando configurar migrations corretamente
+  // @Column({ type: 'boolean', default: false, nullable: true })
+  // archived?: boolean;
+
+  // @Column({ type: 'enum', enum: ['low', 'medium', 'high'], nullable: true })
+  // priority?: 'low' | 'medium' | 'high';
+
   @Column({ type: 'jsonb', nullable: true })
   metadata?: Record<string, any>; // Dados adicionais flexíveis
+
+  // ===== NOVOS CAMPOS v128 =====
+
+  @Column({ type: 'simple-array', nullable: true })
+  participants?: string[]; // IDs dos participantes (atendentes) na conversa
+
+  @Column({ type: 'jsonb', nullable: true })
+  activityLog?: Array<{
+    type: 'assigned' | 'unassigned' | 'tagged' | 'archived' | 'reopened';
+    userId: string;
+    userName: string;
+    timestamp: string;
+    details?: any;
+  }>; // Histórico de atividades da conversa
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

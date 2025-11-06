@@ -66,7 +66,7 @@ services:
 
   # Backend API
   backend:
-    image: nexus-backend:v126.3-media-fix
+    image: nexus-backend:v128-integration
     environment:
       - NODE_ENV=production
       - DB_HOST=46.202.144.210
@@ -92,6 +92,7 @@ services:
       - FRONTEND_URL=https://one.nexusatemporal.com.br
       - NOTIFICAME_API_KEY=0fb8e168-9331-11f0-88f5-0e386dc8b623
       - NOTIFICAME_BASE_URL=https://app.notificame.com.br/api
+      - EXTERNAL_API_KEY=a61a34a61fc84cb9cccd4ff477518a7b98afc179fb521da278745872cb39f2e8
     networks:
       - nexusatnet
     deploy:
@@ -110,7 +111,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v126-chat-complete
+    image: nexus-frontend:v128-prod
     networks:
       - nexusatnet
     deploy:
@@ -125,4 +126,4 @@ services:
         - "traefik.http.routers.nexusfrontend.rule=Host(`one.nexusatemporal.com.br`)"
         - "traefik.http.routers.nexusfrontend.entrypoints=websecure"
         - "traefik.http.routers.nexusfrontend.tls.certresolver=letsencryptresolver"
-        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=3000"
+        - "traefik.http.services.nexusfrontend.loadbalancer.server.port=80"

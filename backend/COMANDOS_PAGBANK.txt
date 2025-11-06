@@ -1,0 +1,126 @@
+# ⚡ Comandos Rápidos - PagBank
+
+## 🔧 ATUALIZAR TOKEN (3 formas)
+
+# Forma 1: Script interativo (RECOMENDADO)
+./scripts/update-token.sh
+
+# Forma 2: Editar manualmente
+nano .env.pagbank
+
+# Forma 3: Comando direto (substitua TOKEN_AQUI)
+sed -i 's/PAGBANK_SANDBOX_TOKEN=.*/PAGBANK_SANDBOX_TOKEN=TOKEN_AQUI/' .env.pagbank
+
+---
+
+## ✅ VALIDAR CONFIGURAÇÃO
+
+# 1. Executar setup
+npm run setup:pagbank
+
+# 2. Testar token rapidamente
+node scripts/test-token.js
+
+# 3. Testes completos
+npm run test:pagbank
+
+---
+
+## 📋 VERIFICAR STATUS
+
+# Ver token atual (primeiros/últimos 20 caracteres)
+cat .env.pagbank | grep PAGBANK_SANDBOX_TOKEN
+
+# Ver configuração no banco
+PGPASSWORD='nexus2024@secure' psql -h 46.202.144.210 -U nexus_admin -d nexus_crm -c "SELECT id, gateway, environment, \"isActive\", \"tenantId\" FROM payment_configs WHERE gateway='pagbank';"
+
+# Ver último resultado de teste
+cat test-results/pagbank-test-*.json | tail -1 | jq '.summary'
+
+---
+
+## 🔍 DIAGNÓSTICO
+
+# Testar conexão com API
+curl -X GET "https://sandbox.api.pagseguro.com/customers?limit=1" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer SEU_TOKEN_AQUI"
+
+# Ver logs de erro
+tail -50 test-results/pagbank-test-*.json
+
+---
+
+## 🆘 RESOLVER PROBLEMAS
+
+# Fazer backup antes de qualquer alteração
+cp .env.pagbank .env.pagbank.backup.$(date +%Y%m%d_%H%M%S)
+
+# Restaurar backup (se necessário)
+cp .env.pagbank.backup.YYYYMMDD_HHMMSS .env.pagbank
+
+# Limpar e reconfigurar tudo
+npm run setup:pagbank
+
+---
+
+## 📚 DOCUMENTAÇÃO
+
+# Ler guia de como obter token
+cat ../COMO_OBTER_TOKEN_PAGBANK.md | less
+
+# Ler quick start
+cat ../PAGBANK_QUICK_START.md | less
+
+# Ler resumo final
+cat ../RESUMO_FINAL_PAGBANK.md | less
+
+# Ler documentação completa
+cat docs/PAGBANK_TESTING.md | less
+
+---
+
+## 🚀 COMANDOS DE PRODUÇÃO (Futuro)
+
+# Quando migrar para produção:
+
+# 1. Atualizar token de produção
+# nano .env.pagbank (adicionar PAGBANK_PRODUCTION_TOKEN)
+
+# 2. Executar setup de produção
+# npm run setup:pagbank-prod (criar este script quando necessário)
+
+# 3. Testar em produção com valor pequeno
+# curl -X POST http://localhost:3000/api/payment-gateway/test/pagbank/pix -d '{"amount":100}'
+
+---
+
+## ⚡ ATALHOS ÚTEIS
+
+# Ir para pasta do projeto
+cd /root/nexusatemporalv1/backend
+
+# Ver todos os scripts disponíveis
+npm run
+
+# Compilar TypeScript
+npm run build
+
+# Iniciar servidor em modo dev
+npm run dev
+
+---
+
+## 📞 LINKS IMPORTANTES
+
+Portal PagBank Dev: https://dev.pagseguro.uol.com.br/
+API Reference: https://developer.pagbank.com.br/reference
+Suporte: 0800 721 4588
+Email: atendimento@pagseguro.com.br
+
+---
+
+COPIE ESTE ARQUIVO PARA REFERÊNCIA RÁPIDA!
+
+Para visualizar:
+cat COMANDOS_PAGBANK.txt

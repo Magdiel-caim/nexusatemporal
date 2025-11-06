@@ -1,7 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Check, CheckCheck, Clock, Download, Play, FileText, Reply, Loader2 } from 'lucide-react';
+import { Check, CheckCheck, Clock, Download, Play, FileText, Reply, Loader2, User } from 'lucide-react';
 import { useMediaUrl } from '../hooks/useMediaUrl';
 
 interface MessageBubbleProps {
@@ -16,6 +16,7 @@ interface MessageBubbleProps {
     deliveredAt?: string;
     readAt?: string;
     mediaUrl?: string;
+    senderName?: string; // Nome do atendente (para mensagens outgoing)
     quotedMsg?: {
       content: string;
       senderName: string;
@@ -181,6 +182,14 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onReply, onDelet
               : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700'
           }`}
         >
+          {/* Sender Name (for outgoing messages) */}
+          {isOutgoing && message.senderName && (
+            <div className="flex items-center gap-1 mb-1 opacity-75">
+              <User className="h-3 w-3" />
+              <span className="text-xs font-medium">{message.senderName}</span>
+            </div>
+          )}
+
           {/* Quoted Message */}
           {renderQuotedMessage()}
 

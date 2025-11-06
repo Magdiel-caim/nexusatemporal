@@ -1,0 +1,42 @@
+{
+  "timestamp": "2025-11-04T23:53:31.685Z",
+  "environment": "sandbox",
+  "email": "magdielk20@hotmail.com",
+  "summary": {
+    "total": 5,
+    "passed": 0,
+    "failed": 5
+  },
+  "results": [
+    {
+      "test": "1. Criar Cliente de Teste",
+      "status": "FAILED",
+      "error": "PagBank API Error: Forbidden",
+      "duration": 169
+    },
+    {
+      "test": "2. Listar Clientes",
+      "status": "FAILED",
+      "error": "PagBank API Error: Forbidden",
+      "duration": 23
+    },
+    {
+      "test": "3. Criar Pedido com PIX",
+      "status": "FAILED",
+      "error": "PagBank API Error: Invalid credential. Review AUTHORIZATION header",
+      "duration": 530
+    },
+    {
+      "test": "5. Criar Pedido com Cartão de Crédito (Simulado)",
+      "status": "FAILED",
+      "error": "PagBank API Error: Invalid credential. Review AUTHORIZATION header",
+      "duration": 505
+    },
+    {
+      "test": "6. Criar Checkout (Página de Pagamento)",
+      "status": "FAILED",
+      "error": "PagBank API Error: Invalid credential. Review AUTHORIZATION header.",
+      "duration": 407
+    }
+  ]
+}

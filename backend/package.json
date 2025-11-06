@@ -13,7 +13,10 @@
     "migration:revert": "npm run typeorm -- migration:revert",
     "seed": "ts-node src/database/seeds/index.ts",
     "lint": "eslint . --ext .ts",
-    "test": "jest"
+    "test": "jest",
+    "setup:pagbank-test": "ts-node scripts/setup-pagbank-test-environment.ts",
+    "setup:pagbank": "ts-node scripts/setup-pagbank-auto.ts",
+    "test:pagbank": "ts-node scripts/test-pagbank-integration.ts"
   },
   "keywords": [
     "crm",

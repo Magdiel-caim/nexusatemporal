@@ -28,23 +28,45 @@ export function useMediaUrl(messageId?: string, originalUrl?: string): MediaUrlR
   const [type, setType] = useState<'base64' | 'signed' | 'direct' | 'unknown' | null>(null);
 
   useEffect(() => {
-    // Se não tiver messageId ou originalUrl, não faz nada
-    if (!messageId || !originalUrl) {
+    // Se não tiver originalUrl, não faz nada
+    if (!originalUrl) {
       return;
     }
 
-    // Se a URL original for base64, usar diretamente
+    // ✅ CORREÇÃO: Se a URL original for base64, usar diretamente
     if (originalUrl.startsWith('data:')) {
+      console.log('📷 Usando base64 direto (tamanho:', originalUrl.length, ')');
       setUrl(originalUrl);
       setType('base64');
+      setLoading(false);
+      setError(null);
       return;
     }
 
-    // Se a URL original for HTTP e NÃO for do S3 privado, usar diretamente
-    // (podemos verificar se a URL funciona ou sempre buscar signed URL)
-    // Por segurança, vamos SEMPRE buscar signed URL para URLs do S3
-    if (originalUrl.includes('idrivee2-26.com') || originalUrl.includes('s3')) {
-      // Buscar signed URL
+    // ✅ CORREÇÃO: Se a URL for do S3 (IDrive E2), usar diretamente
+    // CORS deve estar configurado no bucket
+    if (originalUrl.includes('idrivee2-26.com') || originalUrl.includes('.s3.')) {
+      console.log('☁️ Usando URL S3 direto:', originalUrl);
+      setUrl(originalUrl);
+      setType('direct');
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    // ✅ Se for URL HTTP/HTTPS normal, usar diretamente
+    if (originalUrl.startsWith('http://') || originalUrl.startsWith('https://')) {
+      console.log('🌐 Usando URL HTTP direto:', originalUrl);
+      setUrl(originalUrl);
+      setType('direct');
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
+    // ⚠️ URL desconhecida - tentar buscar signed URL do backend (fallback)
+    if (messageId) {
+      console.log('❓ URL desconhecida, buscando signed URL do backend...');
       const fetchSignedUrl = async () => {
         setLoading(true);
         setError(null);
@@ -53,19 +75,21 @@ export function useMediaUrl(messageId?: string, originalUrl?: string): MediaUrlR
           const { data } = await api.get(`/chat/media/${messageId}`);
 
           if (data.success && data.url) {
+            console.log('✅ Signed URL recebida:', data.url);
             setUrl(data.url);
-            setType(data.type || 'unknown');
+            setType(data.type || 'signed');
           } else {
-            // Fallback para URL original
+            // Fallback: tentar usar URL original mesmo assim
+            console.warn('⚠️ Backend não retornou signed URL, usando original');
             setUrl(originalUrl);
-            setType('direct');
+            setType('unknown');
           }
         } catch (err: any) {
-          console.error('Erro ao buscar signed URL:', err);
+          console.error('❌ Erro ao buscar signed URL:', err);
           setError(err.message || 'Erro ao buscar mídia');
-          // Fallback para URL original
+          // Fallback: usar URL original
           setUrl(originalUrl);
-          setType('direct');
+          setType('unknown');
         } finally {
           setLoading(false);
         }
@@ -73,9 +97,11 @@ export function useMediaUrl(messageId?: string, originalUrl?: string): MediaUrlR
 
       fetchSignedUrl();
     } else {
-      // URL pública normal, usar diretamente
+      // Sem messageId, usar URL original como último recurso
+      console.warn('⚠️ Sem messageId, usando URL original:', originalUrl);
       setUrl(originalUrl);
-      setType('direct');
+      setType('unknown');
+      setLoading(false);
     }
   }, [messageId, originalUrl]);
 

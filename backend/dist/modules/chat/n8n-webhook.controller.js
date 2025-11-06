@@ -728,6 +728,71 @@ class N8NWebhookController {
                 }
                 return res.json({ success: true, message: 'Message revoked event processed' });
             }
+            // Processar evento de confirmação de entrega (message.ack)
+            if (wahaPayload.event === 'message.ack') {
+                console.log('✅ Confirmação de entrega recebida (message.ack):', {
+                    session: wahaPayload.session,
+                    messageId: wahaPayload.payload?.id,
+                    ack: wahaPayload.payload?.ack,
+                });
+                const whatsappMessageId = wahaPayload.payload?.id;
+                const ackStatus = wahaPayload.payload?.ack;
+                if (whatsappMessageId && ackStatus !== undefined) {
+                    // Buscar mensagem no banco
+                    const message = await this.chatService.getMessageByWhatsappId(whatsappMessageId);
+                    if (message) {
+                        // Mapear ACK do WhatsApp para nosso status
+                        // WAHA ACK levels:
+                        // 0 = ERROR
+                        // 1 = PENDING (enviando)
+                        // 2 = SERVER (enviado para servidor WhatsApp)
+                        // 3 = DEVICE (entregue no dispositivo do destinatário)
+                        // 4 = READ (lido pelo destinatário)
+                        let newStatus = 'sent';
+                        if (ackStatus === 0) {
+                            newStatus = 'failed';
+                        }
+                        else if (ackStatus === 1) {
+                            newStatus = 'sent'; // Pendente = enviado
+                        }
+                        else if (ackStatus === 2) {
+                            newStatus = 'sent'; // Servidor = enviado
+                        }
+                        else if (ackStatus === 3) {
+                            newStatus = 'delivered'; // Dispositivo = entregue
+                        }
+                        else if (ackStatus === 4) {
+                            newStatus = 'read'; // Lido
+                        }
+                        console.log(`📊 Atualizando status da mensagem ${message.id}: ${message.status} → ${newStatus}`);
+                        // Atualizar status da mensagem
+                        await this.chatService.updateMessageStatus(message.id, newStatus);
+                        // Emitir via WebSocket para o frontend atualizar UI
+                        const io = req.app.get('io');
+                        if (io) {
+                            io.emit('chat:message-status-updated', {
+                                messageId: message.id,
+                                conversationId: message.conversationId,
+                                whatsappMessageId: whatsappMessageId,
+                                status: newStatus,
+                                ack: ackStatus,
+                            });
+                            console.log('🔊 Status de mensagem emitido via WebSocket');
+                        }
+                        return res.json({
+                            success: true,
+                            message: 'Message status updated',
+                            messageId: message.id,
+                            status: newStatus,
+                            ack: ackStatus,
+                        });
+                    }
+                    else {
+                        console.log('⚠️ Mensagem não encontrada no banco:', whatsappMessageId);
+                    }
+                }
+                return res.json({ success: true, message: 'Message ack event processed' });
+            }
             // Filtrar apenas eventos de mensagem (só processar 'message', ignorar 'message.any' para evitar duplicação)
             if (wahaPayload.event !== 'message') {
                 console.log('⏭️ Evento ignorado (não é "message"):', wahaPayload.event);

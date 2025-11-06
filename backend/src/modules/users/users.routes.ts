@@ -8,6 +8,7 @@ import { Router } from 'express';
 import { CrmDataSource } from '@/database/data-source';
 import { UsersController } from './users.controller';
 import { authenticate } from '@/shared/middleware/auth.middleware';
+import { authenticateApiKey } from '@/shared/middleware/api-key-auth.middleware';
 import { authorize, auditLog } from '@/shared/middlewares/authorize.middleware';
 import { Permission } from '../permissions/permission.types';
 
@@ -31,7 +32,18 @@ const initController = () => {
   }
 };
 
-// Todas as rotas requerem autenticação
+/**
+ * POST /api/users/external/create-from-payment
+ * Rota externa para criar usuário após pagamento no Site de Checkout
+ * Autenticação: API Key (sem JWT)
+ * IMPORTANTE: Esta rota deve vir ANTES do middleware authenticate
+ */
+router.post('/external/create-from-payment', authenticateApiKey, (req, res) => {
+  initController();
+  controller.createUserFromPayment(req, res);
+});
+
+// Todas as outras rotas requerem autenticação JWT
 router.use(authenticate);
 
 /**

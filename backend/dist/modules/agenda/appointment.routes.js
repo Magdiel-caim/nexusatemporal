@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const appointment_controller_1 = __importDefault(require("./appointment.controller"));
+const search_patients_controller_1 = __importDefault(require("./search-patients.controller"));
 const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const router = (0, express_1.Router)();
 // Todas as rotas requerem autenticação
@@ -13,7 +14,8 @@ router.use(auth_middleware_1.authenticate);
 router.post('/', appointment_controller_1.default.create.bind(appointment_controller_1.default));
 router.get('/', appointment_controller_1.default.findAll.bind(appointment_controller_1.default));
 router.get('/today', appointment_controller_1.default.findToday.bind(appointment_controller_1.default));
-// Rotas de disponibilidade e slots (devem vir antes de /:id para não conflitar)
+// Rotas de busca e disponibilidade (devem vir antes de /:id para não conflitar)
+router.get('/search-patients', search_patients_controller_1.default.searchPatients.bind(search_patients_controller_1.default));
 router.post('/check-availability', appointment_controller_1.default.checkAvailability.bind(appointment_controller_1.default));
 router.get('/occupied-slots', appointment_controller_1.default.getOccupiedSlots.bind(appointment_controller_1.default));
 router.get('/available-slots', appointment_controller_1.default.getAvailableSlots.bind(appointment_controller_1.default));

@@ -13,11 +13,21 @@ export interface Conversation {
   lastMessageAt?: string;
   lastMessagePreview?: string;
   tags?: string[];
+  archived?: boolean; // Nova coluna: se a conversa foi arquivada
+  priority?: 'low' | 'medium' | 'high'; // Nova coluna: prioridade da conversa
   metadata?: {
-    priority?: 'low' | 'normal' | 'high' | 'urgent';
     customAttributes?: Record<string, any>;
     [key: string]: any;
   };
+  // Novos campos v128
+  participants?: string[]; // IDs dos participantes (atendentes)
+  activityLog?: Array<{
+    type: 'assigned' | 'unassigned' | 'tagged' | 'archived' | 'reopened';
+    userId: string;
+    userName: string;
+    timestamp: string;
+    details?: any;
+  }>; // Histórico de atividades
   createdAt: string;
   updatedAt: string;
 }
@@ -30,7 +40,7 @@ export interface Message {
   content?: string;
   mediaUrl?: string;
   senderId?: string;
-  senderName?: string;
+  senderName?: string; // v128: Nome do atendente (preenchido automaticamente pelo backend)
   whatsappMessageId?: string;
   status: 'pending' | 'sent' | 'delivered' | 'read' | 'failed';
   sentAt?: string;
@@ -131,7 +141,7 @@ class ChatService {
   }
 
   async addTag(conversationId: string, tagName: string): Promise<Conversation> {
-    const { data } = await api.post(`/chat/conversations/${conversationId}/tags`, { tagName });
+    const { data } = await api.patch(`/chat/conversations/${conversationId}/tags`, { tagName });
     return data;
   }
 
@@ -143,27 +153,27 @@ class ChatService {
   }
 
   async archiveConversation(conversationId: string): Promise<Conversation> {
-    const { data } = await api.post(`/chat/conversations/${conversationId}/archive`);
+    const { data } = await api.patch(`/chat/conversations/${conversationId}/archive`);
     return data;
   }
 
   async unarchiveConversation(conversationId: string): Promise<Conversation> {
-    const { data } = await api.post(`/chat/conversations/${conversationId}/unarchive`);
+    const { data } = await api.patch(`/chat/conversations/${conversationId}/unarchive`);
     return data;
   }
 
   async resolveConversation(conversationId: string): Promise<Conversation> {
-    const { data } = await api.post(`/chat/conversations/${conversationId}/resolve`);
+    const { data } = await api.patch(`/chat/conversations/${conversationId}/resolve`);
     return data;
   }
 
   async reopenConversation(conversationId: string): Promise<Conversation> {
-    const { data } = await api.post(`/chat/conversations/${conversationId}/reopen`);
+    const { data } = await api.patch(`/chat/conversations/${conversationId}/reopen`);
     return data;
   }
 
-  async setPriority(conversationId: string, priority: 'low' | 'normal' | 'high' | 'urgent'): Promise<Conversation> {
-    const { data } = await api.post(`/chat/conversations/${conversationId}/priority`, { priority });
+  async setPriority(conversationId: string, priority: 'low' | 'medium' | 'high' | null): Promise<Conversation> {
+    const { data } = await api.patch(`/chat/conversations/${conversationId}/priority`, { priority });
     return data;
   }
 

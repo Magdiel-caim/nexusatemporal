@@ -4,6 +4,7 @@ import { WhatsAppController } from './whatsapp.controller';
 import { WAHASessionController } from './waha-session.controller';
 import { N8NWebhookController } from './n8n-webhook.controller';
 import { MediaProxyController } from './media-proxy.controller';
+import wahaController from './waha.controller';
 import { authenticate } from '@/shared/middleware/auth.middleware';
 
 const router = Router();
@@ -41,15 +42,15 @@ router.put('/conversations/:id', chatController.updateConversation);
 router.post('/conversations/:id/mark-read', chatController.markAsRead);
 router.post('/conversations/:id/mark-unread', chatController.markAsUnread);
 router.post('/conversations/:id/assign', chatController.assignConversation);
-router.post('/conversations/:id/tags', chatController.addTag);
+router.patch('/conversations/:id/tags', chatController.addTag);
 router.delete('/conversations/:id/tags', chatController.removeTag);
 
 // Conversation actions (FASE 2)
-router.post('/conversations/:id/archive', chatController.archiveConversation);
-router.post('/conversations/:id/unarchive', chatController.unarchiveConversation);
-router.post('/conversations/:id/resolve', chatController.resolveConversation);
-router.post('/conversations/:id/reopen', chatController.reopenConversation);
-router.post('/conversations/:id/priority', chatController.setPriority);
+router.patch('/conversations/:id/archive', chatController.archiveConversation);
+router.patch('/conversations/:id/unarchive', chatController.unarchiveConversation);
+router.patch('/conversations/:id/resolve', chatController.resolveConversation);
+router.patch('/conversations/:id/reopen', chatController.reopenConversation);
+router.patch('/conversations/:id/priority', chatController.setPriority);
 
 // Custom attributes (FASE 3)
 router.post('/conversations/:id/attributes', chatController.setCustomAttribute);
@@ -57,6 +58,11 @@ router.delete('/conversations/:id/attributes', chatController.removeCustomAttrib
 
 // Conversation history (FASE 3)
 router.get('/conversations/history/:phoneNumber', chatController.getConversationHistory);
+
+// NEW v128: Participants & Activity Log
+router.post('/conversations/:id/participants', chatController.addParticipant);
+router.delete('/conversations/:id/participants', chatController.removeParticipant);
+router.get('/conversations/recent/:phoneNumber', chatController.getRecentConversations);
 
 // Message routes
 router.get('/conversations/:conversationId/messages', chatController.getMessages);
@@ -118,5 +124,8 @@ router.post('/whatsapp/sessions/legacy/:instanceId/stop', whatsappController.sto
 
 // WhatsApp media download
 router.get('/whatsapp/media/:mediaId', whatsappController.downloadMedia);
+
+// WAHA API Routes (NEW - Complete Integration)
+router.use('/waha', wahaController);
 
 export default router;

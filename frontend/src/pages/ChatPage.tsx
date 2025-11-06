@@ -162,6 +162,29 @@ const ChatPage: React.FC = () => {
       }
     });
 
+    // Listen para atualizações de status de mensagens (entrega/leitura)
+    socketInstance.on('chat:message-status-updated', (statusData: any) => {
+      console.log('✅ Status de mensagem atualizado:', statusData);
+
+      // Se estiver na conversa, atualizar status da mensagem na UI
+      const currentConversation = selectedConversationRef.current;
+      if (currentConversation && currentConversation.id === statusData.conversationId) {
+        console.log('✅ Atualizando status da mensagem na conversa atual:', {
+          messageId: statusData.messageId,
+          status: statusData.status,
+          ack: statusData.ack
+        });
+
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === statusData.messageId
+              ? { ...msg, status: statusData.status }
+              : msg
+          )
+        );
+      }
+    });
+
     // Listen para typing indicators
     socketInstance.on('typing:start', (data: { conversationId: string; userName: string }) => {
       const currentConversation = selectedConversationRef.current;
@@ -184,6 +207,7 @@ const ChatPage: React.FC = () => {
     return () => {
       socketInstance.off('chat:new-message');
       socketInstance.off('chat:message-deleted');
+      socketInstance.off('chat:message-status-updated');
       socketInstance.disconnect();
     };
   }, []); // WebSocket conecta UMA VEZ e não reconecta
@@ -266,15 +290,37 @@ const ChatPage: React.FC = () => {
         console.log('WhatsApp conversations not available:', whatsappError);
       }
 
-      // Mesclar e ordenar por última mensagem
-      const allConversations = [...normalConversations, ...whatsappConversations]
+      // Mesclar conversas
+      const allConversations = [...normalConversations, ...whatsappConversations];
+
+      // Deduplicar conversas por phoneNumber + whatsappInstanceId
+      const uniqueConversationsMap = new Map<string, Conversation>();
+      allConversations.forEach((conv) => {
+        const key = `${conv.phoneNumber}-${conv.whatsappInstanceId || 'default'}`;
+
+        // Se já existe, manter apenas a mais recente (última mensagem mais nova)
+        if (!uniqueConversationsMap.has(key)) {
+          uniqueConversationsMap.set(key, conv);
+        } else {
+          const existing = uniqueConversationsMap.get(key)!;
+          const existingDate = existing.lastMessageAt ? new Date(existing.lastMessageAt).getTime() : 0;
+          const newDate = conv.lastMessageAt ? new Date(conv.lastMessageAt).getTime() : 0;
+
+          if (newDate > existingDate) {
+            uniqueConversationsMap.set(key, conv);
+          }
+        }
+      });
+
+      // Converter mapa para array e ordenar por última mensagem
+      const deduplicatedConversations = Array.from(uniqueConversationsMap.values())
         .sort((a, b) => {
           const dateA = a.lastMessageAt ? new Date(a.lastMessageAt).getTime() : 0;
           const dateB = b.lastMessageAt ? new Date(b.lastMessageAt).getTime() : 0;
           return dateB - dateA; // Mais recente primeiro
         });
 
-      setConversations(allConversations);
+      setConversations(deduplicatedConversations);
     } catch (error) {
       console.error('Error loading conversations:', error);
       toast.error('Erro ao carregar conversas');

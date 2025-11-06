@@ -1,0 +1,31 @@
+{
+  "name": "session_01k8ypeykyzcxjxp9p59821v56",
+  "status": "WORKING",
+  "config": {
+    "webhooks": [
+      {
+        "url": "https://webhook.nexusatemporal.com/webhook/waha-receive-message",
+        "events": [
+          "message",
+          "message.any"
+        ]
+      }
+    ]
+  },
+  "me": {
+    "id": "554192431011@c.us",
+    "pushName": "Atemporal",
+    "lid": "190778823442671@lid",
+    "jid": "554192431011:39@s.whatsapp.net"
+  },
+  "engine": {
+    "grpc": {
+      "client": "IDLE",
+      "stream": "READY"
+    },
+    "gows": {
+      "found": true,
+      "connected": true
+    }
+  }
+}

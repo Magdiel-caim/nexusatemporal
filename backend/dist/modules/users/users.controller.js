@@ -466,6 +466,175 @@ class UsersController {
         }
     };
     /**
+     * POST /api/users/external/create-from-payment
+     * Cria usuário e ativa assinatura após pagamento no Site de Checkout
+     * Autenticação: API Key (não requer JWT)
+     */
+    createUserFromPayment = async (req, res) => {
+        const client = await this.pool.connect();
+        try {
+            const { email, name, planId, stripeSessionId, amount, } = req.body;
+            // Validação básica
+            if (!email || !name || !planId || !stripeSessionId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email, nome, planId e stripeSessionId são obrigatórios',
+                });
+            }
+            console.log('[External API] Creating user from payment', {
+                email,
+                name,
+                planId,
+                stripeSessionId,
+                timestamp: new Date().toISOString(),
+            });
+            await client.query('BEGIN');
+            // Verificar se sessão já foi processada (evitar duplicação)
+            const existingPayment = await client.query(`SELECT id FROM orders WHERE external_id = $1`, [stripeSessionId]);
+            if (existingPayment.rows.length > 0) {
+                await client.query('ROLLBACK');
+                return res.status(200).json({
+                    success: true,
+                    message: 'Pagamento já processado anteriormente',
+                    alreadyProcessed: true,
+                });
+            }
+            // Verificar se usuário já existe
+            const existingUser = await client.query('SELECT id, email, name, role, status, "tenantId" FROM users WHERE email = $1', [email]);
+            let userId;
+            let tenantId = null;
+            let isNewUser = false;
+            if (existingUser.rows.length > 0) {
+                // Usuário já existe - atualizar assinatura
+                const user = existingUser.rows[0];
+                userId = user.id;
+                tenantId = user.tenantId;
+                console.log('[External API] User already exists, updating subscription', { userId, email });
+                // Atualizar status para ativo se estava inativo
+                if (user.status !== user_entity_1.UserStatus.ACTIVE) {
+                    await client.query(`UPDATE users SET status = $1, "updatedAt" = NOW() WHERE id = $2`, [user_entity_1.UserStatus.ACTIVE, userId]);
+                }
+            }
+            else {
+                // Criar novo usuário
+                isNewUser = true;
+                // Gerar senha temporária
+                const tempPassword = crypto_1.default.randomBytes(12).toString('base64').slice(0, 16);
+                const hashedPassword = await bcryptjs_1.default.hash(tempPassword, 12);
+                // Gerar token de primeiro acesso
+                const firstAccessToken = crypto_1.default.randomBytes(32).toString('hex');
+                const tokenExpires = new Date(Date.now() + 7 * 24 * 3600000); // 7 dias
+                // Criar usuário com role OWNER (é o dono da conta)
+                const userResult = await client.query(`INSERT INTO users (
+            email, password, name, role, status,
+            "passwordResetToken", "passwordResetExpires", "emailVerified"
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          RETURNING id, email, name, role, "tenantId"`, [
+                    email,
+                    hashedPassword,
+                    name,
+                    user_entity_1.UserRole.OWNER,
+                    user_entity_1.UserStatus.ACTIVE,
+                    firstAccessToken,
+                    tokenExpires,
+                    false,
+                ]);
+                userId = userResult.rows[0].id;
+                tenantId = userResult.rows[0].tenantId;
+                console.log('[External API] New user created', { userId, email, role: user_entity_1.UserRole.OWNER });
+                // Enviar email de boas-vindas com credenciais
+                try {
+                    const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${firstAccessToken}`;
+                    await (0, email_1.sendEmail)({
+                        to: email,
+                        subject: 'Bem-vindo ao Nexus Atemporal - Sua conta foi criada!',
+                        html: `
+              <h1>Bem-vindo ao Nexus Atemporal!</h1>
+              <p>Olá <strong>${name}</strong>,</p>
+              <p>Seu pagamento foi confirmado e sua conta foi criada com sucesso! 🎉</p>
+
+              <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <h2 style="margin-top: 0;">Informações da sua conta:</h2>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Plano contratado:</strong> ${planId}</p>
+              </div>
+
+              <p>Para acessar o sistema e definir sua senha, clique no botão abaixo:</p>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" style="display: inline-block; padding: 15px 30px; background-color: #4F46E5; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">Definir Minha Senha</a>
+              </div>
+
+              <p>Ou acesse diretamente: <a href="${process.env.FRONTEND_URL}">${process.env.FRONTEND_URL}</a></p>
+
+              <p style="color: #6b7280; font-size: 14px;"><strong>Importante:</strong> Este link expira em 7 dias.</p>
+
+              <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;">
+
+              <h3>Próximos passos:</h3>
+              <ol>
+                <li>Acesse o sistema usando o link acima</li>
+                <li>Defina uma senha segura</li>
+                <li>Complete seu perfil</li>
+                <li>Comece a usar o Nexus Atemporal!</li>
+              </ol>
+
+              <p>Se você tiver qualquer dúvida, nossa equipe está pronta para ajudar.</p>
+
+              <br>
+              <p>Atenciosamente,<br><strong>Equipe Nexus Atemporal</strong></p>
+            `,
+                    });
+                    console.log('[External API] Welcome email sent', { email });
+                }
+                catch (emailError) {
+                    console.error('[External API] Error sending welcome email:', emailError);
+                    // Não falha a criação se o email falhar
+                }
+            }
+            // Registrar o pedido/pagamento no sistema principal
+            await client.query(`INSERT INTO orders (
+          user_email, user_name, plan, amount, provider, status, external_id
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7)`, [
+                email,
+                name,
+                planId,
+                amount || 0,
+                'stripe',
+                'paid',
+                stripeSessionId,
+            ]);
+            console.log('[External API] Order/payment registered', { email, planId, stripeSessionId });
+            await client.query('COMMIT');
+            res.status(201).json({
+                success: true,
+                message: isNewUser
+                    ? 'Usuário criado e assinatura ativada com sucesso'
+                    : 'Assinatura atualizada com sucesso',
+                data: {
+                    userId,
+                    tenantId,
+                    email,
+                    isNewUser,
+                },
+            });
+        }
+        catch (error) {
+            await client.query('ROLLBACK');
+            console.error('[External API] Error creating user from payment:', error);
+            res.status(500).json({
+                success: false,
+                message: 'Erro ao processar criação de usuário',
+                error: error instanceof Error ? error.message : 'Unknown error',
+            });
+        }
+        finally {
+            client.release();
+        }
+    };
+    /**
      * POST /api/users/:id/resend-welcome-email
      * Reenvia email de boas-vindas
      * Permissão: users.update ou users.update_basic

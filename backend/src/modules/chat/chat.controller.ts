@@ -140,9 +140,9 @@ export class ChatController {
   assignConversation = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { userId } = req.body;
+      const { userId, userName } = req.body;
       const conversationId = await this.ensureConversationExists(id);
-      const conversation = await this.chatService.assignConversation(conversationId, userId);
+      const conversation = await this.chatService.assignConversation(conversationId, userId, userName);
       res.json(conversation);
     } catch (error: any) {
       console.error('[assignConversation] Error:', error.message);
@@ -153,9 +153,9 @@ export class ChatController {
   addTag = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { tagName } = req.body;
+      const { tagName, userId, userName } = req.body;
       const conversationId = await this.ensureConversationExists(id);
-      const conversation = await this.chatService.addTagToConversation(conversationId, tagName);
+      const conversation = await this.chatService.addTagToConversation(conversationId, tagName, userId, userName);
       res.json(conversation);
     } catch (error: any) {
       console.error('[addTag] Error:', error.message);
@@ -380,8 +380,9 @@ export class ChatController {
   archiveConversation = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      const { userId, userName } = req.body;
       const conversationId = await this.ensureConversationExists(id);
-      const conversation = await this.chatService.archiveConversation(conversationId);
+      const conversation = await this.chatService.archiveConversation(conversationId, userId, userName);
       res.json(conversation);
     } catch (error: any) {
       console.error('[archiveConversation] Error:', error.message);
@@ -401,6 +402,19 @@ export class ChatController {
     }
   };
 
+  reopenConversation = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { userId, userName } = req.body;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.reopenConversation(conversationId, userId, userName);
+      res.json(conversation);
+    } catch (error: any) {
+      console.error('[reopenConversation] Error:', error.message);
+      res.status(400).json({ error: error.message });
+    }
+  };
+
   resolveConversation = async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -409,18 +423,6 @@ export class ChatController {
       res.json(conversation);
     } catch (error: any) {
       console.error('[resolveConversation] Error:', error.message);
-      res.status(400).json({ error: error.message });
-    }
-  };
-
-  reopenConversation = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const conversationId = await this.ensureConversationExists(id);
-      const conversation = await this.chatService.reopenConversation(conversationId);
-      res.json(conversation);
-    } catch (error: any) {
-      console.error('[reopenConversation] Error:', error.message);
       res.status(400).json({ error: error.message });
     }
   };
@@ -469,6 +471,44 @@ export class ChatController {
       const { phoneNumber } = req.params;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
       const conversations = await this.chatService.getConversationHistory(phoneNumber, limit);
+      res.json(conversations);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  addParticipant = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { userId, userName } = req.body;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.addParticipant(conversationId, userId, userName);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  removeParticipant = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { userId, userName } = req.body;
+      const conversationId = await this.ensureConversationExists(id);
+      const conversation = await this.chatService.removeParticipant(conversationId, userId, userName);
+      res.json(conversation);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  };
+
+  getRecentConversations = async (req: Request, res: Response) => {
+    try {
+      const { phoneNumber } = req.params;
+      const { hours } = req.query;
+      const conversations = await this.chatService.getRecentConversations(
+        phoneNumber,
+        hours ? parseInt(hours as string) : 6
+      );
       res.json(conversations);
     } catch (error: any) {
       res.status(400).json({ error: error.message });

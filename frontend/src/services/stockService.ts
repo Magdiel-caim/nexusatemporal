@@ -26,24 +26,24 @@ export enum ProductUnit {
 }
 
 export enum MovementType {
-  ENTRADA = 'ENTRADA',
-  SAIDA = 'SAIDA',
-  AJUSTE = 'AJUSTE',
-  DEVOLUCAO = 'DEVOLUCAO',
-  PERDA = 'PERDA',
+  ENTRADA = 'entrada',
+  SAIDA = 'saida',
+  AJUSTE = 'ajuste',
+  DEVOLUCAO = 'devolucao',
+  PERDA = 'perda',
 }
 
 export enum MovementReason {
-  COMPRA = 'COMPRA',
-  PROCEDIMENTO = 'PROCEDIMENTO',
-  VENDA = 'VENDA',
-  AJUSTE_INVENTARIO = 'AJUSTE_INVENTARIO',
-  DEVOLUCAO_FORNECEDOR = 'DEVOLUCAO_FORNECEDOR',
-  DEVOLUCAO_CLIENTE = 'DEVOLUCAO_CLIENTE',
-  PERDA = 'PERDA',
-  VENCIMENTO = 'VENCIMENTO',
-  DANO = 'DANO',
-  OUTRO = 'OUTRO',
+  COMPRA = 'compra',
+  PROCEDIMENTO = 'procedimento',
+  AJUSTE_INVENTARIO = 'ajuste_inventario',
+  DEVOLUCAO_FORNECEDOR = 'devolucao_fornecedor',
+  DEVOLUCAO_CLIENTE = 'devolucao_cliente',
+  PERDA = 'perda',
+  VENCIMENTO = 'vencimento',
+  DANO = 'dano',
+  TRANSFERENCIA = 'transferencia',
+  OUTRO = 'outro',
 }
 
 export enum AlertType {

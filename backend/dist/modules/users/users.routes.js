@@ -9,6 +9,7 @@ const express_1 = require("express");
 const data_source_1 = require("../../database/data-source");
 const users_controller_1 = require("./users.controller");
 const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
+const api_key_auth_middleware_1 = require("../../shared/middleware/api-key-auth.middleware");
 const authorize_middleware_1 = require("../../shared/middlewares/authorize.middleware");
 const permission_types_1 = require("../permissions/permission.types");
 const router = (0, express_1.Router)();
@@ -27,7 +28,17 @@ const initController = () => {
         controller = new users_controller_1.UsersController(pool);
     }
 };
-// Todas as rotas requerem autenticação
+/**
+ * POST /api/users/external/create-from-payment
+ * Rota externa para criar usuário após pagamento no Site de Checkout
+ * Autenticação: API Key (sem JWT)
+ * IMPORTANTE: Esta rota deve vir ANTES do middleware authenticate
+ */
+router.post('/external/create-from-payment', api_key_auth_middleware_1.authenticateApiKey, (req, res) => {
+    initController();
+    controller.createUserFromPayment(req, res);
+});
+// Todas as outras rotas requerem autenticação JWT
 router.use(auth_middleware_1.authenticate);
 /**
  * GET /api/users/permissions/me

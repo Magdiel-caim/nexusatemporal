@@ -222,11 +222,11 @@ export default function MovementList({ refreshKey }: MovementListProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${
-                    movement.type === 'ENTRADA' || movement.type === 'DEVOLUCAO'
+                    movement.type === 'entrada' || movement.type === 'devolucao'
                       ? 'bg-green-100 text-green-800'
                       : 'bg-red-100 text-red-800'
                   }`}>
-                    {movement.type === 'ENTRADA' || movement.type === 'DEVOLUCAO' ? (
+                    {movement.type === 'entrada' || movement.type === 'devolucao' ? (
                       <ArrowUpCircle className="h-3 w-3 mr-1" />
                     ) : (
                       <ArrowDownCircle className="h-3 w-3 mr-1" />

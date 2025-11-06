@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatService = void 0;
 const data_source_1 = require("../../database/data-source");
@@ -87,19 +120,88 @@ class ChatService {
             unreadCount,
         });
     }
-    async assignConversation(conversationId, userId) {
+    async assignConversation(conversationId, userId, userName) {
+        const conversation = await this.getConversationById(conversationId);
+        if (!conversation)
+            throw new Error('Conversation not found');
+        // Adicionar ao log de atividades
+        const activityLog = conversation.activityLog || [];
+        activityLog.push({
+            type: 'assigned',
+            userId,
+            userName: userName || 'Usuário',
+            timestamp: new Date().toISOString(),
+            details: { previousUser: conversation.assignedUserId },
+        });
         return this.updateConversation(conversationId, {
             assignedUserId: userId,
+            activityLog,
         });
     }
-    async addTagToConversation(conversationId, tagName) {
+    /**
+     * Adicionar participante à conversa
+     */
+    async addParticipant(conversationId, userId, userName) {
+        const conversation = await this.getConversationById(conversationId);
+        if (!conversation)
+            throw new Error('Conversation not found');
+        const participants = conversation.participants || [];
+        if (!participants.includes(userId)) {
+            participants.push(userId);
+        }
+        // Log de atividade
+        const activityLog = conversation.activityLog || [];
+        activityLog.push({
+            type: 'assigned',
+            userId,
+            userName: userName || 'Participante',
+            timestamp: new Date().toISOString(),
+            details: { action: 'participant_added' },
+        });
+        return this.updateConversation(conversationId, {
+            participants,
+            activityLog,
+        });
+    }
+    /**
+     * Remover participante da conversa
+     */
+    async removeParticipant(conversationId, userId, userName) {
+        const conversation = await this.getConversationById(conversationId);
+        if (!conversation)
+            throw new Error('Conversation not found');
+        const participants = (conversation.participants || []).filter(id => id !== userId);
+        // Log de atividade
+        const activityLog = conversation.activityLog || [];
+        activityLog.push({
+            type: 'unassigned',
+            userId,
+            userName: userName || 'Participante',
+            timestamp: new Date().toISOString(),
+            details: { action: 'participant_removed' },
+        });
+        return this.updateConversation(conversationId, {
+            participants,
+            activityLog,
+        });
+    }
+    async addTagToConversation(conversationId, tagName, userId, userName) {
         const conversation = await this.getConversationById(conversationId);
         if (!conversation)
             throw new Error('Conversation not found');
         const currentTags = conversation.tags || [];
         if (!currentTags.includes(tagName)) {
             currentTags.push(tagName);
-            await this.updateConversation(conversationId, { tags: currentTags });
+            // Log de atividade
+            const activityLog = conversation.activityLog || [];
+            activityLog.push({
+                type: 'tagged',
+                userId: userId || 'system',
+                userName: userName || 'Sistema',
+                timestamp: new Date().toISOString(),
+                details: { tag: tagName, action: 'added' },
+            });
+            await this.updateConversation(conversationId, { tags: currentTags, activityLog });
         }
         return this.getConversationById(conversationId);
     }
@@ -112,30 +214,55 @@ class ChatService {
         await this.updateConversation(conversationId, { tags: updatedTags });
         return this.getConversationById(conversationId);
     }
-    async archiveConversation(conversationId) {
-        return this.updateConversation(conversationId, {
-            status: 'archived',
+    async archiveConversation(conversationId, userId, userName) {
+        const conversation = await this.getConversationById(conversationId);
+        if (!conversation)
+            throw new Error('Conversation not found');
+        // Log de atividade
+        const activityLog = conversation.activityLog || [];
+        activityLog.push({
+            type: 'archived',
+            userId: userId || 'system',
+            userName: userName || 'Sistema',
+            timestamp: new Date().toISOString(),
+            details: {},
         });
+        return this.updateConversation(conversationId, { status: 'archived', activityLog });
     }
     async unarchiveConversation(conversationId) {
-        return this.updateConversation(conversationId, {
-            status: 'active',
-        });
+        // TEMPORARIAMENTE DESABILITADO - archived column removed from Entity
+        // return this.updateConversation(conversationId, { archived: false });
+        return this.updateConversation(conversationId, { status: 'active' });
     }
     async resolveConversation(conversationId) {
         return this.updateConversation(conversationId, {
             status: 'closed',
         });
     }
-    async reopenConversation(conversationId) {
+    async reopenConversation(conversationId, userId, userName) {
+        const conversation = await this.getConversationById(conversationId);
+        if (!conversation)
+            throw new Error('Conversation not found');
+        // Log de atividade
+        const activityLog = conversation.activityLog || [];
+        activityLog.push({
+            type: 'reopened',
+            userId: userId || 'system',
+            userName: userName || 'Sistema',
+            timestamp: new Date().toISOString(),
+            details: { previousStatus: conversation.status },
+        });
         return this.updateConversation(conversationId, {
             status: 'active',
+            activityLog,
         });
     }
     async setPriority(conversationId, priority) {
         const conversation = await this.getConversationById(conversationId);
         if (!conversation)
             throw new Error('Conversation not found');
+        // TEMPORARIAMENTE DESABILITADO - priority column removed from Entity
+        // Workaround: salvar priority no metadata
         const metadata = conversation.metadata || {};
         metadata.priority = priority;
         return this.updateConversation(conversationId, { metadata });
@@ -168,8 +295,35 @@ class ChatService {
             take: limit,
         });
     }
+    /**
+     * Buscar conversas recentes (últimas X horas)
+     */
+    async getRecentConversations(phoneNumber, hours = 6) {
+        const since = new Date();
+        since.setHours(since.getHours() - hours);
+        return this.conversationRepository
+            .createQueryBuilder('conversation')
+            .where('conversation.phoneNumber = :phoneNumber', { phoneNumber })
+            .andWhere('conversation.lastMessageAt >= :since', { since })
+            .orderBy('conversation.lastMessageAt', 'DESC')
+            .getMany();
+    }
     // ===== MESSAGE OPERATIONS =====
     async createMessage(data) {
+        // Se for mensagem outgoing e não tiver senderName, buscar do usuário
+        if (data.direction === 'outgoing' && data.senderId && !data.senderName) {
+            try {
+                const { AppDataSource } = await Promise.resolve().then(() => __importStar(require('../../database/data-source')));
+                const userRepo = AppDataSource.getRepository('User');
+                const user = await userRepo.findOne({ where: { id: data.senderId } });
+                if (user) {
+                    data.senderName = user.name || 'Atendente';
+                }
+            }
+            catch (error) {
+                console.error('Erro ao buscar nome do usuário:', error);
+            }
+        }
         const message = this.messageRepository.create({
             ...data,
             status: data.direction === 'outgoing' ? 'pending' : 'delivered',

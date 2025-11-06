@@ -66,6 +66,19 @@ router.post('/test/:gateway', (req, res) => {
     initControllers();
     controller.testConnection(req, res);
 });
+// PagBank test routes
+router.post('/test/pagbank/full', (req, res) => {
+    initControllers();
+    controller.testPagBankIntegration(req, res);
+});
+router.post('/test/pagbank/pix', (req, res) => {
+    initControllers();
+    controller.createTestPixPayment(req, res);
+});
+router.get('/test/pagbank/orders', (req, res) => {
+    initControllers();
+    controller.listTestOrders(req, res);
+});
 // Customer routes
 router.post('/customers', (req, res) => {
     initControllers();
