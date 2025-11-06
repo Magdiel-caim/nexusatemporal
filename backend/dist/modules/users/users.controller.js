@@ -706,9 +706,25 @@ class UsersController {
         }
         catch (error) {
             console.error('Error resending welcome email:', error);
+            // Detectar erros específicos do SMTP
+            let errorMessage = 'Erro ao reenviar email';
+            if (error.message) {
+                if (error.message.includes('Unusual sending activity') || error.message.includes('550 5.4.6')) {
+                    errorMessage = 'Conta de email temporariamente bloqueada por atividade suspeita. Entre em contato com o administrador para desbloquear.';
+                }
+                else if (error.message.includes('EAUTH') || error.message.includes('Invalid login')) {
+                    errorMessage = 'Erro de autenticação SMTP. Verifique as credenciais de email configuradas.';
+                }
+                else if (error.message.includes('ECONNECTION') || error.message.includes('ETIMEDOUT')) {
+                    errorMessage = 'Erro de conexão com servidor de email. Tente novamente mais tarde.';
+                }
+                else if (error.responseCode >= 500 && error.responseCode < 600) {
+                    errorMessage = 'Servidor de email temporariamente indisponível. Tente novamente mais tarde.';
+                }
+            }
             res.status(500).json({
                 success: false,
-                message: 'Erro ao reenviar email',
+                message: errorMessage,
             });
         }
     };
