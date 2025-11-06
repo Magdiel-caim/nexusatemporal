@@ -116,12 +116,18 @@ export default function FinanceiroPage() {
         financialService.getOverdueTransactions(),
       ]);
 
+      // Helper para garantir valor numérico válido (proteção contra NaN)
+      const safeNumber = (value: any): number => {
+        const num = Number(value);
+        return isNaN(num) || !isFinite(num) ? 0 : num;
+      };
+
       setStats({
-        totalIncome: monthStats.totalIncome || 0,
-        totalExpense: monthStats.totalExpense || 0,
-        balance: monthStats.balance || 0,
-        accountsReceivable: receivable.reduce((sum, t) => sum + Number(t.amount), 0),
-        accountsPayable: payable.reduce((sum, t) => sum + Number(t.amount), 0),
+        totalIncome: safeNumber(monthStats.totalIncome),
+        totalExpense: safeNumber(monthStats.totalExpense),
+        balance: safeNumber(monthStats.balance),
+        accountsReceivable: receivable.reduce((sum, t) => sum + safeNumber(t.amount), 0),
+        accountsPayable: payable.reduce((sum, t) => sum + safeNumber(t.amount), 0),
         overdueCount: overdue.length,
       });
 

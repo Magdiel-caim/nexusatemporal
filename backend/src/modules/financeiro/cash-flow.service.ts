@@ -148,6 +148,12 @@ export class CashFlowService {
       },
     });
 
+    // Helper para garantir valor numérico válido
+    const safeAmount = (amount: any): number => {
+      const num = Number(amount);
+      return isNaN(num) ? 0 : num;
+    };
+
     // Calcular totais
     let totalIncome = 0;
     let totalExpense = 0;
@@ -159,7 +165,7 @@ export class CashFlowService {
     let otherAmount = 0;
 
     for (const t of transactions) {
-      const amount = Number(t.amount);
+      const amount = safeAmount(t.amount);
 
       if (t.type === TransactionType.RECEITA) {
         totalIncome += amount;
@@ -190,11 +196,11 @@ export class CashFlowService {
     }
 
     const closingBalance =
-      Number(cashFlow.openingBalance) +
+      safeAmount(cashFlow.openingBalance) +
       totalIncome -
       totalExpense +
-      Number(cashFlow.deposits || 0) -
-      Number(cashFlow.withdrawals || 0);
+      safeAmount(cashFlow.deposits) -
+      safeAmount(cashFlow.withdrawals);
 
     await this.cashFlowRepository.update(
       { id: cashFlow.id },
@@ -303,26 +309,32 @@ export class CashFlowService {
     const closedDays = cashFlows.filter((cf) => cf.isClosed).length;
     const openDays = totalDays - closedDays;
 
+    // Helper para garantir valor numérico válido
+    const safeAmount = (amount: any): number => {
+      const num = Number(amount);
+      return isNaN(num) ? 0 : num;
+    };
+
     const totalIncome = cashFlows.reduce(
-      (sum, cf) => sum + Number(cf.totalIncome),
+      (sum, cf) => sum + safeAmount(cf.totalIncome),
       0
     );
     const totalExpense = cashFlows.reduce(
-      (sum, cf) => sum + Number(cf.totalExpense),
+      (sum, cf) => sum + safeAmount(cf.totalExpense),
       0
     );
     const totalWithdrawals = cashFlows.reduce(
-      (sum, cf) => sum + Number(cf.withdrawals || 0),
+      (sum, cf) => sum + safeAmount(cf.withdrawals),
       0
     );
     const totalDeposits = cashFlows.reduce(
-      (sum, cf) => sum + Number(cf.deposits || 0),
+      (sum, cf) => sum + safeAmount(cf.deposits),
       0
     );
 
     const currentBalance =
       cashFlows.length > 0
-        ? Number(cashFlows[0].closingBalance)
+        ? safeAmount(cashFlows[0].closingBalance)
         : 0;
 
     return {

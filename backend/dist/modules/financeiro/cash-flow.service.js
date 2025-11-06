@@ -97,6 +97,11 @@ class CashFlowService {
                 paymentDate: (0, typeorm_1.Between)(startOfDay, endOfDay),
             },
         });
+        // Helper para garantir valor numérico válido
+        const safeAmount = (amount) => {
+            const num = Number(amount);
+            return isNaN(num) ? 0 : num;
+        };
         // Calcular totais
         let totalIncome = 0;
         let totalExpense = 0;
@@ -107,7 +112,7 @@ class CashFlowService {
         let transferAmount = 0;
         let otherAmount = 0;
         for (const t of transactions) {
-            const amount = Number(t.amount);
+            const amount = safeAmount(t.amount);
             if (t.type === transaction_entity_1.TransactionType.RECEITA) {
                 totalIncome += amount;
             }
@@ -135,11 +140,11 @@ class CashFlowService {
                     otherAmount += amount;
             }
         }
-        const closingBalance = Number(cashFlow.openingBalance) +
+        const closingBalance = safeAmount(cashFlow.openingBalance) +
             totalIncome -
             totalExpense +
-            Number(cashFlow.deposits || 0) -
-            Number(cashFlow.withdrawals || 0);
+            safeAmount(cashFlow.deposits) -
+            safeAmount(cashFlow.withdrawals);
         await this.cashFlowRepository.update({ id: cashFlow.id }, {
             totalIncome,
             totalExpense,
@@ -205,12 +210,17 @@ class CashFlowService {
         const totalDays = cashFlows.length;
         const closedDays = cashFlows.filter((cf) => cf.isClosed).length;
         const openDays = totalDays - closedDays;
-        const totalIncome = cashFlows.reduce((sum, cf) => sum + Number(cf.totalIncome), 0);
-        const totalExpense = cashFlows.reduce((sum, cf) => sum + Number(cf.totalExpense), 0);
-        const totalWithdrawals = cashFlows.reduce((sum, cf) => sum + Number(cf.withdrawals || 0), 0);
-        const totalDeposits = cashFlows.reduce((sum, cf) => sum + Number(cf.deposits || 0), 0);
+        // Helper para garantir valor numérico válido
+        const safeAmount = (amount) => {
+            const num = Number(amount);
+            return isNaN(num) ? 0 : num;
+        };
+        const totalIncome = cashFlows.reduce((sum, cf) => sum + safeAmount(cf.totalIncome), 0);
+        const totalExpense = cashFlows.reduce((sum, cf) => sum + safeAmount(cf.totalExpense), 0);
+        const totalWithdrawals = cashFlows.reduce((sum, cf) => sum + safeAmount(cf.withdrawals), 0);
+        const totalDeposits = cashFlows.reduce((sum, cf) => sum + safeAmount(cf.deposits), 0);
         const currentBalance = cashFlows.length > 0
-            ? Number(cashFlows[0].closingBalance)
+            ? safeAmount(cashFlows[0].closingBalance)
             : 0;
         return {
             totalDays,

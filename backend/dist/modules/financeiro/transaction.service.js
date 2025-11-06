@@ -219,20 +219,25 @@ class TransactionService {
             dateTo,
             status: transaction_entity_1.TransactionStatus.CONFIRMADA,
         });
+        // Helper para garantir valor numérico válido
+        const safeAmount = (amount) => {
+            const num = Number(amount);
+            return isNaN(num) ? 0 : num;
+        };
         const totalIncome = transactions
             .filter((t) => t.type === transaction_entity_1.TransactionType.RECEITA)
-            .reduce((sum, t) => sum + Number(t.amount), 0);
+            .reduce((sum, t) => sum + safeAmount(t.amount), 0);
         const totalExpense = transactions
             .filter((t) => t.type === transaction_entity_1.TransactionType.DESPESA)
-            .reduce((sum, t) => sum + Number(t.amount), 0);
+            .reduce((sum, t) => sum + safeAmount(t.amount), 0);
         const balance = totalIncome - totalExpense;
         const byCategory = transactions.reduce((acc, t) => {
-            acc[t.category] = (acc[t.category] || 0) + Number(t.amount);
+            acc[t.category] = (acc[t.category] || 0) + safeAmount(t.amount);
             return acc;
         }, {});
         const byPaymentMethod = transactions.reduce((acc, t) => {
             if (t.paymentMethod) {
-                acc[t.paymentMethod] = (acc[t.paymentMethod] || 0) + Number(t.amount);
+                acc[t.paymentMethod] = (acc[t.paymentMethod] || 0) + safeAmount(t.amount);
             }
             return acc;
         }, {});
