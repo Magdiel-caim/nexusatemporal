@@ -1,0 +1,140 @@
+═══════════════════════════════════════════════════════════════
+ARQUIVOS MODIFICADOS - SESSÃO 06/11/2025 20:00
+═══════════════════════════════════════════════════════════════
+
+📂 FRONTEND (1 arquivo)
+───────────────────────────────────────────────────────────────
+✅ frontend/src/pages/AgendaPage.tsx
+   - Linha 934: Adicionado min={new Date().toISOString().split('T')[0]}
+   - Motivo: Validação de data no formulário de edição
+   - Bug: Task 8 - Restrição de data Agenda
+
+📂 BACKEND (9 arquivos)
+───────────────────────────────────────────────────────────────
+
+MÓDULO FINANCEIRO:
+─────────────────────────────────
+✅ backend/src/modules/financeiro/purchase-order.controller.ts
+   - Linhas: 9, 71, 104, 118
+   - Mudança: { id: userId } → { userId }
+   - Métodos: create, approve, receive, cancel
+   - Bug: Task 9 - Erro aprovar Ordens de Compra
+
+✅ backend/src/modules/financeiro/transaction.controller.ts
+   - Linhas: 9, 68, 84, 110, 127, 154
+   - Mudança: { id: userId } → { userId }
+   - Métodos: create, update, confirm, cancel, reverse, createInstallments
+   - Bug: Task 10 - Erro editar despesas
+
+✅ backend/src/modules/financeiro/cash-flow.controller.ts
+   - Linhas: 9, 25
+   - Mudança: { id: userId } → { userId }
+   - Métodos: open, close
+   - Bug: Task 11 - Erro fluxo de caixa
+
+✅ backend/src/modules/financeiro/invoice.controller.ts
+   - Linha: 9
+   - Mudança: { id: userId } → { userId }
+   - Métodos: create
+
+MÓDULO CHAT:
+─────────────────────────────────
+✅ backend/src/modules/chat/waha-session.controller.ts
+   - Linha: 17
+   - Mudança: { id: userId } → { userId }
+   - Métodos: createSession
+
+MÓDULO PACIENTES:
+─────────────────────────────────
+✅ backend/src/modules/pacientes/controllers/patient.controller.ts
+   - Linhas: 120, 337
+   - Mudança: { id: userId } → { userId }
+   - Métodos: create, createMedicalRecord
+
+MÓDULO LEADS:
+─────────────────────────────────
+✅ backend/src/modules/leads/lead.controller.ts
+   - Múltiplas linhas (5 ocorrências)
+   - Mudança: { id: userId } → { userId }
+
+MÓDULO VENDAS:
+─────────────────────────────────
+✅ backend/src/modules/vendas/vendas.controller.ts
+   - 1 ocorrência
+   - Mudança: { id: userId } → { userId }
+
+DOCKERFILE:
+─────────────────────────────────
+✅ backend/Dockerfile
+   - Linhas 7, 13: Corrigido paths
+   - Mudança: COPY package*.json → COPY backend/package*.json
+   - Mudança: COPY . . → COPY backend/. .
+
+═══════════════════════════════════════════════════════════════
+📊 ESTATÍSTICAS
+═══════════════════════════════════════════════════════════════
+
+Total de arquivos modificados: 10
+  - Frontend: 1
+  - Backend: 9
+
+Total de bugs corrigidos: 14
+  - Validação de data: 1
+  - userId undefined: 13
+
+Módulos afetados: 7
+  - Agenda (frontend)
+  - Financeiro
+  - Chat
+  - Pacientes
+  - Leads
+  - Vendas
+  - Dockerfile
+
+Métodos corrigidos: 22+
+  - Purchase Orders: 4
+  - Transactions: 6
+  - Cash Flow: 2
+  - Invoice: 1
+  - Chat: 1
+  - Pacientes: 2
+  - Leads: 5+
+  - Vendas: 1+
+
+═══════════════════════════════════════════════════════════════
+🚀 DEPLOYS EXECUTADOS
+═══════════════════════════════════════════════════════════════
+
+✅ BACKEND DEPLOYADO (3x)
+   - Build: docker build -t nexus_backend:latest -f backend/Dockerfile .
+   - Deploy: docker service update --image nexus_backend:latest nexus_backend
+   - Status: FUNCIONANDO
+   - Imagem: sha256:529427cf3649
+
+❌ FRONTEND NÃO DEPLOYADO
+   - Build executado: npm run build ✅
+   - Arquivos gerados: frontend/dist/* ✅
+   - Deploy Docker: NÃO FEITO ❌
+   - Status: AGUARDANDO
+
+═══════════════════════════════════════════════════════════════
+📝 GIT COMMITS
+═══════════════════════════════════════════════════════════════
+
+2a438e0 - fix: corrige bugs críticos do Sprint 1 - userId e validação de datas
+df96736 - docs: adiciona documentação completa da sessão Sprint 1 - deploy pendente
+39d7161 - docs: adiciona índice de navegação da documentação da sessão
+
+Branch: sprint-1-bug-fixes
+
+═══════════════════════════════════════════════════════════════
+🎯 PRÓXIMA AÇÃO
+═══════════════════════════════════════════════════════════════
+
+DEPLOY DO FRONTEND (5 minutos):
+
+cd /root/nexusatemporalv1/frontend
+docker build -f Dockerfile.prod -t nexus-frontend:latest .
+docker service update --image nexus-frontend:latest nexus_frontend
+
+═══════════════════════════════════════════════════════════════
