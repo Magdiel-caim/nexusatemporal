@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { financialService, Transaction, Supplier, Invoice } from '@/services/financialService';
 import {
   DollarSign,
@@ -37,8 +38,21 @@ interface FinancialStats {
 type ActiveTab = 'dashboard' | 'transactions' | 'suppliers' | 'invoices' | 'cash-flow' | 'purchase-orders' | 'reports';
 
 export default function FinanceiroPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+
+  // Inicializar activeTab baseado na URL
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    const path = location.pathname;
+    if (path.includes('/transacoes') || path.includes('/transactions')) return 'transactions';
+    if (path.includes('/fornecedores') || path.includes('/suppliers')) return 'suppliers';
+    if (path.includes('/recibos') || path.includes('/invoices')) return 'invoices';
+    if (path.includes('/fluxo-caixa') || path.includes('/cash-flow')) return 'cash-flow';
+    if (path.includes('/ordens-compra') || path.includes('/purchase-orders')) return 'purchase-orders';
+    if (path.includes('/relatorios') || path.includes('/reports')) return 'reports';
+    return 'dashboard';
+  });
   const [stats, setStats] = useState<FinancialStats>({
     totalIncome: 0,
     totalExpense: 0,
@@ -56,6 +70,18 @@ export default function FinanceiroPage() {
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | undefined>();
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | undefined>();
+
+  // Reagir a mudanças na URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/transacoes') || path.includes('/transactions')) setActiveTab('transactions');
+    else if (path.includes('/fornecedores') || path.includes('/suppliers')) setActiveTab('suppliers');
+    else if (path.includes('/recibos') || path.includes('/invoices')) setActiveTab('invoices');
+    else if (path.includes('/fluxo-caixa') || path.includes('/cash-flow')) setActiveTab('cash-flow');
+    else if (path.includes('/ordens-compra') || path.includes('/purchase-orders')) setActiveTab('purchase-orders');
+    else if (path.includes('/relatorios') || path.includes('/reports')) setActiveTab('reports');
+    else if (path === '/financeiro' || path === '/financeiro/dashboard') setActiveTab('dashboard');
+  }, [location]);
 
   useEffect(() => {
     loadFinancialData();
@@ -254,7 +280,7 @@ export default function FinanceiroPage() {
       <div className="border-b border-gray-200 dark:border-gray-700">
         <nav className="-mb-px flex space-x-8">
           <button
-            onClick={() => setActiveTab('dashboard')}
+            onClick={() => navigate('/financeiro/dashboard')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'dashboard'
                 ? 'border-primary-600 text-primary-600'
@@ -264,7 +290,7 @@ export default function FinanceiroPage() {
             Dashboard
           </button>
           <button
-            onClick={() => setActiveTab('transactions')}
+            onClick={() => navigate('/financeiro/transacoes')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'transactions'
                 ? 'border-primary-600 text-primary-600'
@@ -274,7 +300,7 @@ export default function FinanceiroPage() {
             Transações
           </button>
           <button
-            onClick={() => setActiveTab('suppliers')}
+            onClick={() => navigate('/financeiro/fornecedores')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'suppliers'
                 ? 'border-primary-600 text-primary-600'
@@ -284,7 +310,7 @@ export default function FinanceiroPage() {
             Fornecedores
           </button>
           <button
-            onClick={() => setActiveTab('invoices')}
+            onClick={() => navigate('/financeiro/recibos')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'invoices'
                 ? 'border-primary-600 text-primary-600'
@@ -294,7 +320,7 @@ export default function FinanceiroPage() {
             Recibos/NF
           </button>
           <button
-            onClick={() => setActiveTab('cash-flow')}
+            onClick={() => navigate('/financeiro/fluxo-caixa')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'cash-flow'
                 ? 'border-primary-600 text-primary-600'
@@ -304,7 +330,7 @@ export default function FinanceiroPage() {
             Fluxo de Caixa
           </button>
           <button
-            onClick={() => setActiveTab('purchase-orders')}
+            onClick={() => navigate('/financeiro/ordens-compra')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'purchase-orders'
                 ? 'border-primary-600 text-primary-600'
@@ -314,7 +340,7 @@ export default function FinanceiroPage() {
             Ordens de Compra
           </button>
           <button
-            onClick={() => setActiveTab('reports')}
+            onClick={() => navigate('/financeiro/relatorios')}
             className={`py-4 px-1 border-b-2 font-medium text-sm ${
               activeTab === 'reports'
                 ? 'border-primary-600 text-primary-600'

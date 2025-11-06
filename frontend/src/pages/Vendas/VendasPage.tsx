@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Users, ShoppingCart, DollarSign, BarChart } from 'lucide-react';
 import VendedoresTab from './VendedoresTab';
@@ -16,7 +17,24 @@ import DashboardTab from './DashboardTab';
  * - Comissões: Relatórios e pagamentos
  */
 const VendasPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const [activeTab, setActiveTab] = useState(() => {
+    const path = location.pathname;
+    if (path.includes('/vendedores')) return 'vendedores';
+    if (path.includes('/vendas')) return 'vendas';
+    if (path.includes('/comissoes')) return 'comissoes';
+    return 'dashboard';
+  });
+
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/vendedores')) setActiveTab('vendedores');
+    else if (path.includes('/vendas')) setActiveTab('vendas');
+    else if (path.includes('/comissoes')) setActiveTab('comissoes');
+    else if (path === '/vendas' || path === '/vendas/dashboard') setActiveTab('dashboard');
+  }, [location]);
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -31,7 +49,7 @@ const VendasPage: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={(value) => navigate(`/vendas/${value === 'dashboard' ? '' : value}`)} className="space-y-4">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="dashboard" className="flex items-center gap-2">
             <BarChart className="w-4 h-4" />
