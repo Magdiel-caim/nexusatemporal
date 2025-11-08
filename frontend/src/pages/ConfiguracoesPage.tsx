@@ -4,11 +4,12 @@
  * Página principal de configurações do sistema
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Settings, CreditCard, Bell, Users, Database, Shield, Palette, Bot, Key } from 'lucide-react';
 import UsersManagement from '@/components/users/UsersManagement';
 import AIIntegrationsTab from '@/components/settings/AIIntegrationsTab';
 import ApiKeysManagement from '@/components/settings/ApiKeysManagement';
+import api from '@/services/api';
 
 interface ConfigSection {
   id: string;
@@ -19,6 +20,23 @@ interface ConfigSection {
 
 const ConfiguracoesPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState<string>('integracoes');
+  const [paymentConfigs, setPaymentConfigs] = useState<any[]>([]);
+  const [loadingConfigs, setLoadingConfigs] = useState(true);
+
+  // Load payment gateway configurations
+  useEffect(() => {
+    const loadPaymentConfigs = async () => {
+      try {
+        const response = await api.get('/payment-gateway/config');
+        setPaymentConfigs(response.data);
+      } catch (error) {
+        console.error('Error loading payment configs:', error);
+      } finally {
+        setLoadingConfigs(false);
+      }
+    };
+    loadPaymentConfigs();
+  }, []);
 
   const sections: ConfigSection[] = [
     {
@@ -109,9 +127,31 @@ const ConfiguracoesPage: React.FC = () => {
                       Boleto, PIX, Cartão de Crédito, Assinaturas
                     </p>
                     <div className="mt-3 flex items-center">
-                      <span className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
-                        Não configurado
-                      </span>
+                      {(() => {
+                        if (loadingConfigs) {
+                          return (
+                            <span className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                              Carregando...
+                            </span>
+                          );
+                        }
+                        const asaasConfig = paymentConfigs.find(
+                          (c: any) => c.gateway === 'asaas' && c.isActive
+                        );
+                        if (asaasConfig) {
+                          const envLabel = asaasConfig.environment === 'production' ? 'Produção' : 'Sandbox';
+                          return (
+                            <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                              Configurado ({envLabel})
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                            Não configurado
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
 
@@ -121,9 +161,31 @@ const ConfiguracoesPage: React.FC = () => {
                       Boleto, PIX, Cartão, Parcelamento
                     </p>
                     <div className="mt-3 flex items-center">
-                      <span className="text-xs px-2 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200">
-                        Em breve
-                      </span>
+                      {(() => {
+                        if (loadingConfigs) {
+                          return (
+                            <span className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                              Carregando...
+                            </span>
+                          );
+                        }
+                        const pagbankConfig = paymentConfigs.find(
+                          (c: any) => c.gateway === 'pagbank' && c.isActive
+                        );
+                        if (pagbankConfig) {
+                          const envLabel = pagbankConfig.environment === 'production' ? 'Produção' : 'Sandbox';
+                          return (
+                            <span className="text-xs px-2 py-1 rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                              Configurado ({envLabel})
+                            </span>
+                          );
+                        }
+                        return (
+                          <span className="text-xs px-2 py-1 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400">
+                            Não configurado
+                          </span>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>
