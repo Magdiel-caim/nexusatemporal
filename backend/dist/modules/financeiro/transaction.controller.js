@@ -6,7 +6,7 @@ class TransactionController {
     transactionService = new transaction_service_1.TransactionService();
     createTransaction = async (req, res) => {
         try {
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const transaction = await this.transactionService.createTransaction({
                 ...req.body,
                 tenantId,
@@ -30,10 +30,10 @@ class TransactionController {
                 leadId: req.query.leadId,
                 appointmentId: req.query.appointmentId,
                 supplierId: req.query.supplierId,
-                dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom) : undefined,
-                dateTo: req.query.dateTo ? new Date(req.query.dateTo) : undefined,
-                dueDateFrom: req.query.dueDateFrom ? new Date(req.query.dueDateFrom) : undefined,
-                dueDateTo: req.query.dueDateTo ? new Date(req.query.dueDateTo) : undefined,
+                dateFrom: req.query.dateFrom,
+                dateTo: req.query.dateTo,
+                dueDateFrom: req.query.dueDateFrom,
+                dueDateTo: req.query.dueDateTo,
                 search: req.query.search,
                 minAmount: req.query.minAmount ? parseFloat(req.query.minAmount) : undefined,
                 maxAmount: req.query.maxAmount ? parseFloat(req.query.maxAmount) : undefined,
@@ -62,7 +62,7 @@ class TransactionController {
     updateTransaction = async (req, res) => {
         try {
             const { id } = req.params;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const transaction = await this.transactionService.updateTransaction(id, tenantId, req.body, userId);
             res.json(transaction);
         }
@@ -73,7 +73,7 @@ class TransactionController {
     confirmTransaction = async (req, res) => {
         try {
             const { id } = req.params;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             console.log('[DEBUG] confirmTransaction - id:', id);
             console.log('[DEBUG] confirmTransaction - tenantId:', tenantId);
             console.log('[DEBUG] confirmTransaction - userId:', userId);
@@ -93,7 +93,7 @@ class TransactionController {
     cancelTransaction = async (req, res) => {
         try {
             const { id } = req.params;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const { reason } = req.body;
             const transaction = await this.transactionService.cancelTransaction(id, tenantId, userId, reason);
             res.json(transaction);
@@ -105,7 +105,7 @@ class TransactionController {
     reverseTransaction = async (req, res) => {
         try {
             const { id } = req.params;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const { reason } = req.body;
             const transaction = await this.transactionService.reverseTransaction(id, tenantId, userId, reason);
             res.json(transaction);
@@ -127,7 +127,7 @@ class TransactionController {
     };
     createInstallmentTransactions = async (req, res) => {
         try {
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const transactions = await this.transactionService.createInstallmentTransactions({
                 ...req.body,
                 tenantId,
@@ -143,8 +143,16 @@ class TransactionController {
     getTransactionStats = async (req, res) => {
         try {
             const { tenantId } = req.user;
-            const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom) : new Date();
-            const dateTo = req.query.dateTo ? new Date(req.query.dateTo) : new Date();
+            // Helper to get today as YYYY-MM-DD string
+            const getTodayString = () => {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            };
+            const dateFrom = req.query.dateFrom || getTodayString();
+            const dateTo = req.query.dateTo || getTodayString();
             const stats = await this.transactionService.getTransactionStats(tenantId, dateFrom, dateTo);
             res.json(stats);
         }
@@ -155,7 +163,7 @@ class TransactionController {
     getAccountsReceivable = async (req, res) => {
         try {
             const { tenantId } = req.user;
-            const dateLimit = req.query.dateLimit ? new Date(req.query.dateLimit) : undefined;
+            const dateLimit = req.query.dateLimit;
             const accounts = await this.transactionService.getAccountsReceivable(tenantId, dateLimit);
             res.json(accounts);
         }
@@ -166,7 +174,7 @@ class TransactionController {
     getAccountsPayable = async (req, res) => {
         try {
             const { tenantId } = req.user;
-            const dateLimit = req.query.dateLimit ? new Date(req.query.dateLimit) : undefined;
+            const dateLimit = req.query.dateLimit;
             const accounts = await this.transactionService.getAccountsPayable(tenantId, dateLimit);
             res.json(accounts);
         }

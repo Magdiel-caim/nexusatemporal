@@ -1,5 +1,6 @@
-# Frontend Dockerfile - Simplified with Vite dev server
-FROM node:20-alpine
+# Multi-stage build for production
+# Stage 1: Build
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -9,11 +10,23 @@ COPY package*.json ./
 # Install dependencies
 RUN npm install
 
-# Copy frontend source code
+# Copy source code
 COPY . .
 
-# Expose Vite dev server port
-EXPOSE 3000
+# Build for production
+RUN npm run build
 
-# Start Vite dev server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Stage 2: Production with Nginx
+FROM nginx:alpine
+
+# Copy built files from builder stage
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]

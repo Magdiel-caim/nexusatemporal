@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { financialService, Transaction, Supplier, Invoice } from '@/services/financialService';
+import { safeNumber, formatCurrency as formatCurrencyUtil } from '@/utils/formatters';
 import {
   DollarSign,
   TrendingUp,
@@ -35,7 +36,7 @@ interface FinancialStats {
   overdueCount: number;
 }
 
-type ActiveTab = 'dashboard' | 'transactions' | 'suppliers' | 'invoices' | 'cash-flow' | 'purchase-orders' | 'reports';
+type ActiveTab = 'dashboard' | 'transactions' | 'accounts-receivable' | 'accounts-payable' | 'suppliers' | 'invoices' | 'cash-flow' | 'purchase-orders' | 'reports';
 
 export default function FinanceiroPage() {
   const location = useLocation();
@@ -46,6 +47,8 @@ export default function FinanceiroPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
     const path = location.pathname;
     if (path.includes('/transacoes') || path.includes('/transactions')) return 'transactions';
+    if (path.includes('/contas-receber') || path.includes('/accounts-receivable')) return 'accounts-receivable';
+    if (path.includes('/contas-pagar') || path.includes('/accounts-payable')) return 'accounts-payable';
     if (path.includes('/fornecedores') || path.includes('/suppliers')) return 'suppliers';
     if (path.includes('/recibos') || path.includes('/invoices')) return 'invoices';
     if (path.includes('/fluxo-caixa') || path.includes('/cash-flow')) return 'cash-flow';
@@ -75,6 +78,8 @@ export default function FinanceiroPage() {
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/transacoes') || path.includes('/transactions')) setActiveTab('transactions');
+    else if (path.includes('/contas-receber') || path.includes('/accounts-receivable')) setActiveTab('accounts-receivable');
+    else if (path.includes('/contas-pagar') || path.includes('/accounts-payable')) setActiveTab('accounts-payable');
     else if (path.includes('/fornecedores') || path.includes('/suppliers')) setActiveTab('suppliers');
     else if (path.includes('/recibos') || path.includes('/invoices')) setActiveTab('invoices');
     else if (path.includes('/fluxo-caixa') || path.includes('/cash-flow')) setActiveTab('cash-flow');
@@ -116,12 +121,6 @@ export default function FinanceiroPage() {
         financialService.getOverdueTransactions(),
       ]);
 
-      // Helper para garantir valor numérico válido (proteção contra NaN)
-      const safeNumber = (value: any): number => {
-        const num = Number(value);
-        return isNaN(num) || !isFinite(num) ? 0 : num;
-      };
-
       setStats({
         totalIncome: safeNumber(monthStats.totalIncome),
         totalExpense: safeNumber(monthStats.totalExpense),
@@ -143,12 +142,8 @@ export default function FinanceiroPage() {
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
+  // Usa helper global com proteção contra NaN
+  const formatCurrency = formatCurrencyUtil;
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('pt-BR');
@@ -304,6 +299,26 @@ export default function FinanceiroPage() {
             }`}
           >
             Transações
+          </button>
+          <button
+            onClick={() => navigate('/financeiro/contas-receber')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'accounts-receivable'
+                ? 'border-primary-600 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Contas a Receber
+          </button>
+          <button
+            onClick={() => navigate('/financeiro/contas-pagar')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'accounts-payable'
+                ? 'border-primary-600 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Contas a Pagar
           </button>
           <button
             onClick={() => navigate('/financeiro/fornecedores')}
@@ -478,7 +493,7 @@ export default function FinanceiroPage() {
                         </p>
                       </div>
                       <span className="font-bold text-green-600">
-                        {formatCurrency(Number(transaction.amount))}
+                        {formatCurrency(transaction.amount)}
                       </span>
                     </div>
                   ))
@@ -518,7 +533,7 @@ export default function FinanceiroPage() {
                         </p>
                       </div>
                       <span className="font-bold text-red-600">
-                        {formatCurrency(Number(transaction.amount))}
+                        {formatCurrency(transaction.amount)}
                       </span>
                     </div>
                   ))
@@ -584,7 +599,7 @@ export default function FinanceiroPage() {
                           <span className={`text-sm font-bold ${
                             transaction.type === 'receita' ? 'text-green-600' : 'text-red-600'
                           }`}>
-                            {transaction.type === 'receita' ? '+' : '-'}{formatCurrency(Number(transaction.amount))}
+                            {transaction.type === 'receita' ? '+' : '-'}{formatCurrency(transaction.amount)}
                           </span>
                         </td>
                       </tr>
@@ -605,6 +620,192 @@ export default function FinanceiroPage() {
             onCreateTransaction={handleCreateTransaction}
           />
         </Suspense>
+      )}
+
+      {/* Accounts Receivable Tab */}
+      {activeTab === 'accounts-receivable' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <ArrowUpCircle className="text-green-600" size={28} />
+                Contas a Receber
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Valores pendentes de recebimento
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total a Receber</p>
+              <p className="text-3xl font-bold text-green-600">
+                {formatCurrency(stats.accountsReceivable)}
+              </p>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Descrição
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Categoria
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vencimento
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Valor
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  {accountsReceivable.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center">
+                        <CheckCircle className="mx-auto mb-3 text-green-600" size={48} />
+                        <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+                          Nenhuma conta a receber
+                        </p>
+                        <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                          Todos os recebimentos estão em dia!
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    accountsReceivable.map(transaction => (
+                      <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {transaction.description}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {getCategoryLabel(transaction.category)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {formatDate(transaction.dueDate)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <span className="text-sm font-bold text-green-600">
+                            {formatCurrency(transaction.amount)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <button
+                            onClick={() => handleEditTransaction(transaction)}
+                            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                          >
+                            Ver detalhes
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Accounts Payable Tab */}
+      {activeTab === 'accounts-payable' && (
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <ArrowDownCircle className="text-red-600" size={28} />
+                Contas a Pagar
+              </h2>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                Valores pendentes de pagamento
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600 dark:text-gray-400">Total a Pagar</p>
+              <p className="text-3xl font-bold text-red-600">
+                {formatCurrency(stats.accountsPayable)}
+              </p>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Descrição
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Categoria
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Vencimento
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Valor
+                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Ações
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                  {accountsPayable.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center">
+                        <CheckCircle className="mx-auto mb-3 text-green-600" size={48} />
+                        <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+                          Nenhuma conta a pagar
+                        </p>
+                        <p className="text-gray-400 dark:text-gray-500 text-sm mt-1">
+                          Todos os pagamentos estão em dia!
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    accountsPayable.map(transaction => (
+                      <tr key={transaction.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td className="px-6 py-4">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {transaction.description}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {getCategoryLabel(transaction.category)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {formatDate(transaction.dueDate)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <span className="text-sm font-bold text-red-600">
+                            {formatCurrency(transaction.amount)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <button
+                            onClick={() => handleEditTransaction(transaction)}
+                            className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                          >
+                            Ver detalhes
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Suppliers Tab */}

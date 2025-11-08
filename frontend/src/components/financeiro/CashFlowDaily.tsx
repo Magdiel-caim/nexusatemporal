@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { financialService, CashFlow } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
+import { getTodayString, formatDateBR, formatDateTimeBR } from '@/utils/dateUtils';
 
 export default function CashFlowDaily() {
   const [cashFlow, setCashFlow] = useState<CashFlow | null>(null);
@@ -41,7 +42,8 @@ export default function CashFlowDaily() {
   const loadTodayCashFlow = async () => {
     try {
       setLoading(true);
-      const today = new Date().toISOString().split('T')[0];
+      // USANDO TIMEZONE DE SÃO PAULO
+      const today = getTodayString();
       const data = await financialService.getCashFlowByDate(today);
       setCashFlow(data);
     } catch (error: any) {
@@ -57,7 +59,8 @@ export default function CashFlowDaily() {
 
   const handleOpenCashFlow = async () => {
     try {
-      const today = new Date().toISOString().split('T')[0];
+      // USANDO TIMEZONE DE SÃO PAULO
+      const today = getTodayString();
       const data = await financialService.openCashFlow({
         date: today,
         openingBalance: Number(openingBalance),
@@ -136,7 +139,8 @@ export default function CashFlowDaily() {
     if (!cashFlow) return;
 
     try {
-      const today = new Date().toISOString().split('T')[0];
+      // USANDO TIMEZONE DE SÃO PAULO
+      const today = getTodayString();
       const data = await financialService.updateCashFlowFromTransactions(today);
       setCashFlow(data);
       toast.success('Caixa atualizado com transações!');
@@ -150,14 +154,6 @@ export default function CashFlowDaily() {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
-  };
-
-  const formatDateTime = (date: string) => {
-    return new Date(date).toLocaleString('pt-BR');
   };
 
   if (loading) {
@@ -242,18 +238,18 @@ export default function CashFlowDaily() {
           </div>
           <div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Caixa do Dia - {formatDate(cashFlow.date)}
+              Caixa do Dia - {formatDateBR(cashFlow.date)}
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {cashFlow.isClosed ? (
                 <span className="inline-flex items-center text-red-600">
                   <Lock className="w-4 h-4 mr-1" />
-                  Fechado em {formatDateTime(cashFlow.closedAt!)}
+                  Fechado em {formatDateTimeBR(cashFlow.closedAt!)}
                 </span>
               ) : (
                 <span className="inline-flex items-center text-green-600">
                   <Unlock className="w-4 h-4 mr-1" />
-                  Aberto desde {formatDateTime(cashFlow.openedAt || cashFlow.createdAt)}
+                  Aberto desde {formatDateTimeBR(cashFlow.openedAt || cashFlow.createdAt)}
                 </span>
               )}
             </p>

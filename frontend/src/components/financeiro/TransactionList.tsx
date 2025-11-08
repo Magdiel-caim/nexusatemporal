@@ -16,6 +16,8 @@ import {
 } from 'lucide-react';
 import { financialService, Transaction, TransactionType, TransactionStatus, PaymentMethod } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
+import { safeNumber, formatCurrency as formatCurrencyUtil } from '@/utils/formatters';
+import { getTodayString, formatDateBR } from '@/utils/dateUtils';
 
 interface TransactionListProps {
   onEditTransaction?: (transaction: Transaction) => void;
@@ -92,7 +94,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
   const handleConfirmTransaction = async (id: string) => {
     try {
       await financialService.confirmTransaction(id, {
-        paymentDate: new Date().toISOString().split('T')[0],
+        paymentDate: getTodayString(),
       });
       toast.success('Transação confirmada com sucesso!');
       loadTransactions();
@@ -139,15 +141,11 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
+  // Usa helper global com proteção contra NaN
+  const formatCurrency = formatCurrencyUtil;
 
   const formatDate = (date: Date | string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+    return formatDateBR(date);
   };
 
   const getTypeIcon = (type: TransactionType) => {
@@ -553,7 +551,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
                 {formatCurrency(
                   transactions
                     .filter(t => t.type === 'receita')
-                    .reduce((sum, t) => sum + t.amount, 0)
+                    .reduce((sum, t) => sum + safeNumber(t.amount), 0)
                 )}
               </div>
             </div>
@@ -563,7 +561,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
                 {formatCurrency(
                   transactions
                     .filter(t => t.type === 'despesa')
-                    .reduce((sum, t) => sum + t.amount, 0)
+                    .reduce((sum, t) => sum + safeNumber(t.amount), 0)
                 )}
               </div>
             </div>
@@ -572,20 +570,20 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
               <div className={`text-lg font-semibold ${
                 transactions
                   .filter(t => t.type === 'receita')
-                  .reduce((sum, t) => sum + t.amount, 0) -
+                  .reduce((sum, t) => sum + safeNumber(t.amount), 0) -
                 transactions
                   .filter(t => t.type === 'despesa')
-                  .reduce((sum, t) => sum + t.amount, 0) >= 0
+                  .reduce((sum, t) => sum + safeNumber(t.amount), 0) >= 0
                   ? 'text-green-600 dark:text-green-400'
                   : 'text-red-600 dark:text-red-400'
               }`}>
                 {formatCurrency(
                   transactions
                     .filter(t => t.type === 'receita')
-                    .reduce((sum, t) => sum + t.amount, 0) -
+                    .reduce((sum, t) => sum + safeNumber(t.amount), 0) -
                   transactions
                     .filter(t => t.type === 'despesa')
-                    .reduce((sum, t) => sum + t.amount, 0)
+                    .reduce((sum, t) => sum + safeNumber(t.amount), 0)
                 )}
               </div>
             </div>

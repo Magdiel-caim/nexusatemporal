@@ -6,7 +6,7 @@ class CashFlowController {
     cashFlowService = new cash_flow_service_1.CashFlowService();
     openCashFlow = async (req, res) => {
         try {
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const cashFlow = await this.cashFlowService.openCashFlow({
                 ...req.body,
                 tenantId,
@@ -22,7 +22,7 @@ class CashFlowController {
     closeCashFlow = async (req, res) => {
         try {
             const { id } = req.params;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const cashFlow = await this.cashFlowService.closeCashFlow({
                 ...req.body,
                 id,

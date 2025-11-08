@@ -29,6 +29,7 @@ import { financialService } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { safeNumber } from '@/utils/formatters';
 
 interface MonthlyData {
   month: string;
@@ -113,9 +114,9 @@ export default function FinancialReports() {
 
         const data = monthlyMap.get(monthKey)!;
         if (t.type === 'receita') {
-          data.receitas += Number(t.amount);
+          data.receitas += safeNumber(t.amount);
         } else {
-          data.despesas += Number(t.amount);
+          data.despesas += safeNumber(t.amount);
         }
       });
 
@@ -135,7 +136,7 @@ export default function FinancialReports() {
       let totalExpense = 0;
 
       transactions.forEach(t => {
-        const amount = Number(t.amount);
+        const amount = safeNumber(t.amount);
         if (t.type === 'receita') {
           incomeByCategory.set(t.category, (incomeByCategory.get(t.category) || 0) + amount);
           totalIncome += amount;

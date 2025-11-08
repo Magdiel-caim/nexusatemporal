@@ -30,6 +30,15 @@ export class PaymentGatewayController {
 
       const { gateway, environment, apiKey, apiSecret, webhookSecret, isActive, config } = req.body;
 
+      // Debug log
+      console.log('[PaymentGateway] Saving config:', {
+        gateway,
+        environment,
+        isActive,
+        isActiveType: typeof isActive,
+        hasApiKey: !!apiKey
+      });
+
       if (!gateway || !environment || !apiKey) {
         return res.status(400).json({
           error: 'Missing required fields: gateway, environment, apiKey',

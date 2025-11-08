@@ -7,6 +7,17 @@ export default function CashFlowHistory() {
   const [cashFlows, setCashFlows] = useState<CashFlow[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [showCloseModal, setShowCloseModal] = useState(false);
+  const [selectedCashFlow, setSelectedCashFlow] = useState<CashFlow | null>(null);
+  const [closingValues, setClosingValues] = useState({
+    cashAmount: 0,
+    pixAmount: 0,
+    creditCardAmount: 0,
+    debitCardAmount: 0,
+    transferAmount: 0,
+    otherAmount: 0,
+    notes: '',
+  });
   const [filters, setFilters] = useState({
     search: '',
     dateFrom: '',
@@ -47,6 +58,46 @@ export default function CashFlowHistory() {
 
   const formatTime = (date: string) => {
     return new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const openCloseModal = (cashFlow: CashFlow) => {
+    setSelectedCashFlow(cashFlow);
+    setClosingValues({
+      cashAmount: 0,
+      pixAmount: 0,
+      creditCardAmount: 0,
+      debitCardAmount: 0,
+      transferAmount: 0,
+      otherAmount: 0,
+      notes: '',
+    });
+    setShowCloseModal(true);
+  };
+
+  const handleCloseCashFlow = async () => {
+    if (!selectedCashFlow) return;
+
+    try {
+      const closingBalance =
+        closingValues.cashAmount +
+        closingValues.pixAmount +
+        closingValues.creditCardAmount +
+        closingValues.debitCardAmount +
+        closingValues.transferAmount +
+        closingValues.otherAmount;
+
+      await financialService.closeCashFlow(selectedCashFlow.id, {
+        ...closingValues,
+        closingBalance,
+      });
+
+      setShowCloseModal(false);
+      setSelectedCashFlow(null);
+      toast.success('Caixa fechado com sucesso!');
+      loadHistory(); // Recarregar lista
+    } catch (error: any) {
+      toast.error('Erro ao fechar caixa: ' + error.message);
+    }
   };
 
   const getStatusBadge = (isClosed: boolean) => {
@@ -179,6 +230,15 @@ export default function CashFlowHistory() {
                       {formatDate(cashFlow.date)}
                     </h3>
                     {getStatusBadge(cashFlow.isClosed)}
+                    {!cashFlow.isClosed && (
+                      <button
+                        onClick={() => openCloseModal(cashFlow)}
+                        className="ml-auto px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm font-medium flex items-center gap-2"
+                      >
+                        <DollarSign className="w-4 h-4" />
+                        Fechar Caixa
+                      </button>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
@@ -249,6 +309,172 @@ export default function CashFlowHistory() {
           ))
         )}
       </div>
+
+      {/* Modal Fechar Caixa */}
+      {showCloseModal && selectedCashFlow && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                Fechar Caixa - {formatDate(selectedCashFlow.date)}
+              </h3>
+              <button
+                onClick={() => setShowCloseModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Dinheiro
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={closingValues.cashAmount}
+                    onChange={(e) =>
+                      setClosingValues({ ...closingValues, cashAmount: Number(e.target.value) })
+                    }
+                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    PIX
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={closingValues.pixAmount}
+                    onChange={(e) =>
+                      setClosingValues({ ...closingValues, pixAmount: Number(e.target.value) })
+                    }
+                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Cartão de Crédito
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={closingValues.creditCardAmount}
+                    onChange={(e) =>
+                      setClosingValues({ ...closingValues, creditCardAmount: Number(e.target.value) })
+                    }
+                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Cartão de Débito
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={closingValues.debitCardAmount}
+                    onChange={(e) =>
+                      setClosingValues({ ...closingValues, debitCardAmount: Number(e.target.value) })
+                    }
+                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Transferência
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={closingValues.transferAmount}
+                    onChange={(e) =>
+                      setClosingValues({ ...closingValues, transferAmount: Number(e.target.value) })
+                    }
+                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Outros
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={closingValues.otherAmount}
+                    onChange={(e) =>
+                      setClosingValues({ ...closingValues, otherAmount: Number(e.target.value) })
+                    }
+                    className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Observações
+                </label>
+                <textarea
+                  value={closingValues.notes}
+                  onChange={(e) => setClosingValues({ ...closingValues, notes: e.target.value })}
+                  rows={3}
+                  className="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm"
+                />
+              </div>
+
+              <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Saldo de Abertura:
+                  </span>
+                  <span className="text-lg font-bold text-gray-900 dark:text-white">
+                    {formatCurrency(selectedCashFlow.openingBalance)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between mt-2">
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Saldo de Fechamento:
+                  </span>
+                  <span className="text-lg font-bold text-green-600">
+                    {formatCurrency(
+                      closingValues.cashAmount +
+                      closingValues.pixAmount +
+                      closingValues.creditCardAmount +
+                      closingValues.debitCardAmount +
+                      closingValues.transferAmount +
+                      closingValues.otherAmount
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setShowCloseModal(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleCloseCashFlow}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  Fechar Caixa
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

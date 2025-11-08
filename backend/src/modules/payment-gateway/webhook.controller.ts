@@ -41,9 +41,11 @@ export class WebhookController {
         ip: ipAddress,
       });
 
-      // Extract tenant from webhook data or use default
-      // In production, you might want to include tenantId in the webhook URL
-      const tenantId = 'default';
+      // Extract tenant from webhook data
+      // BUG FIX #15: Extract tenantId from query param or header instead of hardcoding
+      const tenantId = (req.query.tenantId as string) ||
+                       req.headers['x-tenant-id'] as string ||
+                       'default';
 
       // Store webhook in database
       const webhookQuery = `
@@ -129,11 +131,16 @@ export class WebhookController {
         RETURNING id, "transactionId"
       `;
 
+      // BUG FIX #8: Validate customer field (can be object or string)
+      const customerId = typeof payment.customer === 'string'
+        ? payment.customer
+        : payment.customer?.id || null;
+
       const chargeResult = await this.pool.query(chargeQuery, [
         tenantId,
         'asaas',
         payment.id,
-        payment.customer,
+        customerId,
         payment.billingType || 'UNDEFINED',
         payment.value,
         payment.dueDate,
@@ -262,17 +269,285 @@ export class WebhookController {
   pagbankWebhook = async (req: Request, res: Response) => {
     try {
       const payload = req.body;
+      const headers = req.headers;
+      const ipAddress = req.ip;
 
-      console.log('PagBank webhook received:', payload);
+      console.log('PagBank webhook received:', {
+        event: payload.event,
+        id: payload.id,
+        reference_id: payload.reference_id,
+        ip: ipAddress,
+      });
 
-      // TODO: Implement PagBank webhook processing
+      // Extract tenant from webhook data
+      // BUG FIX #15: Extract tenantId from query param or header instead of hardcoding
+      const tenantId = (req.query.tenantId as string) ||
+                       req.headers['x-tenant-id'] as string ||
+                       'default';
 
+      // Store webhook in database
+      const webhookQuery = `
+        INSERT INTO payment_webhooks (
+          "tenantId", gateway, event, "gatewayChargeId", "gatewayCustomerId",
+          status, payload, headers, "ipAddress", "retryCount", "createdAt", "updatedAt"
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 0, NOW(), NOW())
+        RETURNING id
+      `;
+
+      const webhookResult = await this.pool.query(webhookQuery, [
+        tenantId,
+        'pagbank',
+        payload.event || 'UNKNOWN',
+        payload.charges?.[0]?.id || payload.id || null,
+        payload.customer?.id || null,
+        'pending',
+        JSON.stringify(payload),
+        JSON.stringify(headers),
+        ipAddress,
+      ]);
+
+      const webhookId = webhookResult.rows[0].id;
+
+      // Process webhook asynchronously
+      this.processPagBankWebhook(webhookId, tenantId, payload).catch((error) => {
+        console.error('Error processing PagBank webhook:', error);
+      });
+
+      // Respond immediately to avoid timeout
       res.status(200).json({ received: true });
     } catch (error: any) {
       console.error('Error handling PagBank webhook:', error);
       res.status(500).json({ error: error.message });
     }
   };
+
+  /**
+   * Process PagBank webhook (async)
+   */
+  private async processPagBankWebhook(webhookId: string, tenantId: string, payload: any) {
+    try {
+      // Update webhook status
+      await this.pool.query(
+        `UPDATE payment_webhooks SET status = 'processing', "updatedAt" = NOW() WHERE id = $1`,
+        [webhookId]
+      );
+
+      const event = payload.event;
+      const charges = payload.charges || [];
+      const charge = charges[0]; // PagBank sends charges array
+
+      if (!charge || !charge.id) {
+        console.log('PagBank webhook has no charge data, marking as ignored');
+        await this.pool.query(
+          `UPDATE payment_webhooks SET status = 'ignored', "processedAt" = NOW(), "updatedAt" = NOW() WHERE id = $1`,
+          [webhookId]
+        );
+        return;
+      }
+
+      // Map PagBank status to our internal status
+      let internalStatus = 'PENDING';
+
+      // BUG FIX #4: Properly map PagBank statuses
+      switch (charge.status) {
+        case 'AUTHORIZED':
+          internalStatus = 'AUTHORIZED'; // Authorized but not captured
+          break;
+        case 'PAID':
+        case 'AVAILABLE':
+          internalStatus = 'PAID'; // Actually paid
+          break;
+        case 'CANCELED':
+        case 'DECLINED':
+          internalStatus = 'CANCELLED';
+          break;
+        case 'IN_ANALYSIS':
+          internalStatus = 'IN_ANALYSIS';
+          break;
+        case 'REFUNDED':
+          internalStatus = 'REFUNDED';
+          break;
+        default:
+          internalStatus = charge.status || 'PENDING';
+      }
+
+      // Update or create payment_charges record
+      const chargeQuery = `
+        INSERT INTO payment_charges (
+          "tenantId", gateway, "gatewayChargeId", "gatewayCustomerId",
+          "billingType", value, "dueDate", description, status,
+          "externalReference", "paymentDate", "confirmedDate",
+          "bankSlipUrl", "invoiceUrl", "pixQrCode", "pixCopyPaste",
+          "webhookReceived", "lastWebhookAt", "rawResponse",
+          "createdAt", "updatedAt", "syncedAt"
+        ) VALUES (
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+          true, NOW(), $17, NOW(), NOW(), NOW()
+        )
+        ON CONFLICT ("tenantId", gateway, "gatewayChargeId")
+        DO UPDATE SET
+          status = EXCLUDED.status,
+          "paymentDate" = COALESCE(EXCLUDED."paymentDate", payment_charges."paymentDate"),
+          "confirmedDate" = COALESCE(EXCLUDED."confirmedDate", payment_charges."confirmedDate"),
+          "webhookReceived" = true,
+          "lastWebhookAt" = NOW(),
+          "rawResponse" = EXCLUDED."rawResponse",
+          "updatedAt" = NOW(),
+          "syncedAt" = NOW()
+        RETURNING id, "transactionId"
+      `;
+
+      // Extract payment method type
+      const paymentMethod = charge.payment_method?.type || 'UNDEFINED';
+      const billingTypeMap: Record<string, string> = {
+        'CREDIT_CARD': 'CREDIT_CARD',
+        'DEBIT_CARD': 'DEBIT_CARD',
+        'BOLETO': 'BOLETO',
+        'PIX': 'PIX',
+      };
+      const billingType = billingTypeMap[paymentMethod] || 'UNDEFINED';
+
+      // Convert amount from cents to decimal
+      const amountValue = charge.amount?.value ? charge.amount.value / 100 : 0;
+
+      const chargeResult = await this.pool.query(chargeQuery, [
+        tenantId,
+        'pagbank',
+        charge.id,
+        payload.customer?.id || null,
+        billingType,
+        amountValue,
+        charge.created_at ? new Date(charge.created_at) : new Date(), // Use created_at as dueDate fallback
+        charge.description || payload.reference_id || null,
+        internalStatus,
+        payload.reference_id || null,
+        charge.paid_at || null,
+        charge.paid_at || null, // Use paid_at as confirmed date
+        null, // PagBank doesn't have bankSlipUrl in same format
+        null, // invoiceUrl
+        charge.links?.find((l: any) => l.media === 'image/png')?.href || null, // PIX QR Code
+        charge.links?.find((l: any) => l.rel === 'QRCODE')?.href || null, // PIX copy/paste
+        JSON.stringify(charge),
+      ]);
+
+      const chargeRecord = chargeResult.rows[0];
+
+      // Emit payment events based on status
+      try {
+        if (internalStatus === 'PENDING' || internalStatus === 'IN_ANALYSIS') {
+          await this.eventEmitter.emit({
+            eventType: 'payment.pending',
+            tenantId,
+            entityType: 'payment',
+            entityId: chargeRecord.id,
+            data: {
+              chargeId: chargeRecord.id,
+              gatewayChargeId: charge.id,
+              gateway: 'pagbank',
+              value: amountValue,
+              status: internalStatus
+            }
+          });
+        } else if (internalStatus === 'PAID' || internalStatus === 'AVAILABLE') {
+          await this.eventEmitter.emit({
+            eventType: 'payment.received',
+            tenantId,
+            entityType: 'payment',
+            entityId: chargeRecord.id,
+            data: {
+              chargeId: chargeRecord.id,
+              gatewayChargeId: charge.id,
+              gateway: 'pagbank',
+              value: amountValue,
+              paymentDate: charge.paid_at
+            }
+          });
+        } else if (internalStatus === 'AUTHORIZED') {
+          await this.eventEmitter.emit({
+            eventType: 'payment.authorized',
+            tenantId,
+            entityType: 'payment',
+            entityId: chargeRecord.id,
+            data: {
+              chargeId: chargeRecord.id,
+              gatewayChargeId: charge.id,
+              gateway: 'pagbank',
+              value: amountValue,
+              status: 'AUTHORIZED'
+            }
+          });
+        } else if (internalStatus === 'REFUNDED') {
+          await this.eventEmitter.emit({
+            eventType: 'payment.refunded',
+            tenantId,
+            entityType: 'payment',
+            entityId: chargeRecord.id,
+            data: {
+              chargeId: chargeRecord.id,
+              gatewayChargeId: charge.id,
+              gateway: 'pagbank',
+              value: amountValue
+            }
+          });
+        }
+      } catch (error) {
+        console.error('[WebhookController] Failed to emit PagBank payment event:', error);
+        // Don't fail webhook processing if event emission fails
+      }
+
+      // If payment was received, update linked financial transaction
+      if (chargeRecord.transactionId && (internalStatus === 'PAID' || internalStatus === 'AVAILABLE')) {
+        await this.pool.query(
+          `
+          UPDATE transactions
+          SET status = 'confirmada', "confirmedAt" = NOW(), "updatedAt" = NOW()
+          WHERE id = $1 AND status = 'pendente'
+        `,
+          [chargeRecord.transactionId]
+        );
+      }
+
+      // Mark webhook as processed
+      await this.pool.query(
+        `UPDATE payment_webhooks SET status = 'processed', "processedAt" = NOW(), "updatedAt" = NOW() WHERE id = $1`,
+        [webhookId]
+      );
+
+      console.log(`PagBank webhook ${webhookId} processed successfully for charge ${charge.id}`);
+    } catch (error: any) {
+      console.error('Error processing PagBank webhook:', error);
+
+      // Emit payment.failed event
+      try {
+        if (payload.charges?.[0]) {
+          await this.eventEmitter.emit({
+            eventType: 'payment.failed',
+            tenantId,
+            entityType: 'payment',
+            entityId: payload.charges[0].id,
+            data: {
+              gatewayChargeId: payload.charges[0].id,
+              gateway: 'pagbank',
+              reason: error.message,
+              payload: payload.charges[0]
+            }
+          });
+        }
+      } catch (emitError) {
+        console.error('[WebhookController] Failed to emit PagBank payment.failed event:', emitError);
+      }
+
+      // Mark webhook as failed
+      await this.pool.query(
+        `
+        UPDATE payment_webhooks
+        SET status = 'failed', "errorMessage" = $1, "retryCount" = "retryCount" + 1, "updatedAt" = NOW()
+        WHERE id = $2
+      `,
+        [error.message, webhookId]
+      );
+    }
+  }
 
   /**
    * Get webhook logs

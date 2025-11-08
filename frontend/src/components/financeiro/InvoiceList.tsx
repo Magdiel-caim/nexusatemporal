@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { financialService, Invoice } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
+import { formatDateBR } from '@/utils/dateUtils';
 
 interface InvoiceListProps {
   onEditInvoice?: (invoice: Invoice) => void;
@@ -93,7 +94,7 @@ export default function InvoiceList({ onEditInvoice, onCreateInvoice }: InvoiceL
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+    return formatDateBR(date);
   };
 
   const getTypeLabel = (type: string) => {

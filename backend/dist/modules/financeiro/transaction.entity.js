@@ -84,7 +84,8 @@ let Transaction = class Transaction {
     procedure;
     supplierId;
     supplier;
-    // Datas
+    // Datas - armazenadas como VARCHAR(10) no formato YYYY-MM-DD
+    // Sem conversão de timezone - PostgreSQL trata como texto puro
     dueDate;
     paymentDate;
     referenceDate;
@@ -191,16 +192,16 @@ __decorate([
     __metadata("design:type", supplier_entity_1.Supplier)
 ], Transaction.prototype, "supplier", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'date' }),
-    __metadata("design:type", Date)
+    (0, typeorm_1.Column)({ type: 'varchar', length: 10 }),
+    __metadata("design:type", String)
 ], Transaction.prototype, "dueDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'date', nullable: true }),
-    __metadata("design:type", Date)
+    (0, typeorm_1.Column)({ type: 'varchar', length: 10, nullable: true }),
+    __metadata("design:type", String)
 ], Transaction.prototype, "paymentDate", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ type: 'date' }),
-    __metadata("design:type", Date)
+    (0, typeorm_1.Column)({ type: 'varchar', length: 10 }),
+    __metadata("design:type", String)
 ], Transaction.prototype, "referenceDate", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'jsonb', nullable: true }),

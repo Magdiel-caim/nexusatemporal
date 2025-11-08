@@ -7,6 +7,7 @@ import {
   deleteVendedor,
   type Vendedor,
 } from '@/services/vendasService';
+import { userService, type User } from '@/services/userService';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -67,6 +68,12 @@ const VendedoresTab: React.FC = () => {
   const { data: vendedores = [], isLoading, isError } = useQuery({
     queryKey: ['vendedores'],
     queryFn: listVendedores,
+  });
+
+  // Query para listar usuários disponíveis
+  const { data: users = [] } = useQuery<User[]>({
+    queryKey: ['users'],
+    queryFn: userService.getUsers,
   });
 
   // Mutation para criar vendedor
@@ -238,7 +245,6 @@ const VendedoresTab: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Código</TableHead>
                   <TableHead>Vendedor</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Tipo Comissão</TableHead>
@@ -251,23 +257,29 @@ const VendedoresTab: React.FC = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       Carregando...
                     </TableCell>
                   </TableRow>
                 ) : filteredVendedores.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       Nenhum vendedor encontrado
                     </TableCell>
                   </TableRow>
                 ) : (
                   filteredVendedores.map((vendedor) => (
                     <TableRow key={vendedor.id}>
-                      <TableCell className="font-medium">
-                        {vendedor.codigoVendedor}
+                      <TableCell>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-gray-900 dark:text-gray-100">
+                            {vendedor.user?.name || '-'}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            {vendedor.codigoVendedor}
+                          </span>
+                        </div>
                       </TableCell>
-                      <TableCell>{vendedor.user?.name || '-'}</TableCell>
                       <TableCell>{vendedor.user?.email || '-'}</TableCell>
                       <TableCell>
                         <Badge variant="outline">
@@ -330,16 +342,30 @@ const VendedoresTab: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="userId">ID do Usuário *</Label>
-                <Input
-                  id="userId"
+                <Label htmlFor="userId">Usuário *</Label>
+                <Select
                   value={formData.userId}
-                  onChange={(e) =>
-                    setFormData({ ...formData, userId: e.target.value })
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, userId: value })
                   }
-                  required
-                  placeholder="UUID do usuário"
-                />
+                  disabled={!!editingVendedor}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione um usuário" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        {user.name} ({user.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {editingVendedor && (
+                  <p className="text-xs text-muted-foreground">
+                    Usuário não pode ser alterado após criação
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">

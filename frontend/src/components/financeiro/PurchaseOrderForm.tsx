@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, Plus, Trash2 } from 'lucide-react';
 import { financialService, Supplier } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
+import { getTodayString } from '@/utils/dateUtils';
 
 interface PurchaseOrderItem {
   description: string;
@@ -21,7 +22,7 @@ export default function PurchaseOrderForm({ orderId, onClose, onSuccess }: Purch
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [formData, setFormData] = useState({
     supplierId: '',
-    orderDate: new Date().toISOString().split('T')[0],
+    orderDate: getTodayString(),
     expectedDeliveryDate: '',
     priority: 'normal' as 'baixa' | 'normal' | 'alta' | 'urgente',
     notes: '',

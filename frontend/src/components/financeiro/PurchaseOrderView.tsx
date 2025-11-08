@@ -13,6 +13,7 @@ import {
 import { financialService, PurchaseOrder, Supplier } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
 import PurchaseOrderForm from './PurchaseOrderForm';
+import { formatDateBR } from '@/utils/dateUtils';
 
 export default function PurchaseOrderView() {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
@@ -98,7 +99,7 @@ export default function PurchaseOrderView() {
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('pt-BR');
+    return formatDateBR(date);
   };
 
   const getStatusBadge = (status: string) => {

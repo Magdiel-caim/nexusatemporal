@@ -85,7 +85,9 @@ const allMenuItems: MenuItem[] = [
     path: '/vendas',
     roles: ['superadmin', 'owner', 'admin'],
     submenu: [
-      { icon: ShoppingCart, label: 'Vendas', path: '/vendas/lista', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: BarChart2, label: 'Dashboard', path: '/vendas', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: Users2, label: 'Vendedores', path: '/vendas/vendedores', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: ShoppingCart, label: 'Vendas', path: '/vendas/vendas', roles: ['superadmin', 'owner', 'admin'] },
       { icon: DollarSign, label: 'Comissões', path: '/vendas/comissoes', roles: ['superadmin', 'owner', 'admin'] },
     ],
   },

@@ -30,10 +30,10 @@ export class TransactionController {
         leadId: req.query.leadId as string,
         appointmentId: req.query.appointmentId as string,
         supplierId: req.query.supplierId as string,
-        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
-        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined,
-        dueDateFrom: req.query.dueDateFrom ? new Date(req.query.dueDateFrom as string) : undefined,
-        dueDateTo: req.query.dueDateTo ? new Date(req.query.dueDateTo as string) : undefined,
+        dateFrom: req.query.dateFrom as string,
+        dateTo: req.query.dateTo as string,
+        dueDateFrom: req.query.dueDateFrom as string,
+        dueDateTo: req.query.dueDateTo as string,
         search: req.query.search as string,
         minAmount: req.query.minAmount ? parseFloat(req.query.minAmount as string) : undefined,
         maxAmount: req.query.maxAmount ? parseFloat(req.query.maxAmount as string) : undefined,
@@ -167,8 +167,18 @@ export class TransactionController {
   getTransactionStats = async (req: Request, res: Response) => {
     try {
       const { tenantId } = req.user as any;
-      const dateFrom = req.query.dateFrom ? new Date(req.query.dateFrom as string) : new Date();
-      const dateTo = req.query.dateTo ? new Date(req.query.dateTo as string) : new Date();
+
+      // Helper to get today as YYYY-MM-DD string
+      const getTodayString = () => {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+
+      const dateFrom = req.query.dateFrom as string || getTodayString();
+      const dateTo = req.query.dateTo as string || getTodayString();
 
       const stats = await this.transactionService.getTransactionStats(tenantId, dateFrom, dateTo);
       res.json(stats);
@@ -180,7 +190,7 @@ export class TransactionController {
   getAccountsReceivable = async (req: Request, res: Response) => {
     try {
       const { tenantId } = req.user as any;
-      const dateLimit = req.query.dateLimit ? new Date(req.query.dateLimit as string) : undefined;
+      const dateLimit = req.query.dateLimit as string | undefined;
       const accounts = await this.transactionService.getAccountsReceivable(tenantId, dateLimit);
       res.json(accounts);
     } catch (error: any) {
@@ -191,7 +201,7 @@ export class TransactionController {
   getAccountsPayable = async (req: Request, res: Response) => {
     try {
       const { tenantId } = req.user as any;
-      const dateLimit = req.query.dateLimit ? new Date(req.query.dateLimit as string) : undefined;
+      const dateLimit = req.query.dateLimit as string | undefined;
       const accounts = await this.transactionService.getAccountsPayable(tenantId, dateLimit);
       res.json(accounts);
     } catch (error: any) {

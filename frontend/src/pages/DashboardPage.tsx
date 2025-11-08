@@ -5,6 +5,7 @@ import { leadsService } from '@/services/leadsService';
 import appointmentService, { Appointment } from '@/services/appointmentService';
 import { financialService, Transaction } from '@/services/financialService';
 import stockService, { Product, StockAlert } from '@/services/stockService';
+import { safeNumber } from '@/utils/formatters';
 import {
   Users,
   DollarSign,
@@ -335,14 +336,14 @@ export default function DashboardPage() {
       const receivables = transactions.filter((t: Transaction) => t.type === 'receita' && t.status === 'pendente');
       console.log('[Dashboard] Contas a pagar:', payables.length, '| Contas a receber:', receivables.length);
 
-      // Calcular totais do mês
+      // Calcular totais do mês (com proteção contra NaN)
       const revenue = transactions
         .filter((t: Transaction) => t.type === 'receita' && t.status === 'confirmada')
-        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+        .reduce((sum: number, t: Transaction) => sum + safeNumber(t.amount), 0);
 
       const expenses = transactions
         .filter((t: Transaction) => t.type === 'despesa' && t.status === 'confirmada')
-        .reduce((sum: number, t: Transaction) => sum + Number(t.amount), 0);
+        .reduce((sum: number, t: Transaction) => sum + safeNumber(t.amount), 0);
       console.log('[Dashboard] Receitas:', revenue, '| Despesas:', expenses);
 
       setPendingPayables(payables.slice(0, 5)); // Top 5

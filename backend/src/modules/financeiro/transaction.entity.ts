@@ -131,15 +131,16 @@ export class Transaction {
   @JoinColumn({ name: 'supplierId' })
   supplier: Supplier;
 
-  // Datas
-  @Column({ type: 'date' })
-  dueDate: Date;
+  // Datas - armazenadas como VARCHAR(10) no formato YYYY-MM-DD
+  // Sem conversão de timezone - PostgreSQL trata como texto puro
+  @Column({ type: 'varchar', length: 10 })
+  dueDate: string;
 
-  @Column({ type: 'date', nullable: true })
-  paymentDate: Date;
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  paymentDate: string;
 
-  @Column({ type: 'date' })
-  referenceDate: Date;
+  @Column({ type: 'varchar', length: 10 })
+  referenceDate: string;
 
   // Comprovantes e anexos
   @Column({ type: 'jsonb', nullable: true })

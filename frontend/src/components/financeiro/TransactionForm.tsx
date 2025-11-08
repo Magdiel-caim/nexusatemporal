@@ -9,6 +9,7 @@ import {
   TransactionStatus,
 } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
+import { getTodayString } from '@/utils/dateUtils';
 
 interface TransactionFormProps {
   transaction?: Transaction;
@@ -70,9 +71,9 @@ export default function TransactionForm({ transaction, onClose, onSuccess }: Tra
     description: transaction?.description || '',
     paymentMethod: transaction?.paymentMethod || '' as PaymentMethod | '',
     status: transaction?.status || 'pendente' as TransactionStatus,
-    dueDate: transaction?.dueDate ? transaction.dueDate.split('T')[0] : '',
-    paymentDate: transaction?.paymentDate ? transaction.paymentDate.split('T')[0] : '',
-    referenceDate: transaction?.referenceDate ? transaction.referenceDate.split('T')[0] : new Date().toISOString().split('T')[0],
+    dueDate: transaction?.dueDate ? String(transaction.dueDate).split('T')[0] : '',
+    paymentDate: transaction?.paymentDate ? String(transaction.paymentDate).split('T')[0] : '',
+    referenceDate: transaction?.referenceDate ? String(transaction.referenceDate).split('T')[0] : getTodayString(),
     notes: transaction?.notes || '',
     leadId: transaction?.leadId || '',
     appointmentId: transaction?.appointmentId || '',

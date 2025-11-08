@@ -26,9 +26,9 @@ export class TransactionService {
     appointmentId?: string;
     procedureId?: string;
     supplierId?: string;
-    dueDate: Date;
-    paymentDate?: Date;
-    referenceDate: Date;
+    dueDate: string;
+    paymentDate?: string;
+    referenceDate: string;
     attachments?: any[];
     notes?: string;
     isInstallment?: boolean;
@@ -61,10 +61,10 @@ export class TransactionService {
       leadId?: string;
       appointmentId?: string;
       supplierId?: string;
-      dateFrom?: Date;
-      dateTo?: Date;
-      dueDateFrom?: Date;
-      dueDateTo?: Date;
+      dateFrom?: string;
+      dateTo?: string;
+      dueDateFrom?: string;
+      dueDateTo?: string;
       search?: string;
       minAmount?: number;
       maxAmount?: number;
@@ -165,7 +165,7 @@ export class TransactionService {
     id: string,
     tenantId: string,
     data: {
-      paymentDate: string | Date;
+      paymentDate: string;
       paymentMethod?: PaymentMethod;
       approvedById: string;
     }
@@ -180,16 +180,12 @@ export class TransactionService {
       throw new Error('Transação já confirmada');
     }
 
-    // Convert paymentDate to Date if it's a string
-    const paymentDate = typeof data.paymentDate === 'string'
-      ? new Date(data.paymentDate)
-      : data.paymentDate;
-
+    // Keep paymentDate as string - no timezone conversion
     await this.transactionRepository.update(
       { id, tenantId },
       {
         status: TransactionStatus.CONFIRMADA,
-        paymentDate,
+        paymentDate: data.paymentDate,
         paymentMethod: data.paymentMethod || transaction.paymentMethod,
         approvedById: data.approvedById,
         approvedAt: new Date(),
@@ -289,12 +285,12 @@ export class TransactionService {
     description: string;
     paymentMethod?: PaymentMethod;
     totalInstallments: number;
-    firstDueDate: Date;
+    firstDueDate: string;
     leadId?: string;
     appointmentId?: string;
     procedureId?: string;
     supplierId?: string;
-    referenceDate: Date;
+    referenceDate: string;
     tenantId: string;
     createdById: string;
   }) {
@@ -325,8 +321,15 @@ export class TransactionService {
     }
 
     for (let i = 1; i <= data.totalInstallments; i++) {
-      const dueDate = new Date(data.firstDueDate);
-      dueDate.setMonth(dueDate.getMonth() + (i - 1));
+      // Calculate dueDate as string (no timezone issues)
+      const [year, month, day] = data.firstDueDate.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      date.setMonth(date.getMonth() + (i - 1));
+
+      const newYear = date.getFullYear();
+      const newMonth = String(date.getMonth() + 1).padStart(2, '0');
+      const newDay = String(date.getDate()).padStart(2, '0');
+      const dueDate = `${newYear}-${newMonth}-${newDay}`;
 
       const transaction = await this.createTransaction({
         type: data.type,
@@ -360,8 +363,8 @@ export class TransactionService {
   // Analytics and Reports
   async getTransactionStats(
     tenantId: string,
-    dateFrom: Date,
-    dateTo: Date
+    dateFrom: string,
+    dateTo: string
   ) {
     const transactions = await this.getTransactionsByTenant(tenantId, {
       dateFrom,
@@ -407,9 +410,19 @@ export class TransactionService {
     };
   }
 
-  async getAccountsReceivable(tenantId: string, dateLimit?: Date) {
-    const limit = dateLimit || new Date();
-    limit.setDate(limit.getDate() + 30); // Próximos 30 dias por padrão
+  async getAccountsReceivable(tenantId: string, dateLimit?: string) {
+    let limit: string;
+    if (dateLimit) {
+      limit = dateLimit;
+    } else {
+      // Próximos 30 dias por padrão
+      const date = new Date();
+      date.setDate(date.getDate() + 30);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      limit = `${year}-${month}-${day}`;
+    }
 
     return this.getTransactionsByTenant(tenantId, {
       type: TransactionType.RECEITA,
@@ -418,9 +431,19 @@ export class TransactionService {
     });
   }
 
-  async getAccountsPayable(tenantId: string, dateLimit?: Date) {
-    const limit = dateLimit || new Date();
-    limit.setDate(limit.getDate() + 30); // Próximos 30 dias por padrão
+  async getAccountsPayable(tenantId: string, dateLimit?: string) {
+    let limit: string;
+    if (dateLimit) {
+      limit = dateLimit;
+    } else {
+      // Próximos 30 dias por padrão
+      const date = new Date();
+      date.setDate(date.getDate() + 30);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      limit = `${year}-${month}-${day}`;
+    }
 
     return this.getTransactionsByTenant(tenantId, {
       type: TransactionType.DESPESA,
@@ -430,8 +453,12 @@ export class TransactionService {
   }
 
   async getOverdueTransactions(tenantId: string) {
+    // Get today as YYYY-MM-DD string (no timezone issues)
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayString = `${year}-${month}-${day}`;
 
     const query = this.transactionRepository
       .createQueryBuilder('transaction')
@@ -439,7 +466,7 @@ export class TransactionService {
       .andWhere('transaction.status = :status', {
         status: TransactionStatus.PENDENTE,
       })
-      .andWhere('transaction.dueDate < :today', { today })
+      .andWhere('transaction.dueDate < :today', { today: todayString })
       .leftJoinAndSelect('transaction.lead', 'lead')
       .leftJoinAndSelect('transaction.supplier', 'supplier')
       .orderBy('transaction.dueDate', 'ASC');
@@ -448,8 +475,14 @@ export class TransactionService {
   }
 
   async getCashFlow(tenantId: string, month: number, year: number) {
-    const startDate = new Date(year, month - 1, 1);
-    const endDate = new Date(year, month, 0);
+    // Create start and end dates as strings (YYYY-MM-DD)
+    const startDay = '01';
+    const lastDay = new Date(year, month, 0).getDate(); // Last day of month
+    const monthStr = String(month).padStart(2, '0');
+    const lastDayStr = String(lastDay).padStart(2, '0');
+
+    const startDate = `${year}-${monthStr}-${startDay}`;
+    const endDate = `${year}-${monthStr}-${lastDayStr}`;
 
     const transactions = await this.getTransactionsByTenant(tenantId, {
       dateFrom: startDate,
@@ -463,7 +496,8 @@ export class TransactionService {
     > = {};
 
     for (const t of transactions) {
-      const dateKey = t.paymentDate!.toISOString().split('T')[0];
+      // paymentDate is already a string in YYYY-MM-DD format
+      const dateKey = t.paymentDate!.split('T')[0];
 
       if (!dailyFlow[dateKey]) {
         dailyFlow[dateKey] = { income: 0, expense: 0, balance: 0 };

@@ -5,6 +5,7 @@ import { leadsService } from '../services/leadsService';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 import AgendaCalendar from '../components/agenda/AgendaCalendar';
+import { toDateInputValue, createDateTimeInSaoPaulo, getTodayString, SYSTEM_TIMEZONE } from '@/utils/dateUtils';
 
 const AgendaPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -95,18 +96,20 @@ const AgendaPage: React.FC = () => {
       filtered = filtered.filter(apt => apt.procedureId === filters.procedureId);
     }
 
-    // Filtro por data inicial
+    // Filtro por data inicial - Comparação de strings YYYY-MM-DD
     if (filters.dateFrom) {
-      const fromDate = new Date(filters.dateFrom);
-      fromDate.setHours(0, 0, 0, 0);
-      filtered = filtered.filter(apt => new Date(apt.scheduledDate) >= fromDate);
+      filtered = filtered.filter(apt => {
+        const aptDateStr = new Date(apt.scheduledDate).toISOString().split('T')[0];
+        return aptDateStr >= filters.dateFrom;
+      });
     }
 
-    // Filtro por data final
+    // Filtro por data final - Comparação de strings YYYY-MM-DD
     if (filters.dateTo) {
-      const toDate = new Date(filters.dateTo);
-      toDate.setHours(23, 59, 59, 999);
-      filtered = filtered.filter(apt => new Date(apt.scheduledDate) <= toDate);
+      filtered = filtered.filter(apt => {
+        const aptDateStr = new Date(apt.scheduledDate).toISOString().split('T')[0];
+        return aptDateStr <= filters.dateTo;
+      });
     }
 
     setFilteredAppointments(filtered);
@@ -165,7 +168,8 @@ const AgendaPage: React.FC = () => {
     e.preventDefault();
 
     try {
-      const scheduledDate = new Date(`${formData.scheduledDate}T${formData.scheduledTime}:00`);
+      // USANDO TIMEZONE DE SÃO PAULO
+      const scheduledDate = createDateTimeInSaoPaulo(formData.scheduledDate, formData.scheduledTime);
 
       await appointmentService.create({
         leadId: formData.leadId,
@@ -207,8 +211,13 @@ const AgendaPage: React.FC = () => {
     setSelectedAppointment(appointment);
     const date = new Date(appointment.scheduledDate);
     setEditFormData({
-      scheduledDate: date.toISOString().split('T')[0],
-      scheduledTime: date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', hour12: false }),
+      scheduledDate: toDateInputValue(date),
+      scheduledTime: date.toLocaleTimeString('pt-BR', {
+        timeZone: SYSTEM_TIMEZONE,
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }),
       location: appointment.location,
       notes: appointment.notes || '',
     });
@@ -221,7 +230,8 @@ const AgendaPage: React.FC = () => {
     if (!selectedAppointment) return;
 
     try {
-      const scheduledDate = new Date(`${editFormData.scheduledDate}T${editFormData.scheduledTime}:00`);
+      // USANDO TIMEZONE DE SÃO PAULO
+      const scheduledDate = createDateTimeInSaoPaulo(editFormData.scheduledDate, editFormData.scheduledTime);
 
       const dto: UpdateAppointmentDto = {
         scheduledDate: scheduledDate.toISOString(),
@@ -581,12 +591,14 @@ const AgendaPage: React.FC = () => {
                         {viewMode === 'all' && (
                           <span className="font-medium mr-1">
                             {new Date(appointment.scheduledDate).toLocaleDateString('pt-BR', {
+                              timeZone: SYSTEM_TIMEZONE,
                               day: '2-digit',
                               month: '2-digit',
                             })}
                           </span>
                         )}
                         {new Date(appointment.scheduledDate).toLocaleTimeString('pt-BR', {
+                          timeZone: SYSTEM_TIMEZONE,
                           hour: '2-digit',
                           minute: '2-digit',
                         })}
@@ -775,7 +787,7 @@ const AgendaPage: React.FC = () => {
                     <input
                       type="date"
                       required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={getTodayString()}
                       value={formData.scheduledDate}
                       onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
                       className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
@@ -931,7 +943,7 @@ const AgendaPage: React.FC = () => {
                     <input
                       type="date"
                       required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={getTodayString()}
                       value={editFormData.scheduledDate}
                       onChange={(e) => setEditFormData({ ...editFormData, scheduledDate: e.target.value })}
                       className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"

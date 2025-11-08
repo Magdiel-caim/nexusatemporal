@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, AlertCircle } from 'lucide-react';
+import { isPastTime } from '@/utils/dateUtils';
 
 interface TimeSlot {
   time: string;
@@ -63,18 +64,6 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
     }
 
     setTimeSlots(slots);
-  };
-
-  const isPastTime = (date: string, time: string): boolean => {
-    if (!date) return false;
-
-    const [hours, minutes] = time.split(':').map(Number);
-    const slotDate = new Date(date);
-    slotDate.setHours(hours, minutes, 0, 0);
-
-    const now = new Date();
-
-    return slotDate < now;
   };
 
   const handleSlotClick = (slot: TimeSlot) => {

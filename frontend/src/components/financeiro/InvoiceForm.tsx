@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { X, FileText, Plus, Trash2, DollarSign } from 'lucide-react';
 import { financialService, Invoice, Transaction } from '../../services/financialService';
 import { toast } from 'react-hot-toast';
+import { getTodayString } from '@/utils/dateUtils';
 
 interface InvoiceFormProps {
   invoice?: Invoice;
@@ -25,8 +26,8 @@ export default function InvoiceForm({ invoice, onClose, onSuccess }: InvoiceForm
     transactionId: invoice?.transactionId || '',
     leadId: invoice?.leadId || '',
     description: invoice?.description || '',
-    issueDate: invoice?.issueDate?.split('T')[0] || new Date().toISOString().split('T')[0],
-    dueDate: invoice?.dueDate?.split('T')[0] || '',
+    issueDate: invoice?.issueDate ? String(invoice.issueDate).split('T')[0] : getTodayString(),
+    dueDate: invoice?.dueDate ? String(invoice.dueDate).split('T')[0] : '',
   });
   const [items, setItems] = useState<InvoiceItem[]>(
     invoice?.items || [{ description: '', quantity: 1, unitPrice: 0, totalPrice: 0 }]

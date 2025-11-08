@@ -6,7 +6,7 @@ class LeadController {
     leadService = new lead_service_1.LeadService();
     createLead = async (req, res) => {
         try {
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             console.log('Creating lead with data:', req.body);
             const lead = await this.leadService.createLead({
                 ...req.body,
@@ -61,7 +61,7 @@ class LeadController {
     updateLead = async (req, res) => {
         try {
             const { id } = req.params;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const lead = await this.leadService.updateLead(id, tenantId, req.body, userId);
             res.json(lead);
         }
@@ -84,7 +84,7 @@ class LeadController {
         try {
             const { id } = req.params;
             const { stageId } = req.body;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const lead = await this.leadService.moveLeadToStage(id, stageId, tenantId, userId);
             res.json(lead);
         }
@@ -95,7 +95,7 @@ class LeadController {
     bulkUpdateLeads = async (req, res) => {
         try {
             const { leadIds, data } = req.body;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const leads = await this.leadService.bulkUpdateLeads(leadIds, tenantId, data, userId);
             res.json(leads);
         }
@@ -107,7 +107,7 @@ class LeadController {
     createActivity = async (req, res) => {
         try {
             const { id: leadId } = req.params;
-            const { id: userId } = req.user;
+            const { userId } = req.user;
             const activity = await this.leadService.createActivity({
                 ...req.body,
                 leadId,

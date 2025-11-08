@@ -106,7 +106,7 @@ class PatientController {
      */
     create = async (req, res) => {
         try {
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const data = req.body;
             // Validar CPF duplicado
             if (data.cpf) {
@@ -283,7 +283,7 @@ class PatientController {
     createMedicalRecord = async (req, res) => {
         try {
             const { id: patientId } = req.params;
-            const { tenantId, id: userId } = req.user;
+            const { tenantId, userId } = req.user;
             const data = req.body;
             const record = await this.medicalRecordService.create({
                 ...data,

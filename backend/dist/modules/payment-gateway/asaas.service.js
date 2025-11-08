@@ -21,21 +21,71 @@ class AsaasService {
         }
         this.apiKey = config.apiKey;
         this.environment = config.environment;
+        // BUG FIX #1: Use official Asaas sandbox URL
         const baseURL = config.environment === 'production'
             ? 'https://api.asaas.com/v3'
-            : 'https://api-sandbox.asaas.com/v3';
+            : 'https://sandbox.asaas.com/api/v3'; // Official sandbox URL
         this.axiosInstance = axios_1.default.create({
             baseURL,
             headers: {
-                'Content-Type': 'application/json',
+                // BUG FIX #13: Add charset to Content-Type
+                'Content-Type': 'application/json; charset=utf-8',
+                // BUG FIX #14: Add User-Agent for better identification
+                'User-Agent': 'NexusAtemporal/1.0 (Asaas Payment Integration)',
+                'Accept': 'application/json',
                 access_token: this.apiKey,
             },
-            timeout: 30000,
+            // BUG FIX #10: Make timeout configurable via environment
+            timeout: parseInt(process.env.PAYMENT_API_TIMEOUT || '30000', 10),
         });
-        // Response interceptor for error handling
+        // BUG FIX #5: Improved error handling with specific HTTP codes
         this.axiosInstance.interceptors.response.use((response) => response, (error) => {
             if (error.response) {
-                throw new Error(`Asaas API Error: ${error.response.data?.errors?.[0]?.description || error.response.statusText}`);
+                const status = error.response.status;
+                const data = error.response.data;
+                // Extract detailed error message
+                const errorMessage = data?.errors?.[0]?.description ||
+                    data?.message ||
+                    error.response.statusText;
+                // Create structured error with HTTP status
+                const structuredError = new Error(`Asaas API Error (${status}): ${errorMessage}`);
+                structuredError.statusCode = status;
+                structuredError.originalError = data;
+                // Handle specific HTTP codes
+                switch (status) {
+                    case 400:
+                        structuredError.type = 'VALIDATION_ERROR';
+                        break;
+                    case 401:
+                        structuredError.type = 'AUTHENTICATION_ERROR';
+                        break;
+                    case 403:
+                        structuredError.type = 'AUTHORIZATION_ERROR';
+                        break;
+                    case 404:
+                        structuredError.type = 'NOT_FOUND';
+                        break;
+                    case 429:
+                        structuredError.type = 'RATE_LIMIT_EXCEEDED';
+                        structuredError.retryAfter = error.response.headers['retry-after'];
+                        break;
+                    case 500:
+                    case 502:
+                    case 503:
+                        structuredError.type = 'SERVER_ERROR';
+                        structuredError.retryable = true;
+                        break;
+                    default:
+                        structuredError.type = 'UNKNOWN_ERROR';
+                }
+                throw structuredError;
+            }
+            // Network or timeout error
+            if (error.code === 'ECONNABORTED') {
+                const timeoutError = new Error('Asaas API Timeout: Request took too long');
+                timeoutError.type = 'TIMEOUT';
+                timeoutError.retryable = true;
+                throw timeoutError;
             }
             throw error;
         });

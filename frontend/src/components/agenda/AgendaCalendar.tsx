@@ -7,6 +7,7 @@ import appointmentService, { Appointment } from '@/services/appointmentService';
 import { leadsService } from '@/services/leadsService';
 import { X, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { toDateInputValue, createDateTimeInSaoPaulo, getTodayString, SYSTEM_TIMEZONE } from '@/utils/dateUtils';
 
 interface AgendaCalendarProps {
   appointments: Appointment[];
@@ -67,8 +68,10 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
   };
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
-    const date = slotInfo.start.toISOString().split('T')[0];
+    // Converte para timezone de São Paulo
+    const date = toDateInputValue(slotInfo.start);
     const time = slotInfo.start.toLocaleTimeString('pt-BR', {
+      timeZone: SYSTEM_TIMEZONE,
       hour: '2-digit',
       minute: '2-digit',
       hour12: false,
@@ -102,8 +105,8 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
   const handleCreateAppointment = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validar horário disponível
-    const scheduledDateTime = new Date(`${formData.scheduledDate}T${formData.scheduledTime}:00`);
+    // Validar horário disponível - USANDO TIMEZONE DE SÃO PAULO
+    const scheduledDateTime = createDateTimeInSaoPaulo(formData.scheduledDate, formData.scheduledTime);
     const selectedProcedure = procedures.find(p => p.id === formData.procedureId);
     const duration = selectedProcedure?.duration || 60;
 
@@ -258,7 +261,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                       <input
                         type="date"
                         required
-                        min={new Date().toISOString().split('T')[0]}
+                        min={getTodayString()}
                         value={formData.scheduledDate}
                         onChange={(e) => setFormData({ ...formData, scheduledDate: e.target.value })}
                         className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg"

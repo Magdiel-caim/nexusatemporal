@@ -22,18 +22,31 @@ const VendasPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = location.pathname;
+    // Verificar paths exatos primeiro
+    if (path === '/vendas' || path === '/vendas/') return 'dashboard';
+    if (path === '/vendas/dashboard') return 'dashboard';
+    if (path === '/vendas/vendedores') return 'vendedores';
+    if (path === '/vendas/vendas') return 'vendas';
+    if (path === '/vendas/comissoes') return 'comissoes';
+    // Fallback para verificações com includes (para subrotas)
     if (path.includes('/vendedores')) return 'vendedores';
-    if (path.includes('/vendas')) return 'vendas';
     if (path.includes('/comissoes')) return 'comissoes';
+    // Se nada bater, dashboard é o padrão
     return 'dashboard';
   });
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes('/vendedores')) setActiveTab('vendedores');
-    else if (path.includes('/vendas')) setActiveTab('vendas');
-    else if (path.includes('/comissoes')) setActiveTab('comissoes');
-    else if (path === '/vendas' || path === '/vendas/dashboard') setActiveTab('dashboard');
+    // Verificar paths exatos primeiro
+    if (path === '/vendas' || path === '/vendas/' || path === '/vendas/dashboard') {
+      setActiveTab('dashboard');
+    } else if (path === '/vendas/vendedores' || path.includes('/vendedores')) {
+      setActiveTab('vendedores');
+    } else if (path === '/vendas/vendas') {
+      setActiveTab('vendas');
+    } else if (path === '/vendas/comissoes' || path.includes('/comissoes')) {
+      setActiveTab('comissoes');
+    }
   }, [location]);
 
   return (
