@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
+import { Calendar, dateFnsLocalizer, Event } from 'react-big-calendar';
+import withDragAndDrop, { EventInteractionArgs } from 'react-big-calendar/lib/addons/dragAndDrop';
 import { format, parse, startOfWeek, getDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 import { Appointment } from '@/services/appointmentService';
 import './CalendarView.css';
 
@@ -18,7 +20,10 @@ const localizer = dateFnsLocalizer({
   locales,
 });
 
-interface CalendarEvent {
+// Create DragAndDropCalendar component
+const DragAndDropCalendar = withDragAndDrop<CalendarEvent, any>(Calendar);
+
+interface CalendarEvent extends Event {
   id: string;
   title: string;
   start: Date;
@@ -32,6 +37,8 @@ interface CalendarViewProps {
   onSelectSlot: (slotInfo: { start: Date; end: Date }) => void;
   onSelectEvent: (event: CalendarEvent) => void;
   onNavigate: (date: Date) => void;
+  onEventDrop?: (data: EventInteractionArgs<CalendarEvent>) => void;
+  draggableAccessor?: (event: CalendarEvent) => boolean;
 }
 
 const CalendarView: React.FC<CalendarViewProps> = ({
@@ -39,6 +46,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   onSelectSlot,
   onSelectEvent,
   onNavigate,
+  onEventDrop,
+  draggableAccessor,
 }) => {
   const events: CalendarEvent[] = useMemo(() => {
     return appointments.map((apt) => {
@@ -101,26 +110,29 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
   return (
     <div className="calendar-container">
-      <Calendar
+      <DragAndDropCalendar
         localizer={localizer}
         events={events}
-        startAccessor="start"
-        endAccessor="end"
+        startAccessor={(event: CalendarEvent) => event.start}
+        endAccessor={(event: CalendarEvent) => event.end}
         style={{ height: '100%', minHeight: 600 }}
         culture="pt-BR"
         messages={messages}
         onSelectSlot={onSelectSlot}
-        onSelectEvent={onSelectEvent}
+        onSelectEvent={(event: CalendarEvent) => onSelectEvent(event)}
         onNavigate={onNavigate}
+        onEventDrop={onEventDrop}
+        draggableAccessor={draggableAccessor}
+        resizable={false}
         selectable
         eventPropGetter={eventStyleGetter}
         views={['month', 'week', 'day', 'agenda']}
         defaultView="week"
-        step={5} // Incremento de 5 minutos
-        timeslots={12} // 12 slots de 5 min = 1 hora
-        min={new Date(2025, 0, 1, 7, 0, 0)} // 7h
-        max={new Date(2025, 0, 1, 20, 0, 0)} // 20h
-        scrollToTime={new Date(2025, 0, 1, 8, 0, 0)} // Scroll para 8h
+        step={5}
+        timeslots={12}
+        min={new Date(2025, 0, 1, 7, 0, 0)}
+        max={new Date(2025, 0, 1, 20, 0, 0)}
+        scrollToTime={new Date(2025, 0, 1, 8, 0, 0)}
       />
     </div>
   );

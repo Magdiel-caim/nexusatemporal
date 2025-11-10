@@ -13,15 +13,21 @@ const morgan_1 = __importDefault(require("morgan"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
-const data_source_1 = require("./database/data-source");
-const patient_datasource_1 = require("./modules/pacientes/database/patient.datasource");
-const error_handler_1 = require("./shared/middleware/error-handler");
-const logger_1 = require("./shared/utils/logger");
-const routes_1 = __importDefault(require("./routes"));
-const websocket_service_1 = require("./modules/chat/websocket.service");
+const data_source_1 = require("@/database/data-source");
+const patient_datasource_1 = require("@/modules/pacientes/database/patient.datasource");
+const error_handler_1 = require("@/shared/middleware/error-handler");
+const logger_1 = require("@/shared/utils/logger");
+const routes_1 = __importDefault(require("@/routes"));
+const websocket_service_1 = require("@/modules/chat/websocket.service");
+const sentry_service_1 = __importDefault(require("@/services/sentry.service"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 exports.app = app;
+// ============================================
+// SENTRY - Error Tracking & Performance Monitoring
+// Deve ser inicializado ANTES de qualquer middleware
+// ============================================
+sentry_service_1.default.init(app);
 const httpServer = (0, http_1.createServer)(app);
 const io = new socket_io_1.Server(httpServer, {
     cors: {
@@ -32,6 +38,9 @@ const io = new socket_io_1.Server(httpServer, {
 exports.io = io;
 // Trust proxy - necessário quando atrás do Traefik
 app.set('trust proxy', true);
+// Sentry Request Handler - DEVE ser o primeiro middleware
+app.use(sentry_service_1.default.requestHandler());
+app.use(sentry_service_1.default.tracingHandler());
 // Middleware
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
@@ -58,9 +67,12 @@ app.get('/health', (req, res) => {
     res.json({
         status: 'ok',
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        sentry: sentry_service_1.default.isInitialized() ? 'enabled' : 'disabled'
     });
 });
+// Sentry Error Handler - DEVE vir ANTES do error handler da aplicação
+app.use(sentry_service_1.default.errorHandler());
 // Error handler (must be last)
 app.use(error_handler_1.errorHandler);
 // Initialize WebSocket service for Chat module
@@ -70,12 +82,18 @@ app.use(error_handler_1.errorHandler);
 // Remove quando webhooks WAHA funcionarem
 // Para desativar: ENABLE_WHATSAPP_POLLING=false
 // ============================================
-const WhatsAppSyncService_1 = __importDefault(require("./services/WhatsAppSyncService"));
+const WhatsAppSyncService_1 = __importDefault(require("@/services/WhatsAppSyncService"));
 let whatsappSyncService = null;
 // ============================================
 // BULK MESSAGE WORKER - BullMQ
 // ============================================
-require("./modules/marketing/workers/bulk-message.worker");
+require("@/modules/marketing/workers/bulk-message.worker");
+// ============================================
+// STOCK ALERT CRON JOB
+// Verifica estoque baixo/vencido diariamente às 08:00
+// ============================================
+const stock_alert_cron_service_1 = require("@/services/stock-alert-cron.service");
+let stockAlertCronService = null;
 const PORT = process.env.API_PORT || 3001;
 // Initialize databases and start server
 Promise.all([
@@ -101,6 +119,12 @@ Promise.all([
     // ============================================
     whatsappSyncService = new WhatsAppSyncService_1.default(io);
     whatsappSyncService.start();
+    // ============================================
+    // Inicializar Stock Alert Cron Service
+    // ============================================
+    stockAlertCronService = (0, stock_alert_cron_service_1.getStockAlertCronService)();
+    stockAlertCronService.start();
+    logger_1.logger.info('📅 Stock Alert Cron Service started (scheduled for 08:00 daily)');
     httpServer.listen(PORT, () => {
         logger_1.logger.info(`🚀 Server running on port ${PORT}`);
         logger_1.logger.info(`📡 Environment: ${process.env.NODE_ENV}`);
@@ -119,19 +143,29 @@ process.on('SIGTERM', () => {
     if (whatsappSyncService) {
         whatsappSyncService.stop();
     }
+    // Parar cron de alertas de estoque
+    if (stockAlertCronService) {
+        stockAlertCronService.stop();
+        logger_1.logger.info('Stock Alert Cron Service stopped');
+    }
     httpServer.close(() => {
         logger_1.logger.info('HTTP server closed');
-        const closeTasks = [
-            data_source_1.AppDataSource.destroy(),
-            data_source_1.CrmDataSource.destroy()
-        ];
-        // Only close PatientDataSource if it was initialized
-        if (patient_datasource_1.PatientDataSource.isInitialized) {
-            closeTasks.push(patient_datasource_1.PatientDataSource.destroy());
-        }
-        Promise.all(closeTasks).then(() => {
-            logger_1.logger.info('All database connections closed');
-            process.exit(0);
+        // Flush Sentry events antes de fechar
+        sentry_service_1.default.flush(2000).then(() => {
+            logger_1.logger.info('Sentry events flushed');
+            const closeTasks = [
+                data_source_1.AppDataSource.destroy(),
+                data_source_1.CrmDataSource.destroy(),
+                sentry_service_1.default.close(2000)
+            ];
+            // Only close PatientDataSource if it was initialized
+            if (patient_datasource_1.PatientDataSource.isInitialized) {
+                closeTasks.push(patient_datasource_1.PatientDataSource.destroy());
+            }
+            Promise.all(closeTasks).then(() => {
+                logger_1.logger.info('All database connections closed');
+                process.exit(0);
+            });
         });
     });
 });

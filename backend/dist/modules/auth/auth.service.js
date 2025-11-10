@@ -39,10 +39,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const jwt = __importStar(require("jsonwebtoken"));
 const uuid_1 = require("uuid");
-const data_source_1 = require("../../database/data-source");
+const data_source_1 = require("@/database/data-source");
 const user_entity_1 = require("./user.entity");
-const error_handler_1 = require("../../shared/middleware/error-handler");
-const email_1 = require("../../shared/utils/email");
+const error_handler_1 = require("@/shared/middleware/error-handler");
+const email_1 = require("@/shared/utils/email");
 const crypto_1 = __importDefault(require("crypto"));
 class AuthService {
     userRepository = data_source_1.CrmDataSource.getRepository(user_entity_1.User);

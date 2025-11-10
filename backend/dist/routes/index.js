@@ -4,25 +4,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_routes_1 = __importDefault(require("../modules/auth/auth.routes"));
-const data_routes_1 = __importDefault(require("../modules/config/data.routes"));
-const leads_routes_1 = __importDefault(require("../modules/leads/leads.routes"));
-const public_leads_routes_1 = __importDefault(require("../modules/leads/public-leads.routes")); // Public API for external integrations (N8N, etc)
-const chat_routes_1 = __importDefault(require("../modules/chat/chat.routes"));
-const appointment_routes_1 = __importDefault(require("../modules/agenda/appointment.routes"));
-const public_appointment_routes_1 = __importDefault(require("../modules/agenda/public-appointment.routes"));
-const medical_record_routes_1 = __importDefault(require("../modules/medical-records/medical-record.routes"));
-const financeiro_routes_1 = __importDefault(require("../modules/financeiro/financeiro.routes"));
-const payment_gateway_routes_1 = __importDefault(require("../modules/payment-gateway/payment-gateway.routes"));
-const users_routes_1 = __importDefault(require("../modules/users/users.routes"));
-const automation_routes_1 = __importDefault(require("../modules/marketing/automation/automation.routes")); // Moved to Marketing module
-const estoque_routes_1 = __importDefault(require("../modules/estoque/estoque.routes"));
-const vendas_routes_1 = __importDefault(require("../modules/vendas/vendas.routes"));
-const bi_routes_1 = __importDefault(require("../modules/bi/bi.routes")); // BI Module - Business Intelligence
-const marketing_routes_1 = __importDefault(require("../modules/marketing/marketing.routes")); // Marketing Module - Campaigns, Social Posts, Bulk Messages, Landing Pages, AI Assistant
-const meta_routes_1 = __importDefault(require("../modules/meta/meta.routes")); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
-const patient_routes_1 = __importDefault(require("../modules/pacientes/routes/patient.routes")); // Patient Management - Complete medical records, images, appointments
-const api_key_routes_1 = __importDefault(require("../modules/integrations/routes/api-key.routes")); // API Keys management for N8N and external integrations
+const auth_routes_1 = __importDefault(require("@/modules/auth/auth.routes"));
+const data_routes_1 = __importDefault(require("@/modules/config/data.routes"));
+const leads_routes_1 = __importDefault(require("@/modules/leads/leads.routes"));
+const public_leads_routes_1 = __importDefault(require("@/modules/leads/public-leads.routes")); // Public API for external integrations (N8N, etc)
+const chat_routes_1 = __importDefault(require("@/modules/chat/chat.routes"));
+const appointment_routes_1 = __importDefault(require("@/modules/agenda/appointment.routes"));
+const public_appointment_routes_1 = __importDefault(require("@/modules/agenda/public-appointment.routes"));
+const google_calendar_routes_1 = __importDefault(require("@/modules/agenda/google-calendar.routes"));
+const medical_record_routes_1 = __importDefault(require("@/modules/medical-records/medical-record.routes"));
+const financeiro_routes_1 = __importDefault(require("@/modules/financeiro/financeiro.routes"));
+const payment_gateway_routes_1 = __importDefault(require("@/modules/payment-gateway/payment-gateway.routes"));
+const users_routes_1 = __importDefault(require("@/modules/users/users.routes"));
+const automation_routes_1 = __importDefault(require("@/modules/marketing/automation/automation.routes")); // Moved to Marketing module
+const estoque_routes_1 = __importDefault(require("@/modules/estoque/estoque.routes"));
+const vendas_routes_1 = __importDefault(require("@/modules/vendas/vendas.routes"));
+const bi_routes_1 = __importDefault(require("@/modules/bi/bi.routes")); // BI Module - Business Intelligence
+const marketing_routes_1 = __importDefault(require("@/modules/marketing/marketing.routes")); // Marketing Module - Campaigns, Social Posts, Bulk Messages, Landing Pages, AI Assistant
+const meta_routes_1 = __importDefault(require("@/modules/meta/meta.routes")); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
+const patient_routes_1 = __importDefault(require("@/modules/pacientes/routes/patient.routes")); // Patient Management - Complete medical records, images, appointments
+const api_key_routes_1 = __importDefault(require("@/modules/integrations/routes/api-key.routes")); // API Keys management for N8N and external integrations
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import configRoutes from '@/modules/config/config.routes';
@@ -43,6 +44,7 @@ router.use('/public/leads', public_leads_routes_1.default); // Public API for ex
 router.use('/chat', chat_routes_1.default);
 router.use('/appointments', appointment_routes_1.default);
 router.use('/public/appointments', public_appointment_routes_1.default); // Public API for external integrations
+router.use('/agenda/google-calendar', google_calendar_routes_1.default); // Google Calendar Integration
 router.use('/medical-records', medical_record_routes_1.default);
 router.use('/financial', financeiro_routes_1.default);
 router.use('/payment-gateway', payment_gateway_routes_1.default); // Payment gateway integration (Asaas, PagBank)

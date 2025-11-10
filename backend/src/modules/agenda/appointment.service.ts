@@ -20,6 +20,7 @@ import { getAutomationDbPool } from '@/modules/marketing/automation/database';
 export interface CreateAppointmentDto {
   leadId: string;
   procedureId: string;
+  procedureIds?: string[]; // Múltiplos procedimentos (opcional)
   professionalId?: string;
   scheduledDate: Date;
   estimatedDuration?: number;
@@ -90,6 +91,7 @@ export class AppointmentService {
     const appointment = this.appointmentRepo.create({
       leadId: data.leadId,
       procedureId: data.procedureId,
+      procedureIds: data.procedureIds, // Múltiplos procedimentos
       professionalId: data.professionalId,
       scheduledDate: data.scheduledDate,
       estimatedDuration: data.estimatedDuration,

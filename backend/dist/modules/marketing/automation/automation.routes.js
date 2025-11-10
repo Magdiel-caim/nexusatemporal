@@ -6,7 +6,7 @@ const workflow_controller_1 = require("./workflow.controller");
 const event_controller_1 = require("./event.controller");
 const integration_controller_1 = require("./integration.controller");
 const database_1 = require("./database");
-const auth_middleware_1 = require("../../../shared/middleware/auth.middleware");
+const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
 const router = (0, express_1.Router)();
 // All automation routes require authentication
 router.use(auth_middleware_1.authenticate);

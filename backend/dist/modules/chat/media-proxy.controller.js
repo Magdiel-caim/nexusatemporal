@@ -34,9 +34,9 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MediaProxyController = void 0;
-const data_source_1 = require("../../database/data-source");
-const s3_client_1 = require("../../integrations/idrive/s3-client");
-const logger_1 = require("../../shared/utils/logger");
+const data_source_1 = require("@/database/data-source");
+const s3_client_1 = require("@/integrations/idrive/s3-client");
+const logger_1 = require("@/shared/utils/logger");
 /**
  * Controller para gerar URLs assinadas de mídias do chat
  */
@@ -141,7 +141,7 @@ class MediaProxyController {
             }
             // Se for URL HTTP, fazer download do S3 e fazer stream
             if (mediaUrl.startsWith('http')) {
-                const { downloadFile } = await Promise.resolve().then(() => __importStar(require('../../integrations/idrive/s3-client')));
+                const { downloadFile } = await Promise.resolve().then(() => __importStar(require('@/integrations/idrive/s3-client')));
                 try {
                     const url = new URL(mediaUrl);
                     const pathParts = url.pathname.split('/');

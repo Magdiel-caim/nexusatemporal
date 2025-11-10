@@ -69,6 +69,10 @@ export class Appointment {
   @JoinColumn({ name: 'procedureId' })
   procedure: Procedure;
 
+  // Múltiplos procedimentos (opcional - para procedimentos combinados)
+  @Column({ type: 'json', nullable: true })
+  procedureIds: string[];
+
   // Relacionamento com Profissional (médico/biomédico)
   @Column({ type: 'varchar', nullable: true })
   professionalId: string;

@@ -6,6 +6,7 @@ import publicLeadsRoutes from '@/modules/leads/public-leads.routes'; // Public A
 import chatRoutes from '@/modules/chat/chat.routes';
 import appointmentRoutes from '@/modules/agenda/appointment.routes';
 import publicAppointmentRoutes from '@/modules/agenda/public-appointment.routes';
+import googleCalendarRoutes from '@/modules/agenda/google-calendar.routes';
 import medicalRecordRoutes from '@/modules/medical-records/medical-record.routes';
 import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
 import paymentGatewayRoutes from '@/modules/payment-gateway/payment-gateway.routes';
@@ -41,6 +42,7 @@ router.use('/public/leads', publicLeadsRoutes); // Public API for external integ
 router.use('/chat', chatRoutes);
 router.use('/appointments', appointmentRoutes);
 router.use('/public/appointments', publicAppointmentRoutes); // Public API for external integrations
+router.use('/agenda/google-calendar', googleCalendarRoutes); // Google Calendar Integration
 router.use('/medical-records', medicalRecordRoutes);
 router.use('/financial', financeiroRoutes);
 router.use('/payment-gateway', paymentGatewayRoutes); // Payment gateway integration (Asaas, PagBank)

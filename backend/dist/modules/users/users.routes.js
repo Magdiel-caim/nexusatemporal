@@ -6,10 +6,10 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const data_source_1 = require("../../database/data-source");
+const data_source_1 = require("@/database/data-source");
 const users_controller_1 = require("./users.controller");
-const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
-const authorize_middleware_1 = require("../../shared/middlewares/authorize.middleware");
+const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
+const authorize_middleware_1 = require("@/shared/middlewares/authorize.middleware");
 const permission_types_1 = require("../permissions/permission.types");
 const router = (0, express_1.Router)();
 // Get database connection pool from CrmDataSource

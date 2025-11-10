@@ -7,8 +7,8 @@ const appointment_entity_1 = require("./appointment.entity");
 const appointment_return_entity_1 = require("./appointment-return.entity");
 const appointment_notification_entity_1 = require("./appointment-notification.entity");
 const lead_entity_1 = require("../leads/lead.entity");
-const EventEmitterService_1 = require("../../services/EventEmitterService");
-const database_1 = require("../../modules/marketing/automation/database");
+const EventEmitterService_1 = require("@/services/EventEmitterService");
+const database_1 = require("@/modules/marketing/automation/database");
 class AppointmentService {
     appointmentRepo;
     returnRepo;
@@ -34,6 +34,7 @@ class AppointmentService {
         const appointment = this.appointmentRepo.create({
             leadId: data.leadId,
             procedureId: data.procedureId,
+            procedureIds: data.procedureIds, // Múltiplos procedimentos
             professionalId: data.professionalId,
             scheduledDate: data.scheduledDate,
             estimatedDuration: data.estimatedDuration,

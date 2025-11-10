@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.IntegrationService = void 0;
-const WahaService_1 = require("../../../services/WahaService");
-const OpenAIService_1 = require("../../../services/OpenAIService");
-const N8nService_1 = require("../../../services/N8nService");
+const WahaService_1 = require("@/services/WahaService");
+const OpenAIService_1 = require("@/services/OpenAIService");
+const N8nService_1 = require("@/services/N8nService");
 class IntegrationService {
     db;
     constructor(db) {

@@ -7,8 +7,8 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
-const data_source_1 = require("../../database/data-source");
+const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
+const data_source_1 = require("@/database/data-source");
 const meta_oauth_controller_1 = require("./meta-oauth.controller");
 const meta_webhook_controller_1 = require("./meta-webhook.controller");
 const meta_messaging_controller_1 = require("./meta-messaging.controller");

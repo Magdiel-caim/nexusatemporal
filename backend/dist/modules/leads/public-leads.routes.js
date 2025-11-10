@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const lead_controller_1 = require("./lead.controller");
-const api_key_auth_middleware_1 = require("../../middleware/api-key-auth.middleware");
+const api_key_auth_middleware_1 = require("@/middleware/api-key-auth.middleware");
 const router = (0, express_1.Router)();
 const leadController = new lead_controller_1.LeadController();
 /**

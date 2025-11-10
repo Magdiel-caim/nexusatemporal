@@ -407,6 +407,53 @@ router.get('/alerts/count', authenticate, async (req, res) => {
   }
 });
 
+// CRON JOB MANAGEMENT ROUTES
+import { getStockAlertCronService } from '@/services/stock-alert-cron.service';
+
+// Verificar status do cron job (admin apenas)
+router.get('/alerts/cron/status', authenticate, async (req, res) => {
+  try {
+    // Verificar se é admin/owner
+    const userRole = req.user?.role;
+    if (userRole !== 'owner' && userRole !== 'admin') {
+      return res.status(403).json({ error: 'Apenas administradores podem acessar esta funcionalidade' });
+    }
+
+    const cronService = getStockAlertCronService();
+    const status = cronService.getStatus();
+    res.json(status);
+  } catch (error: any) {
+    console.error('Error getting cron status:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Executar verificação manual de alertas (admin apenas)
+router.post('/alerts/cron/run', authenticate, async (req, res) => {
+  try {
+    // Verificar se é admin/owner
+    const userRole = req.user?.role;
+    if (userRole !== 'owner' && userRole !== 'admin') {
+      return res.status(403).json({ error: 'Apenas administradores podem executar esta ação' });
+    }
+
+    const cronService = getStockAlertCronService();
+
+    // Executar de forma assíncrona para não travar a resposta
+    cronService.executeManually().catch(error => {
+      console.error('Error during manual stock alert check:', error);
+    });
+
+    res.json({
+      success: true,
+      message: 'Verificação de estoque iniciada. Os alertas serão processados em segundo plano.',
+    });
+  } catch (error: any) {
+    console.error('Error triggering manual stock alert check:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ============================================
 // REPORTS ROUTES
 // ============================================

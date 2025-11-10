@@ -1,0 +1,275 @@
+{
+  "exportedAt": "2025-11-10T14:30:45.123Z",
+  "environment": "sandbox",
+  "totalLogs": 3,
+  "logs": [
+    {
+      "timestamp": "2025-11-10T14:28:12.456Z",
+      "requestId": "pagbank_1699614492456_x7y8z9",
+      "environment": "sandbox",
+      "type": "REQUEST",
+      "method": "POST",
+      "url": "/orders",
+      "fullUrl": "https://sandbox.api.pagseguro.com/orders",
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "User-Agent": "NexusAtemporal/1.0 (PagBank Payment Integration)",
+        "Accept": "application/json",
+        "Authorization": "Bearer ***MASKED***",
+        "X-Request-ID": "pagbank_1699614492456_x7y8z9"
+      },
+      "body": {
+        "reference_id": "ORDER-2025-11-10-001",
+        "customer": {
+          "name": "João da Silva",
+          "email": "joao.silva@example.com",
+          "tax_id": "***********"
+        },
+        "items": [
+          {
+            "name": "Consulta Médica",
+            "quantity": 1,
+            "unit_amount": 15000
+          }
+        ],
+        "charges": [
+          {
+            "description": "Pagamento de consulta",
+            "amount": {
+              "value": 15000,
+              "currency": "BRL"
+            },
+            "payment_method": {
+              "type": "PIX"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-11-10T14:28:13.123Z",
+      "requestId": "pagbank_1699614492456_x7y8z9",
+      "environment": "sandbox",
+      "type": "ERROR",
+      "request": {
+        "method": "POST",
+        "url": "https://sandbox.api.pagseguro.com/orders",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "User-Agent": "NexusAtemporal/1.0 (PagBank Payment Integration)",
+          "Accept": "application/json",
+          "Authorization": "Bearer ***MASKED***",
+          "X-Request-ID": "pagbank_1699614492456_x7y8z9"
+        },
+        "body": {
+          "reference_id": "ORDER-2025-11-10-001",
+          "customer": {
+            "name": "João da Silva",
+            "email": "joao.silva@example.com",
+            "tax_id": "***********"
+          },
+          "items": [
+            {
+              "name": "Consulta Médica",
+              "quantity": 1,
+              "unit_amount": 15000
+            }
+          ],
+          "charges": [
+            {
+              "description": "Pagamento de consulta",
+              "amount": {
+                "value": 15000,
+                "currency": "BRL"
+              },
+              "payment_method": {
+                "type": "PIX"
+              }
+            }
+          ]
+        }
+      },
+      "error": {
+        "message": "getaddrinfo ENOTFOUND sandbox.api.pagseguro.com",
+        "code": "ENOTFOUND",
+        "responseTime": "667ms",
+        "statusCode": null,
+        "statusText": null,
+        "headers": null,
+        "body": null
+      }
+    },
+    {
+      "timestamp": "2025-11-10T14:29:45.789Z",
+      "requestId": "pagbank_1699614585789_a1b2c3",
+      "environment": "sandbox",
+      "type": "REQUEST",
+      "method": "GET",
+      "url": "/customers",
+      "fullUrl": "https://sandbox.api.pagseguro.com/customers?limit=10",
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "User-Agent": "NexusAtemporal/1.0 (PagBank Payment Integration)",
+        "Accept": "application/json",
+        "Authorization": "Bearer ***MASKED***",
+        "X-Request-ID": "pagbank_1699614585789_a1b2c3"
+      },
+      "body": null
+    },
+    {
+      "timestamp": "2025-11-10T14:29:46.234Z",
+      "requestId": "pagbank_1699614585789_a1b2c3",
+      "environment": "sandbox",
+      "type": "RESPONSE",
+      "request": {
+        "method": "GET",
+        "url": "https://sandbox.api.pagseguro.com/customers?limit=10"
+      },
+      "response": {
+        "status": 200,
+        "statusText": "OK",
+        "headers": {
+          "content-type": "application/json; charset=utf-8",
+          "date": "Sun, 10 Nov 2025 14:29:46 GMT",
+          "server": "nginx",
+          "x-ratelimit-limit": "1000",
+          "x-ratelimit-remaining": "999",
+          "x-request-id": "req_abc123def456"
+        },
+        "body": {
+          "customers": [
+            {
+              "id": "CUST_123456789",
+              "name": "Maria Santos",
+              "email": "maria.santos@example.com",
+              "tax_id": "***********",
+              "created_at": "2025-11-01T10:30:00.000-03:00"
+            }
+          ],
+          "total": 1
+        },
+        "responseTime": "445ms"
+      }
+    },
+    {
+      "timestamp": "2025-11-10T14:30:30.555Z",
+      "requestId": "pagbank_1699614630555_d4e5f6",
+      "environment": "sandbox",
+      "type": "REQUEST",
+      "method": "POST",
+      "url": "/orders",
+      "fullUrl": "https://sandbox.api.pagseguro.com/orders",
+      "headers": {
+        "Content-Type": "application/json; charset=utf-8",
+        "User-Agent": "NexusAtemporal/1.0 (PagBank Payment Integration)",
+        "Accept": "application/json",
+        "Authorization": "Bearer ***MASKED***",
+        "X-Request-ID": "pagbank_1699614630555_d4e5f6"
+      },
+      "body": {
+        "reference_id": "ORDER-2025-11-10-002",
+        "customer": {
+          "name": "Pedro Oliveira",
+          "email": "pedro@example.com",
+          "tax_id": "***********"
+        },
+        "items": [
+          {
+            "name": "Procedimento Estético",
+            "quantity": 1,
+            "unit_amount": 35000
+          }
+        ],
+        "charges": [
+          {
+            "description": "Pagamento de procedimento",
+            "amount": {
+              "value": 35000,
+              "currency": "BRL"
+            },
+            "payment_method": {
+              "type": "CREDIT_CARD",
+              "installments": 3,
+              "capture": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "timestamp": "2025-11-10T14:30:31.888Z",
+      "requestId": "pagbank_1699614630555_d4e5f6",
+      "environment": "sandbox",
+      "type": "ERROR",
+      "request": {
+        "method": "POST",
+        "url": "https://sandbox.api.pagseguro.com/orders",
+        "headers": {
+          "Content-Type": "application/json; charset=utf-8",
+          "User-Agent": "NexusAtemporal/1.0 (PagBank Payment Integration)",
+          "Accept": "application/json",
+          "Authorization": "Bearer ***MASKED***",
+          "X-Request-ID": "pagbank_1699614630555_d4e5f6"
+        },
+        "body": {
+          "reference_id": "ORDER-2025-11-10-002",
+          "customer": {
+            "name": "Pedro Oliveira",
+            "email": "pedro@example.com",
+            "tax_id": "***********"
+          },
+          "items": [
+            {
+              "name": "Procedimento Estético",
+              "quantity": 1,
+              "unit_amount": 35000
+            }
+          ],
+          "charges": [
+            {
+              "description": "Pagamento de procedimento",
+              "amount": {
+                "value": 35000,
+                "currency": "BRL"
+              },
+              "payment_method": {
+                "type": "CREDIT_CARD",
+                "installments": 3,
+                "capture": true
+              }
+            }
+          ]
+        }
+      },
+      "error": {
+        "message": "Request failed with status code 403",
+        "code": "ERR_BAD_REQUEST",
+        "responseTime": "1333ms",
+        "statusCode": 403,
+        "statusText": "Forbidden",
+        "headers": {
+          "content-type": "application/json",
+          "date": "Sun, 10 Nov 2025 14:30:31 GMT",
+          "server": "cloudflare",
+          "cf-ray": "8c2f1e3a4b5c6d7e-GRU"
+        },
+        "body": {
+          "error_messages": [
+            {
+              "code": "40300",
+              "description": "Access denied. Your IP address is not authorized to access this resource.",
+              "parameter": null
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "notes": [
+    "Dados sensíveis como API Keys, tokens, CPF/CNPJ e informações de cartão foram mascarados automaticamente",
+    "Cada requisição possui um Request ID único para rastreamento",
+    "Response Time indica o tempo de resposta da API em milissegundos",
+    "Headers completos são incluídos para análise de problemas relacionados a Cloudflare ou proxy",
+    "Este arquivo foi gerado automaticamente pelo sistema de logs integrado"
+  ]
+}

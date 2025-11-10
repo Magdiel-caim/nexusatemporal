@@ -7,7 +7,7 @@ exports.UsersController = void 0;
 const user_entity_1 = require("../auth/user.entity");
 const permissions_service_1 = require("../permissions/permissions.service");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const email_1 = require("../../shared/utils/email");
+const email_1 = require("@/shared/utils/email");
 const crypto_1 = __importDefault(require("crypto"));
 /**
  * UsersController

@@ -144,20 +144,21 @@ export class CashFlowService {
       );
     }
 
-    // Convert Date to string for transaction query
-    // paymentDate is stored as string in YYYY-MM-DD format
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const dateString = `${year}-${month}-${day}`;
+    // Buscar transações no dia específico
+    // paymentDate é Date, então precisamos buscar pelo dia completo
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
 
-    const transactions = await this.transactionRepository.find({
-      where: {
-        tenantId,
-        status: TransactionStatus.CONFIRMADA,
-        paymentDate: dateString,
-      },
-    });
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const transactions = await this.transactionRepository
+      .createQueryBuilder('transaction')
+      .where('transaction.tenantId = :tenantId', { tenantId })
+      .andWhere('transaction.status = :status', { status: TransactionStatus.CONFIRMADA })
+      .andWhere('transaction.paymentDate >= :startOfDay', { startOfDay })
+      .andWhere('transaction.paymentDate <= :endOfDay', { endOfDay })
+      .getMany();
 
     // Calcular totais
     let totalIncome = 0;

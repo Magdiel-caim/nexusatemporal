@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
+const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
 const product_service_1 = require("./product.service");
 const stock_movement_service_1 = require("./stock-movement.service");
 const stock_alert_service_1 = require("./stock-alert.service");
@@ -360,6 +360,48 @@ router.get('/alerts/count', auth_middleware_1.authenticate, async (req, res) => 
     }
     catch (error) {
         console.error('Error getting alerts count:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// CRON JOB MANAGEMENT ROUTES
+const stock_alert_cron_service_1 = require("@/services/stock-alert-cron.service");
+// Verificar status do cron job (admin apenas)
+router.get('/alerts/cron/status', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        // Verificar se é admin/owner
+        const userRole = req.user?.role;
+        if (userRole !== 'owner' && userRole !== 'admin') {
+            return res.status(403).json({ error: 'Apenas administradores podem acessar esta funcionalidade' });
+        }
+        const cronService = (0, stock_alert_cron_service_1.getStockAlertCronService)();
+        const status = cronService.getStatus();
+        res.json(status);
+    }
+    catch (error) {
+        console.error('Error getting cron status:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Executar verificação manual de alertas (admin apenas)
+router.post('/alerts/cron/run', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        // Verificar se é admin/owner
+        const userRole = req.user?.role;
+        if (userRole !== 'owner' && userRole !== 'admin') {
+            return res.status(403).json({ error: 'Apenas administradores podem executar esta ação' });
+        }
+        const cronService = (0, stock_alert_cron_service_1.getStockAlertCronService)();
+        // Executar de forma assíncrona para não travar a resposta
+        cronService.executeManually().catch(error => {
+            console.error('Error during manual stock alert check:', error);
+        });
+        res.json({
+            success: true,
+            message: 'Verificação de estoque iniciada. Os alertas serão processados em segundo plano.',
+        });
+    }
+    catch (error) {
+        console.error('Error triggering manual stock alert check:', error);
         res.status(500).json({ error: error.message });
     }
 });

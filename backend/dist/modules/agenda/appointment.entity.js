@@ -58,6 +58,8 @@ let Appointment = class Appointment {
     // Relacionamento com Procedimento
     procedureId;
     procedure;
+    // Múltiplos procedimentos (opcional - para procedimentos combinados)
+    procedureIds;
     // Relacionamento com Profissional (médico/biomédico)
     professionalId;
     professional;
@@ -148,6 +150,10 @@ __decorate([
     (0, typeorm_1.JoinColumn)({ name: 'procedureId' }),
     __metadata("design:type", procedure_entity_1.Procedure)
 ], Appointment.prototype, "procedure", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'json', nullable: true }),
+    __metadata("design:type", Array)
+], Appointment.prototype, "procedureIds", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", String)

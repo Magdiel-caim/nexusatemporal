@@ -4,6 +4,7 @@ export interface Appointment {
   id: string;
   leadId: string;
   procedureId: string;
+  procedureIds?: string[]; // Múltiplos procedimentos
   professionalId?: string;
   scheduledDate: string;
   estimatedDuration?: number;
@@ -39,6 +40,7 @@ export interface Appointment {
 export interface CreateAppointmentDto {
   leadId: string;
   procedureId: string;
+  procedureIds?: string[]; // Múltiplos procedimentos
   professionalId?: string;
   scheduledDate: string;
   estimatedDuration?: number;
