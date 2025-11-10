@@ -6,6 +6,7 @@ import { StockAlertService } from './stock-alert.service';
 import { ProcedureProductService } from './procedure-product.service';
 import { InventoryCountService } from './inventory-count.service';
 import { AuditLogService } from './audit-log.service';
+import { StockBatchService } from './stock-batch.service';
 import { Pool } from 'pg';
 
 const router = Router();
@@ -17,6 +18,7 @@ let alertService: StockAlertService;
 let procedureProductService: ProcedureProductService;
 let inventoryCountService: InventoryCountService;
 let auditLogService: AuditLogService;
+let batchService: StockBatchService;
 
 function getProductService(): ProductService {
   if (!productService) {
@@ -58,6 +60,13 @@ function getAuditLogService(): AuditLogService {
     auditLogService = new AuditLogService();
   }
   return auditLogService;
+}
+
+function getBatchService(): StockBatchService {
+  if (!batchService) {
+    batchService = new StockBatchService();
+  }
+  return batchService;
 }
 
 // ============================================
@@ -339,6 +348,134 @@ router.get('/movements/most-used', authenticate, async (req, res) => {
   } catch (error: any) {
     console.error('Error fetching most used products:', error);
     res.status(500).json({ error: error.message });
+  }
+});
+
+// STOCK BATCHES ROUTES
+router.get('/batches', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { productId, status, expiringSoon, expired, active, limit, offset } = req.query;
+
+    const result = await getBatchService().findAll({
+      tenantId,
+      productId: productId as string,
+      status: status as any,
+      expiringSoon: expiringSoon === 'true',
+      expired: expired === 'true',
+      active: active === 'true',
+      limit: limit ? parseInt(limit as string) : 50,
+      offset: offset ? parseInt(offset as string) : 0,
+    });
+
+    res.json(result);
+  } catch (error: any) {
+    console.error('Error fetching batches:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/batches', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const batchData = { ...req.body, tenantId };
+
+    const batch = await getBatchService().create(batchData);
+    res.status(201).json(batch);
+  } catch (error: any) {
+    console.error('Error creating batch:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/batches/:id', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+
+    const batch = await getBatchService().findOne(id, tenantId);
+    res.json(batch);
+  } catch (error: any) {
+    console.error('Error fetching batch:', error);
+    res.status(404).json({ error: error.message });
+  }
+});
+
+router.put('/batches/:id', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+
+    const batch = await getBatchService().update(id, tenantId, req.body);
+    res.json(batch);
+  } catch (error: any) {
+    console.error('Error updating batch:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.delete('/batches/:id', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+
+    await getBatchService().delete(id, tenantId);
+    res.status(204).send();
+  } catch (error: any) {
+    console.error('Error deleting batch:', error);
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.get('/batches/product/:productId', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { productId } = req.params;
+    const { onlyActive } = req.query;
+
+    const batches = await getBatchService().findByProduct(
+      productId,
+      tenantId,
+      onlyActive !== 'false'
+    );
+    res.json(batches);
+  } catch (error: any) {
+    console.error('Error fetching product batches:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get('/batches/status-report', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+
+    const report = await getBatchService().getStatusReport(tenantId);
+    res.json(report);
+  } catch (error: any) {
+    console.error('Error fetching batch status report:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/batches/:id/update-stock', authenticate, async (req, res) => {
+  try {
+    const tenantId = req.user?.tenantId || 'default';
+    const { id } = req.params;
+    const { quantity, operation } = req.body;
+
+    if (!quantity || !operation) {
+      return res.status(400).json({ error: 'quantity and operation are required' });
+    }
+
+    if (operation !== 'add' && operation !== 'subtract') {
+      return res.status(400).json({ error: 'operation must be "add" or "subtract"' });
+    }
+
+    const batch = await getBatchService().updateStock(id, tenantId, quantity, operation);
+    res.json(batch);
+  } catch (error: any) {
+    console.error('Error updating batch stock:', error);
+    res.status(400).json({ error: error.message });
   }
 });
 

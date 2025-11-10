@@ -135,6 +135,39 @@ export interface StockAlert {
   updatedAt: string;
 }
 
+export enum BatchStatus {
+  ACTIVE = 'active',
+  EXPIRED = 'expired',
+  EXPIRING_SOON = 'expiring_soon',
+  DEPLETED = 'depleted',
+}
+
+export interface StockBatch {
+  id: string;
+  productId: string;
+  product?: Product;
+  batchNumber: string;
+  manufacturerBatchNumber?: string;
+  manufactureDate?: string;
+  expirationDate: string;
+  receiptDate?: string;
+  currentStock: number;
+  initialStock: number;
+  unitCost?: number;
+  totalCost?: number;
+  status: BatchStatus;
+  supplierId?: string;
+  invoiceNumber?: string;
+  location?: string;
+  notes?: string;
+  alertSent: boolean;
+  alertSentAt?: string;
+  tenantId: string;
+  createdAt: string;
+  updatedAt: string;
+  daysUntilExpiration?: number;
+}
+
 export interface CreateProductDTO {
   name: string;
   sku?: string;
@@ -586,6 +619,80 @@ class StockService {
 
   async getDiscrepancyReport(countId: string): Promise<DiscrepancyReport> {
     const response = await api.get(`/stock/inventory-counts/${countId}/discrepancies`);
+    return response.data;
+  }
+
+  // STOCK BATCHES
+  async getBatches(filters: {
+    productId?: string;
+    status?: string;
+    expiringSoon?: boolean;
+    expired?: boolean;
+    active?: boolean;
+    limit?: number;
+    offset?: number;
+  } = {}) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== '') {
+        params.append(key, value.toString());
+      }
+    });
+
+    const response = await api.get(`/stock/batches?${params.toString()}`);
+    return response.data;
+  }
+
+  async getBatch(id: string) {
+    const response = await api.get(`/stock/batches/${id}`);
+    return response.data;
+  }
+
+  async createBatch(data: {
+    productId: string;
+    batchNumber: string;
+    manufacturerBatchNumber?: string;
+    manufactureDate?: string;
+    expirationDate: string;
+    receiptDate?: string;
+    initialStock: number;
+    unitCost?: number;
+    totalCost?: number;
+    supplierId?: string;
+    invoiceNumber?: string;
+    location?: string;
+    notes?: string;
+  }) {
+    const response = await api.post('/stock/batches', data);
+    return response.data;
+  }
+
+  async updateBatch(id: string, data: {
+    batchNumber?: string;
+    location?: string;
+    notes?: string;
+  }) {
+    const response = await api.put(`/stock/batches/${id}`, data);
+    return response.data;
+  }
+
+  async deleteBatch(id: string) {
+    const response = await api.delete(`/stock/batches/${id}`);
+    return response.data;
+  }
+
+  async getBatchesByProduct(productId: string, onlyActive: boolean = true) {
+    const response = await api.get(`/stock/batches/product/${productId}?onlyActive=${onlyActive}`);
+    return response.data;
+  }
+
+  async getBatchStatusReport() {
+    const response = await api.get('/stock/batches/status-report');
+    return response.data;
+  }
+
+  async updateBatchStock(id: string, quantity: number, operation: 'add' | 'subtract') {
+    const response = await api.post(`/stock/batches/${id}/update-stock`, { quantity, operation });
     return response.data;
   }
 

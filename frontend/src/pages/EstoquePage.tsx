@@ -165,7 +165,7 @@ export default function EstoquePage() {
       {/* Alert Summary */}
       {alertCount.total > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumo de Alertas</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Resumo de Alertas</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="flex items-center space-x-3">
               <div className="h-10 w-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
@@ -272,7 +272,7 @@ export default function EstoquePage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-orange-700">
+                  <p className="text-lg font-bold text-orange-700 dark:text-orange-400">
                     {product.expirationDate
                       ? new Date(product.expirationDate).toLocaleDateString('pt-BR')
                       : 'Sem data'}
