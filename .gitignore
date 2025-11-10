@@ -57,3 +57,14 @@ storage/
 backups/
 *.backup
 *.sql.gz
+
+# Backups grandes
+*.tar.gz
+backups/
+
+# Site institucional (não faz parte do sistema Nexus)
+Site_nexus* atemporal/
+*site*.tar.gz
+backup-site-*.tar.gz
+SESSAO_*_SITE_*.md
+BACKUP_SITE_*.md
