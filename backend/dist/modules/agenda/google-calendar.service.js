@@ -11,9 +11,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.GoogleCalendarService = exports.GoogleCalendarIntegration = exports.CalendarSyncStatus = void 0;
 const googleapis_1 = require("googleapis");
-const logger_1 = require("@/shared/utils/logger");
+const logger_1 = require("../../shared/utils/logger");
 const appointment_entity_1 = require("./appointment.entity");
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../../database/data-source");
 /**
  * Google Calendar Integration Entity
  * Armazena tokens OAuth2 e configurações por profissional

@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LeadService = void 0;
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../../database/data-source");
 const lead_entity_1 = require("./lead.entity");
 const activity_entity_1 = require("./activity.entity");
-const EventEmitterService_1 = require("@/services/EventEmitterService");
-const database_1 = require("@/modules/marketing/automation/database");
+const EventEmitterService_1 = require("../../services/EventEmitterService");
+const database_1 = require("../../modules/marketing/automation/database");
 class LeadService {
     leadRepository = data_source_1.CrmDataSource.getRepository(lead_entity_1.Lead);
     activityRepository = data_source_1.CrmDataSource.getRepository(activity_entity_1.Activity);

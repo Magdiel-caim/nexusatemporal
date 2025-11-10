@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
+const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const product_service_1 = require("./product.service");
 const stock_movement_service_1 = require("./stock-movement.service");
 const stock_alert_service_1 = require("./stock-alert.service");
@@ -364,7 +364,7 @@ router.get('/alerts/count', auth_middleware_1.authenticate, async (req, res) => 
     }
 });
 // CRON JOB MANAGEMENT ROUTES
-const stock_alert_cron_service_1 = require("@/services/stock-alert-cron.service");
+const stock_alert_cron_service_1 = require("../../services/stock-alert-cron.service");
 // Verificar status do cron job (admin apenas)
 router.get('/alerts/cron/status', auth_middleware_1.authenticate, async (req, res) => {
     try {

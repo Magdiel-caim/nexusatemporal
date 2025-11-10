@@ -1,4 +1,37 @@
 "use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -13,13 +46,14 @@ const morgan_1 = __importDefault(require("morgan"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const http_1 = require("http");
 const socket_io_1 = require("socket.io");
-const data_source_1 = require("@/database/data-source");
-const patient_datasource_1 = require("@/modules/pacientes/database/patient.datasource");
-const error_handler_1 = require("@/shared/middleware/error-handler");
-const logger_1 = require("@/shared/utils/logger");
-const routes_1 = __importDefault(require("@/routes"));
-const websocket_service_1 = require("@/modules/chat/websocket.service");
-const sentry_service_1 = __importDefault(require("@/services/sentry.service"));
+const data_source_1 = require("./database/data-source");
+const patient_datasource_1 = require("./modules/pacientes/database/patient.datasource");
+const error_handler_1 = require("./shared/middleware/error-handler");
+const logger_1 = require("./shared/utils/logger");
+const routes_1 = __importDefault(require("./routes"));
+const websocket_service_1 = require("./modules/chat/websocket.service");
+const sentry_service_1 = __importDefault(require("./services/sentry.service"));
+const Sentry = __importStar(require("@sentry/node"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 exports.app = app;
@@ -39,8 +73,7 @@ exports.io = io;
 // Trust proxy - necessário quando atrás do Traefik
 app.set('trust proxy', true);
 // Sentry Request Handler - DEVE ser o primeiro middleware
-app.use(sentry_service_1.default.requestHandler());
-app.use(sentry_service_1.default.tracingHandler());
+// Na nova versão do Sentry, o setupExpressErrorHandler é chamado depois das rotas
 // Middleware
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
@@ -72,7 +105,7 @@ app.get('/health', (req, res) => {
     });
 });
 // Sentry Error Handler - DEVE vir ANTES do error handler da aplicação
-app.use(sentry_service_1.default.errorHandler());
+Sentry.setupExpressErrorHandler(app);
 // Error handler (must be last)
 app.use(error_handler_1.errorHandler);
 // Initialize WebSocket service for Chat module
@@ -82,17 +115,17 @@ app.use(error_handler_1.errorHandler);
 // Remove quando webhooks WAHA funcionarem
 // Para desativar: ENABLE_WHATSAPP_POLLING=false
 // ============================================
-const WhatsAppSyncService_1 = __importDefault(require("@/services/WhatsAppSyncService"));
+const WhatsAppSyncService_1 = __importDefault(require("./services/WhatsAppSyncService"));
 let whatsappSyncService = null;
 // ============================================
 // BULK MESSAGE WORKER - BullMQ
 // ============================================
-require("@/modules/marketing/workers/bulk-message.worker");
+require("./modules/marketing/workers/bulk-message.worker");
 // ============================================
 // STOCK ALERT CRON JOB
 // Verifica estoque baixo/vencido diariamente às 08:00
 // ============================================
-const stock_alert_cron_service_1 = require("@/services/stock-alert-cron.service");
+const stock_alert_cron_service_1 = require("./services/stock-alert-cron.service");
 let stockAlertCronService = null;
 const PORT = process.env.API_PORT || 3001;
 // Initialize databases and start server

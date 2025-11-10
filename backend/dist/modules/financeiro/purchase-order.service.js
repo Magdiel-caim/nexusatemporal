@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PurchaseOrderService = void 0;
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../../database/data-source");
 const purchase_order_entity_1 = require("./purchase-order.entity");
 const typeorm_1 = require("typeorm");
 class PurchaseOrderService {

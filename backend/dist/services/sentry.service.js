@@ -36,7 +36,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SentryService = void 0;
 const Sentry = __importStar(require("@sentry/node"));
 const profiling_node_1 = require("@sentry/profiling-node");
-const logger_1 = require("@/shared/utils/logger");
+const logger_1 = require("../shared/utils/logger");
 /**
  * Sentry Service
  * Inicializa e configura monitoramento de erros e performance

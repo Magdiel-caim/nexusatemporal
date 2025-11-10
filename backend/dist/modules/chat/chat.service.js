@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ChatService = void 0;
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../../database/data-source");
 const conversation_entity_1 = require("./conversation.entity");
 const message_entity_1 = require("./message.entity");
 const attachment_entity_1 = require("./attachment.entity");

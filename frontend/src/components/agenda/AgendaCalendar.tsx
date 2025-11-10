@@ -31,6 +31,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
     leadId: '',
     procedureId: '',
     procedureIds: [] as string[], // Múltiplos procedimentos
+    procedureSelectionMode: 'single' as 'single' | 'multiple', // Modo de seleção de procedimentos
     scheduledDate: '',
     scheduledTime: '09:00',
     selectedTimes: [] as string[], // Múltiplos horários consecutivos
@@ -229,6 +230,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
         leadId: '',
         procedureId: '',
         procedureIds: [],
+        procedureSelectionMode: 'single',
         scheduledDate: '',
         scheduledTime: '09:00',
         selectedTimes: [],
@@ -386,21 +388,21 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                       <div className="mb-2 flex gap-2">
                         <button
                           type="button"
-                          onClick={() => setFormData({ ...formData, procedureIds: [], procedureId: '' })}
-                          className={`px-3 py-1 text-xs rounded ${formData.procedureIds.length === 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
+                          onClick={() => setFormData({ ...formData, procedureSelectionMode: 'single', procedureIds: [], procedureId: '' })}
+                          className={`px-3 py-1 text-xs rounded ${formData.procedureSelectionMode === 'single' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
                         >
                           Único
                         </button>
                         <button
                           type="button"
-                          onClick={() => setFormData({ ...formData, procedureId: '' })}
-                          className={`px-3 py-1 text-xs rounded ${formData.procedureIds.length > 0 ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
+                          onClick={() => setFormData({ ...formData, procedureSelectionMode: 'multiple', procedureId: '' })}
+                          className={`px-3 py-1 text-xs rounded ${formData.procedureSelectionMode === 'multiple' ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'}`}
                         >
                           Múltiplos
                         </button>
                       </div>
 
-                      {formData.procedureIds.length === 0 ? (
+                      {formData.procedureSelectionMode === 'single' ? (
                         // Seleção única
                         <select
                           required
@@ -622,7 +624,8 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
                     type="submit"
                     disabled={
                       !formData.leadId ||
-                      (!formData.procedureId && formData.procedureIds.length === 0) ||
+                      (formData.procedureSelectionMode === 'single' && !formData.procedureId) ||
+                      (formData.procedureSelectionMode === 'multiple' && formData.procedureIds.length === 0) ||
                       !formData.scheduledDate ||
                       (formData.timeSelectionMode === 'single' && !formData.scheduledTime) ||
                       (formData.timeSelectionMode === 'multiple' && formData.selectedTimes.length === 0) ||

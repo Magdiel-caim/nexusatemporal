@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
+const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const google_calendar_service_1 = require("./google-calendar.service");
-const logger_1 = require("@/shared/utils/logger");
+const logger_1 = require("../../shared/utils/logger");
 const router = (0, express_1.Router)();
 // Lazy initialization
 let googleCalendarService = null;

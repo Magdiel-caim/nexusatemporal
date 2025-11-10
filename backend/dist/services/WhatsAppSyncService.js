@@ -14,7 +14,7 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.WhatsAppSyncService = void 0;
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../database/data-source");
 class WhatsAppSyncService {
     syncInterval = null;
     isRunning = false;

@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const vendas_controller_1 = require("./vendas.controller");
 const database_1 = require("./database");
-const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
+const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const router = (0, express_1.Router)();
 // All vendas routes require authentication
 router.use(auth_middleware_1.authenticate);

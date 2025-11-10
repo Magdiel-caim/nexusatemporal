@@ -15,6 +15,7 @@ import { logger } from '@/shared/utils/logger';
 import routes from '@/routes';
 import { initializeWebSocketService } from '@/modules/chat/websocket.service';
 import SentryService from '@/services/sentry.service';
+import * as Sentry from '@sentry/node';
 
 dotenv.config();
 

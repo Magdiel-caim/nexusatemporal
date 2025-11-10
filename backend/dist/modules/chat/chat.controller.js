@@ -611,7 +611,7 @@ class ChatController {
             });
             console.log(`[Channels] ${atemporalSessions.length} sessões Atemporal filtradas`);
             // Importar AppDataSource para queries
-            const { AppDataSource } = await Promise.resolve().then(() => __importStar(require('@/database/data-source')));
+            const { AppDataSource } = await Promise.resolve().then(() => __importStar(require('../../database/data-source')));
             // 2. Para cada sessão Atemporal, contar conversas
             const channels = await Promise.all(atemporalSessions.map(async (session) => {
                 try {

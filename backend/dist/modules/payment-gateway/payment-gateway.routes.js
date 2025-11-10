@@ -6,10 +6,10 @@
  */
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const data_source_1 = require("@/database/data-source");
+const data_source_1 = require("../../database/data-source");
 const payment_gateway_controller_1 = require("./payment-gateway.controller");
 const webhook_controller_1 = require("./webhook.controller");
-const auth_middleware_1 = require("@/shared/middleware/auth.middleware");
+const auth_middleware_1 = require("../../shared/middleware/auth.middleware");
 const router = (0, express_1.Router)();
 // Get database connection pool from CrmDataSource
 const getPool = () => {

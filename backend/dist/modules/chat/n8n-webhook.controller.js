@@ -34,8 +34,8 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.N8NWebhookController = void 0;
-const media_upload_service_1 = require("@/services/media-upload.service");
-const logger_1 = require("@/shared/utils/logger");
+const media_upload_service_1 = require("../../services/media-upload.service");
+const logger_1 = require("../../shared/utils/logger");
 const chat_service_1 = require("./chat.service");
 class N8NWebhookController {
     mediaUploadService = new media_upload_service_1.MediaUploadService();
@@ -61,7 +61,7 @@ class N8NWebhookController {
                 });
             }
             // Importar funções S3
-            const { uploadFile } = await Promise.resolve().then(() => __importStar(require('@/integrations/idrive/s3-client')));
+            const { uploadFile } = await Promise.resolve().then(() => __importStar(require('../../integrations/idrive/s3-client')));
             // Converter base64 para Buffer
             const base64Data = mediaBase64.replace(/^data:.+;base64,/, '');
             const buffer = Buffer.from(base64Data, 'base64');
@@ -812,7 +812,7 @@ class N8NWebhookController {
                     else if (messageType === 'document')
                         extension = 'pdf';
                     // Upload no S3
-                    const { uploadFile } = await Promise.resolve().then(() => __importStar(require('@/integrations/idrive/s3-client')));
+                    const { uploadFile } = await Promise.resolve().then(() => __importStar(require('../../integrations/idrive/s3-client')));
                     const timestamp_str = new Date().toISOString().replace(/[:.]/g, '-');
                     const s3Key = `whatsapp/${session}/${timestamp_str}-${payload.id}.${extension}`;
                     console.log('☁️ Fazendo upload no S3:', s3Key);
