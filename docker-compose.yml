@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v142-optional-fields
+    image: nexus-frontend:v144-navigation-dragdrop-fix
     networks:
       - nexusatnet
     deploy:
