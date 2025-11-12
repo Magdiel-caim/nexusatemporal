@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v143-submenu-fix
+    image: nexus-frontend:v142-optional-fields
     networks:
       - nexusatnet
     deploy:
