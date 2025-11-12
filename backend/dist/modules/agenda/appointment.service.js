@@ -307,10 +307,10 @@ class AppointmentService {
      * Buscar agendamentos do dia (para dashboard)
      */
     async findToday(tenantId) {
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date();
-        endOfDay.setHours(23, 59, 59, 999);
+        // Correção: Criar datas usando componentes explícitos para evitar problemas de timezone
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
         return this.findByDate(tenantId, startOfDay, endOfDay);
     }
     /**
@@ -501,10 +501,11 @@ class AppointmentService {
     async getOccupiedSlots(tenantId, date, // YYYY-MM-DD
     location, professionalId, interval = 5 // Intervalo em minutos
     ) {
-        const startOfDay = new Date(date + 'T00:00:00');
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(date + 'T23:59:59');
-        endOfDay.setHours(23, 59, 59, 999);
+        // Correção: Parse manual para evitar problemas de timezone
+        // Cria data no timezone local do servidor sem ambiguidade
+        const [year, month, day] = date.split('-').map(Number);
+        const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+        const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
         const where = {
             tenantId,
             location,
