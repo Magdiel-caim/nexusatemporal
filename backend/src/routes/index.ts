@@ -19,6 +19,7 @@ import marketingRoutes from '@/modules/marketing/marketing.routes'; // Marketing
 import metaRoutes from '@/modules/meta/meta.routes'; // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 import pacientesRoutes from '@/modules/pacientes/routes/patient.routes'; // Patient Management - Complete medical records, images, appointments
 import apiKeyRoutes from '@/modules/integrations/routes/api-key.routes'; // API Keys management for N8N and external integrations
+import notificameRoutes from '@/modules/notificame/routes/notificame.routes'; // Notifica.me Integration - OAuth for Instagram, Facebook, WhatsApp
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import configRoutes from '@/modules/config/config.routes';
@@ -55,6 +56,7 @@ router.use('/marketing', marketingRoutes); // Marketing Module - Campaigns, Soci
 router.use('/meta', metaRoutes); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 router.use('/pacientes', pacientesRoutes); // Patient Management - Complete medical records, images, appointments
 router.use('/integrations/api-keys', apiKeyRoutes); // API Keys management for N8N and external integrations
+router.use('/notificame', notificameRoutes); // Notifica.me Integration - OAuth for Instagram, Facebook, WhatsApp
 
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);
