@@ -22,18 +22,22 @@ const VendasPage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState(() => {
     const path = location.pathname;
+    // Ordem importante: verificar URLs específicas primeiro
+    if (path.includes('/dashboard')) return 'dashboard';
     if (path.includes('/vendedores')) return 'vendedores';
-    if (path.includes('/vendas')) return 'vendas';
     if (path.includes('/comissoes')) return 'comissoes';
+    if (path.includes('/vendas/vendas')) return 'vendas';
     return 'dashboard';
   });
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes('/vendedores')) setActiveTab('vendedores');
-    else if (path.includes('/vendas')) setActiveTab('vendas');
+    // Ordem importante: verificar URLs específicas primeiro
+    if (path.includes('/dashboard')) setActiveTab('dashboard');
+    else if (path.includes('/vendedores')) setActiveTab('vendedores');
     else if (path.includes('/comissoes')) setActiveTab('comissoes');
-    else if (path === '/vendas' || path === '/vendas/dashboard') setActiveTab('dashboard');
+    else if (path.includes('/vendas/vendas')) setActiveTab('vendas');
+    else if (path === '/vendas') setActiveTab('dashboard');
   }, [location]);
 
   return (

@@ -35,7 +35,7 @@ interface FinancialStats {
   overdueCount: number;
 }
 
-type ActiveTab = 'dashboard' | 'transactions' | 'suppliers' | 'invoices' | 'cash-flow' | 'purchase-orders' | 'reports';
+type ActiveTab = 'dashboard' | 'transactions' | 'accounts-receivable' | 'accounts-payable' | 'suppliers' | 'invoices' | 'cash-flow' | 'purchase-orders' | 'reports';
 
 export default function FinanceiroPage() {
   const location = useLocation();
@@ -46,6 +46,8 @@ export default function FinanceiroPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
     const path = location.pathname;
     if (path.includes('/transacoes') || path.includes('/transactions')) return 'transactions';
+    if (path.includes('/contas-receber') || path.includes('/accounts-receivable')) return 'accounts-receivable';
+    if (path.includes('/contas-pagar') || path.includes('/accounts-payable')) return 'accounts-payable';
     if (path.includes('/fornecedores') || path.includes('/suppliers')) return 'suppliers';
     if (path.includes('/recibos') || path.includes('/invoices')) return 'invoices';
     if (path.includes('/fluxo-caixa') || path.includes('/cash-flow')) return 'cash-flow';
@@ -75,6 +77,8 @@ export default function FinanceiroPage() {
   useEffect(() => {
     const path = location.pathname;
     if (path.includes('/transacoes') || path.includes('/transactions')) setActiveTab('transactions');
+    else if (path.includes('/contas-receber') || path.includes('/accounts-receivable')) setActiveTab('accounts-receivable');
+    else if (path.includes('/contas-pagar') || path.includes('/accounts-payable')) setActiveTab('accounts-payable');
     else if (path.includes('/fornecedores') || path.includes('/suppliers')) setActiveTab('suppliers');
     else if (path.includes('/recibos') || path.includes('/invoices')) setActiveTab('invoices');
     else if (path.includes('/fluxo-caixa') || path.includes('/cash-flow')) setActiveTab('cash-flow');
@@ -298,6 +302,26 @@ export default function FinanceiroPage() {
             }`}
           >
             Transações
+          </button>
+          <button
+            onClick={() => navigate('/financeiro/contas-pagar')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'accounts-payable'
+                ? 'border-primary-600 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Contas a Pagar
+          </button>
+          <button
+            onClick={() => navigate('/financeiro/contas-receber')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'accounts-receivable'
+                ? 'border-primary-600 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Contas a Receber
           </button>
           <button
             onClick={() => navigate('/financeiro/fornecedores')}
@@ -597,6 +621,30 @@ export default function FinanceiroPage() {
           <TransactionList
             onEditTransaction={handleEditTransaction}
             onCreateTransaction={handleCreateTransaction}
+          />
+        </Suspense>
+      )}
+
+      {/* Accounts Payable Tab */}
+      {activeTab === 'accounts-payable' && (
+        <Suspense fallback={<LoadingComponent />}>
+          <TransactionList
+            onEditTransaction={handleEditTransaction}
+            onCreateTransaction={handleCreateTransaction}
+            defaultFilters={{ type: 'despesa', status: 'pendente' }}
+            title="Contas a Pagar"
+          />
+        </Suspense>
+      )}
+
+      {/* Accounts Receivable Tab */}
+      {activeTab === 'accounts-receivable' && (
+        <Suspense fallback={<LoadingComponent />}>
+          <TransactionList
+            onEditTransaction={handleEditTransaction}
+            onCreateTransaction={handleCreateTransaction}
+            defaultFilters={{ type: 'receita', status: 'pendente' }}
+            title="Contas a Receber"
           />
         </Suspense>
       )}

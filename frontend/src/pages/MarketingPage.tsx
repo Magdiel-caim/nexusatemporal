@@ -41,26 +41,32 @@ export default function MarketingPage() {
 
   const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
     const path = location.pathname;
+    // Ordem importante: verificar URLs específicas primeiro
+    if (path.includes('/dashboard')) return 'dashboard';
     if (path.includes('/campanhas') || path.includes('/campaigns')) return 'campaigns';
     if (path.includes('/social')) return 'social';
     if (path.includes('/mensagens') || path.includes('/bulk-messaging')) return 'bulk-messaging';
     if (path.includes('/landing-pages')) return 'landing-pages';
-    if (path.includes('/ai-assistant')) return 'ai-assistant';
-    if (path.includes('/ai-usage')) return 'ai-usage';
-    if (path.includes('/automacao') || path.includes('/automation')) return 'automation';
+    // Suporte para ambas as rotas: /ia e /ai-assistant
+    if (path.includes('/ia-usage') || path.includes('/ai-usage')) return 'ai-usage';
+    if (path.includes('/ia') || path.includes('/ai-assistant')) return 'ai-assistant';
+    if (path.includes('/automacoes') || path.includes('/automacao') || path.includes('/automation')) return 'automation';
     return 'dashboard';
   });
 
   useEffect(() => {
     const path = location.pathname;
-    if (path.includes('/campanhas') || path.includes('/campaigns')) setActiveTab('campaigns');
+    // Ordem importante: verificar URLs específicas primeiro
+    if (path.includes('/dashboard')) setActiveTab('dashboard');
+    else if (path.includes('/campanhas') || path.includes('/campaigns')) setActiveTab('campaigns');
     else if (path.includes('/social')) setActiveTab('social');
     else if (path.includes('/mensagens') || path.includes('/bulk-messaging')) setActiveTab('bulk-messaging');
     else if (path.includes('/landing-pages')) setActiveTab('landing-pages');
-    else if (path.includes('/ai-assistant')) setActiveTab('ai-assistant');
-    else if (path.includes('/ai-usage')) setActiveTab('ai-usage');
-    else if (path.includes('/automacao') || path.includes('/automation')) setActiveTab('automation');
-    else if (path === '/marketing' || path === '/marketing/dashboard') setActiveTab('dashboard');
+    // Suporte para ambas as rotas: /ia e /ai-assistant (ia-usage ANTES de ia para evitar match errado)
+    else if (path.includes('/ia-usage') || path.includes('/ai-usage')) setActiveTab('ai-usage');
+    else if (path.includes('/ia') || path.includes('/ai-assistant')) setActiveTab('ai-assistant');
+    else if (path.includes('/automacoes') || path.includes('/automacao') || path.includes('/automation')) setActiveTab('automation');
+    else if (path === '/marketing') setActiveTab('dashboard');
   }, [location]);
 
   // Social Media States
