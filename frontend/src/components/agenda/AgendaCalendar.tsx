@@ -10,6 +10,7 @@ import { X, Plus, Calendar as CalendarIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useDragValidation } from '@/hooks/useDragValidation';
 import { EventInteractionArgs } from 'react-big-calendar/lib/addons/dragAndDrop';
+import { formatDateToISO } from '@/lib/dateUtils';
 
 interface AgendaCalendarProps {
   appointments: Appointment[];
@@ -68,6 +69,12 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
 
   const loadOccupiedSlots = async () => {
     try {
+      // Validar formato da data antes de chamar API
+      if (!formData.scheduledDate || !/^\d{4}-\d{2}-\d{2}$/.test(formData.scheduledDate)) {
+        console.warn('[AgendaCalendar] Data inválida, ignorando chamada de API:', formData.scheduledDate);
+        return;
+      }
+
       const slots = await appointmentService.getOccupiedSlots(
         formData.scheduledDate,
         formData.location
@@ -79,7 +86,7 @@ const AgendaCalendar: React.FC<AgendaCalendarProps> = ({ appointments, onRefresh
   };
 
   const handleSelectSlot = (slotInfo: { start: Date; end: Date }) => {
-    const date = slotInfo.start.toISOString().split('T')[0];
+    const date = formatDateToISO(slotInfo.start);
     const time = slotInfo.start.toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',

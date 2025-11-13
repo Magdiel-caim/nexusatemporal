@@ -66,8 +66,14 @@ const MultiTimeSlotPicker: React.FC<MultiTimeSlotPickerProps> = ({
   const isPastTime = (date: string, time: string): boolean => {
     if (!date) return false;
 
+    // Validar formato da data
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      console.warn('[MultiTimeSlotPicker] Data inválida no isPastTime:', date);
+      return false;
+    }
+
     const [hours, minutes] = time.split(':').map(Number);
-    const slotDate = new Date(date);
+    const slotDate = new Date(date + 'T00:00:00');
     slotDate.setHours(hours, minutes, 0, 0);
 
     const now = new Date();
@@ -148,13 +154,13 @@ const MultiTimeSlotPicker: React.FC<MultiTimeSlotPickerProps> = ({
 
   const periods = ['Manhã', 'Tarde', 'Noite'];
 
-  if (!selectedDate) {
+  if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) {
     return (
       <div className="flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
         <div className="text-center">
           <Clock className="mx-auto mb-2 text-gray-400 dark:text-gray-600" size={32} />
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Selecione uma data para ver os horários disponíveis
+            {!selectedDate ? 'Selecione uma data para ver os horários disponíveis' : 'Data inválida. Por favor, selecione uma data válida.'}
           </p>
         </div>
       </div>
@@ -170,7 +176,10 @@ const MultiTimeSlotPicker: React.FC<MultiTimeSlotPickerProps> = ({
       <div className="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
         <div>
           <h3 className="font-semibold text-gray-900 dark:text-white">
-            Horários para {new Date(selectedDate + 'T00:00:00').toLocaleDateString('pt-BR')}
+            Horários para {(() => {
+              const [year, month, day] = selectedDate.split('-');
+              return new Date(Number(year), Number(month) - 1, Number(day)).toLocaleDateString('pt-BR');
+            })()}
           </h3>
           {location && (
             <p className="text-sm text-gray-600 dark:text-gray-400">Local: {formatLocation(location)}</p>
