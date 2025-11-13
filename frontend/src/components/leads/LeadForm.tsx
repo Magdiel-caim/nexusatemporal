@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { Lead, Stage, Procedure, leadsService } from '@/services/leadsService';
 import { User, userService } from '@/services/userService';
 import toast from 'react-hot-toast';
+import ProcedureSelector from '../shared/ProcedureSelector';
 
 interface LeadFormProps {
   onSubmit: (data: Partial<Lead>) => Promise<void>;
@@ -25,6 +26,8 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
     state: initialData?.state || '',
     stageId: initialData?.stageId || stages[0]?.id || '',
     procedureId: initialData?.procedureId || initialData?.procedure?.id || '',
+    procedureIds: (initialData as any)?.procedureIds || [] as string[],
+    procedureSelectionMode: ((initialData as any)?.procedureIds && (initialData as any)?.procedureIds.length > 0) ? 'multiple' as 'multiple' : 'single' as 'single',
     assignedToId: initialData?.assignedTo?.id || '',
     source: initialData?.source || 'website',
     channel: initialData?.channel || 'whatsapp',
@@ -77,6 +80,7 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
         ...formData,
         // Convert empty strings to null for UUID fields
         procedureId: formData.procedureId || undefined,
+        ...(formData.procedureIds.length > 0 && { procedureIds: formData.procedureIds } as any),
         assignedToId: formData.assignedToId || undefined,
         // Convert empty strings to null for optional text fields
         email: formData.email || undefined,
@@ -249,24 +253,23 @@ export default function LeadForm({ onSubmit, onCancel, initialData, stages }: Le
             </select>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">Procedimento</label>
-            <select
-              value={formData.procedureId}
-              onChange={(e) => handleChange('procedureId', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 dark:bg-gray-800/50 text-gray-900 dark:text-white dark:placeholder-gray-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-            >
-              <option value="">Selecione um procedimento</option>
-              {procedures.map(procedure => {
-                const price = procedure.price ? Number(procedure.price) : null;
-                return (
-                  <option key={procedure.id} value={procedure.id}>
-                    {procedure.name} {price ? `- R$ ${price.toFixed(2)}` : ''}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+          <ProcedureSelector
+            procedures={procedures}
+            mode={formData.procedureSelectionMode}
+            selectedProcedureId={formData.procedureId}
+            selectedProcedureIds={formData.procedureIds}
+            onModeChange={(mode) => setFormData({
+              ...formData,
+              procedureSelectionMode: mode,
+              procedureId: mode === 'multiple' ? '' : formData.procedureId,
+              procedureIds: mode === 'single' ? [] : formData.procedureIds
+            })}
+            onSingleChange={(procedureId) => setFormData({ ...formData, procedureId })}
+            onMultipleChange={(procedureIds) => setFormData({ ...formData, procedureIds })}
+            required={false}
+            showModeToggle={true}
+            className="mb-4"
+          />
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-white mb-1">

@@ -1,4 +1,5 @@
 import { useState, useEffect, lazy, Suspense } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { stockService, Product, AlertCount, StockValue } from '@/services/stockService';
 import {
   Package,
@@ -26,8 +27,21 @@ const InventoryCountTab = lazy(() => import('../components/estoque/InventoryCoun
 type ActiveTab = 'dashboard' | 'products' | 'movements' | 'alerts' | 'reports' | 'procedures' | 'inventory';
 
 export default function EstoquePage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+
+  // Inicializar activeTab baseado na URL
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    const path = location.pathname;
+    if (path.includes('/produtos') || path.includes('/products')) return 'products';
+    if (path.includes('/movimentacoes') || path.includes('/movements')) return 'movements';
+    if (path.includes('/alertas') || path.includes('/alerts')) return 'alerts';
+    if (path.includes('/relatorios') || path.includes('/reports')) return 'reports';
+    if (path.includes('/procedimentos') || path.includes('/procedures')) return 'procedures';
+    if (path.includes('/inventario') || path.includes('/inventory')) return 'inventory';
+    return 'dashboard';
+  });
   const [stockValue, setStockValue] = useState<StockValue>({
     totalValue: 0,
     totalProducts: 0,
@@ -48,6 +62,18 @@ export default function EstoquePage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
   const [showMovementForm, setShowMovementForm] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Reagir a mudanças na URL
+  useEffect(() => {
+    const path = location.pathname;
+    if (path.includes('/produtos') || path.includes('/products')) setActiveTab('products');
+    else if (path.includes('/movimentacoes') || path.includes('/movements')) setActiveTab('movements');
+    else if (path.includes('/alertas') || path.includes('/alerts')) setActiveTab('alerts');
+    else if (path.includes('/relatorios') || path.includes('/reports')) setActiveTab('reports');
+    else if (path.includes('/procedimentos') || path.includes('/procedures')) setActiveTab('procedures');
+    else if (path.includes('/inventario') || path.includes('/inventory')) setActiveTab('inventory');
+    else if (path === '/estoque' || path === '/estoque/dashboard') setActiveTab('dashboard');
+  }, [location]);
 
   useEffect(() => {
     loadDashboardData();
@@ -165,7 +191,7 @@ export default function EstoquePage() {
       {/* Alert Summary */}
       {alertCount.total > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Resumo de Alertas</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Resumo de Alertas</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="flex items-center space-x-3">
               <div className="h-10 w-10 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
@@ -213,7 +239,7 @@ export default function EstoquePage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Produtos com Estoque Baixo</h3>
             <button
-              onClick={() => setActiveTab('alerts')}
+              onClick={() => navigate('/estoque/alertas')}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
               Ver todos
@@ -252,7 +278,7 @@ export default function EstoquePage() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Produtos Próximos ao Vencimento</h3>
             <button
-              onClick={() => setActiveTab('alerts')}
+              onClick={() => navigate('/estoque/alertas')}
               className="text-sm text-blue-600 hover:text-blue-700 font-medium"
             >
               Ver todos
@@ -272,7 +298,7 @@ export default function EstoquePage() {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold text-orange-700">
+                  <p className="text-lg font-bold text-orange-700 dark:text-orange-400">
                     {product.expirationDate
                       ? new Date(product.expirationDate).toLocaleDateString('pt-BR')
                       : 'Sem data'}
@@ -327,7 +353,7 @@ export default function EstoquePage() {
           <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="-mb-px flex space-x-8">
               <button
-                onClick={() => setActiveTab('dashboard')}
+                onClick={() => navigate('/estoque/dashboard')}
                 className={`
                   py-4 px-1 border-b-2 font-medium text-sm transition-colors
                   ${
@@ -340,7 +366,7 @@ export default function EstoquePage() {
                 Dashboard
               </button>
               <button
-                onClick={() => setActiveTab('products')}
+                onClick={() => navigate('/estoque/produtos')}
                 className={`
                   py-4 px-1 border-b-2 font-medium text-sm transition-colors
                   ${
@@ -353,7 +379,7 @@ export default function EstoquePage() {
                 Produtos
               </button>
               <button
-                onClick={() => setActiveTab('movements')}
+                onClick={() => navigate('/estoque/movimentacoes')}
                 className={`
                   py-4 px-1 border-b-2 font-medium text-sm transition-colors
                   ${
@@ -366,7 +392,7 @@ export default function EstoquePage() {
                 Movimentações
               </button>
               <button
-                onClick={() => setActiveTab('alerts')}
+                onClick={() => navigate('/estoque/alertas')}
                 className={`
                   py-4 px-1 border-b-2 font-medium text-sm transition-colors relative
                   ${
@@ -384,7 +410,7 @@ export default function EstoquePage() {
                 )}
               </button>
               <button
-                onClick={() => setActiveTab('reports')}
+                onClick={() => navigate('/estoque/relatorios')}
                 className={`
                   py-4 px-1 border-b-2 font-medium text-sm transition-colors
                   ${
@@ -397,7 +423,7 @@ export default function EstoquePage() {
                 Relatórios
               </button>
               <button
-                onClick={() => setActiveTab('procedures')}
+                onClick={() => navigate('/estoque/procedimentos')}
                 className={`
                   py-4 px-1 border-b-2 font-medium text-sm transition-colors
                   ${
@@ -410,7 +436,7 @@ export default function EstoquePage() {
                 Procedimentos
               </button>
               <button
-                onClick={() => setActiveTab('inventory')}
+                onClick={() => navigate('/estoque/inventario')}
                 className={`
                   py-4 px-1 border-b-2 font-medium text-sm transition-colors
                   ${

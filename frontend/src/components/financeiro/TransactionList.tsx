@@ -20,29 +20,45 @@ import { toast } from 'react-hot-toast';
 interface TransactionListProps {
   onEditTransaction?: (transaction: Transaction) => void;
   onCreateTransaction?: () => void;
+  defaultFilters?: Partial<{
+    type: TransactionType;
+    status: TransactionStatus;
+    category: string;
+    paymentMethod: PaymentMethod;
+    search: string;
+    dateFrom: string;
+    dateTo: string;
+    dueDateFrom: string;
+    dueDateTo: string;
+  }>;
+  title?: string;
 }
 
-export default function TransactionList({ onEditTransaction, onCreateTransaction }: TransactionListProps) {
+export default function TransactionList({ onEditTransaction, onCreateTransaction, defaultFilters, title }: TransactionListProps) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filtros
+  // Filtros - inicializar com defaultFilters se fornecido
   const [filters, setFilters] = useState({
-    type: '' as TransactionType | '',
-    status: '' as TransactionStatus | '',
-    category: '',
-    paymentMethod: '' as PaymentMethod | '',
-    search: '',
-    dateFrom: '',
-    dateTo: '',
-    dueDateFrom: '',
-    dueDateTo: '',
+    type: (defaultFilters?.type || '') as TransactionType | '',
+    status: (defaultFilters?.status || '') as TransactionStatus | '',
+    category: defaultFilters?.category || '',
+    paymentMethod: (defaultFilters?.paymentMethod || '') as PaymentMethod | '',
+    search: defaultFilters?.search || '',
+    dateFrom: defaultFilters?.dateFrom || '',
+    dateTo: defaultFilters?.dateTo || '',
+    dueDateFrom: defaultFilters?.dueDateFrom || '',
+    dueDateTo: defaultFilters?.dueDateTo || '',
   });
 
   useEffect(() => {
     loadTransactions();
   }, []);
+
+  useEffect(() => {
+    loadTransactions();
+  }, [filters]);
 
   const loadTransactions = async () => {
     try {
@@ -211,7 +227,7 @@ export default function TransactionList({ onEditTransaction, onCreateTransaction
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Transações
+            {title || 'Transações'}
           </h2>
           <span className="text-sm text-gray-500 dark:text-gray-400">
             {transactions.length} registro(s)

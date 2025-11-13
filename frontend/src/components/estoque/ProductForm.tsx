@@ -57,11 +57,11 @@ export default function ProductForm({ product, onClose, onSave }: ProductFormPro
   const loadSuppliers = async () => {
     try {
       setLoadingSuppliers(true);
-      const response: any = await financialService.getSuppliers({});
-      setSuppliers(response.data || []);
+      const data = await financialService.getSuppliers({ isActive: true });
+      setSuppliers(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Erro ao carregar fornecedores:', error);
-      // Não mostra toast para não poluir - fornecedor é opcional
+      toast.error('Erro ao carregar fornecedores. Verifique sua conexão.');
     } finally {
       setLoadingSuppliers(false);
     }

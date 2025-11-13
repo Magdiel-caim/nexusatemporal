@@ -66,7 +66,7 @@ services:
 
   # Backend API
   backend:
-    image: nexus-backend:v126.3-media-fix
+    image: nexus-backend:v144-agenda-fix
     environment:
       - NODE_ENV=production
       - DB_HOST=46.202.144.210
@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v126-chat-complete
+    image: nexus-frontend:v151-calendar-all-patients
     networks:
       - nexusatnet
     deploy:

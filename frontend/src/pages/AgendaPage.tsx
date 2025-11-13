@@ -5,6 +5,7 @@ import { leadsService } from '../services/leadsService';
 import { useAuthStore } from '../store/authStore';
 import toast from 'react-hot-toast';
 import AgendaCalendar from '../components/agenda/AgendaCalendar';
+import ProcedureSelector from '../components/shared/ProcedureSelector';
 
 const AgendaPage: React.FC = () => {
   const { user } = useAuthStore();
@@ -37,6 +38,8 @@ const AgendaPage: React.FC = () => {
   const [formData, setFormData] = useState({
     leadId: '',
     procedureId: '',
+    procedureIds: [] as string[],
+    procedureSelectionMode: 'single' as 'single' | 'multiple',
     scheduledDate: '',
     scheduledTime: '09:00',
     location: 'moema',
@@ -64,6 +67,13 @@ const AgendaPage: React.FC = () => {
   useEffect(() => {
     loadAppointments();
   }, [viewMode]);
+
+  // Quando mudar para modo calendário, garantir que carrega todos os appointments
+  useEffect(() => {
+    if (viewType === 'calendar' && viewMode !== 'all') {
+      setViewMode('all');
+    }
+  }, [viewType]);
 
   // Aplicar filtros sempre que mudar
   useEffect(() => {
@@ -167,9 +177,20 @@ const AgendaPage: React.FC = () => {
     try {
       const scheduledDate = new Date(`${formData.scheduledDate}T${formData.scheduledTime}:00`);
 
+      // Calcular duração total se múltiplos procedimentos
+      let estimatedDuration: number | undefined;
+      if (formData.procedureSelectionMode === 'multiple' && formData.procedureIds.length > 0) {
+        estimatedDuration = formData.procedureIds.reduce((sum, id) => {
+          const proc = procedures.find(p => p.id === id);
+          return sum + (proc?.duration || 60);
+        }, 0);
+      }
+
       await appointmentService.create({
         leadId: formData.leadId,
         procedureId: formData.procedureId,
+        procedureIds: formData.procedureIds.length > 0 ? formData.procedureIds : undefined,
+        estimatedDuration,
         scheduledDate: scheduledDate.toISOString(),
         location: formData.location,
         paymentAmount: formData.paymentAmount ? parseFloat(formData.paymentAmount) : undefined,
@@ -180,7 +201,7 @@ const AgendaPage: React.FC = () => {
         notes: formData.notes || undefined,
       });
 
-      alert('Agendamento criado com sucesso!');
+      toast.success('Agendamento criado com sucesso!');
       setShowNewForm(false);
       loadAppointments();
 
@@ -188,6 +209,8 @@ const AgendaPage: React.FC = () => {
       setFormData({
         leadId: '',
         procedureId: '',
+        procedureIds: [],
+        procedureSelectionMode: 'single',
         scheduledDate: '',
         scheduledTime: '09:00',
         location: 'moema',
@@ -199,7 +222,7 @@ const AgendaPage: React.FC = () => {
         notes: '',
       });
     } catch (error: any) {
-      alert('Erro ao criar agendamento: ' + (error.response?.data?.message || error.message));
+      toast.error('Erro ao criar agendamento: ' + (error.response?.data?.message || error.message));
     }
   };
 
@@ -752,22 +775,22 @@ const AgendaPage: React.FC = () => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Procedimento *</label>
-                  <select
-                    required
-                    value={formData.procedureId}
-                    onChange={(e) => setFormData({ ...formData, procedureId: e.target.value })}
-                    className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-gray-900 dark:text-white rounded"
-                  >
-                    <option value="">Selecione um procedimento</option>
-                    {procedures.map((proc) => (
-                      <option key={proc.id} value={proc.id}>
-                        {proc.name} - R$ {proc.price} ({proc.duration}min)
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <ProcedureSelector
+                  procedures={procedures}
+                  mode={formData.procedureSelectionMode}
+                  selectedProcedureId={formData.procedureId}
+                  selectedProcedureIds={formData.procedureIds}
+                  onModeChange={(mode) => setFormData({
+                    ...formData,
+                    procedureSelectionMode: mode,
+                    procedureId: mode === 'multiple' ? '' : formData.procedureId,
+                    procedureIds: mode === 'single' ? [] : formData.procedureIds
+                  })}
+                  onSingleChange={(procedureId) => setFormData({ ...formData, procedureId })}
+                  onMultipleChange={(procedureIds) => setFormData({ ...formData, procedureIds })}
+                  required={true}
+                  showModeToggle={true}
+                />
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -893,7 +916,12 @@ const AgendaPage: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    disabled={
+                      formData.procedureSelectionMode === 'single'
+                        ? !formData.procedureId
+                        : formData.procedureIds.length === 0
+                    }
+                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Criar Agendamento
                   </button>

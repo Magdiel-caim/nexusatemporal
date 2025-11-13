@@ -8,6 +8,15 @@ const typeorm_1 = require("typeorm");
 class CashFlowService {
     cashFlowRepository = data_source_1.CrmDataSource.getRepository(cash_flow_entity_1.CashFlow);
     transactionRepository = data_source_1.CrmDataSource.getRepository(transaction_entity_1.Transaction);
+    /**
+     * Helper para garantir valor numérico válido em TODOS os cálculos
+     * Previne NaN, Infinity, null, undefined
+     * Centralizado para consistência em todo o serviço
+     */
+    safeAmount(amount) {
+        const num = Number(amount);
+        return isNaN(num) || !isFinite(num) ? 0 : num;
+    }
     async openCashFlow(data) {
         // Verificar se já existe fluxo de caixa para esta data
         const existing = await this.cashFlowRepository.findOne({
@@ -85,18 +94,19 @@ class CashFlowService {
         if (cashFlow.isClosed) {
             throw new Error('Fluxo de caixa fechado não pode ser atualizado automaticamente');
         }
-        // Buscar todas as transações confirmadas do dia
+        // Buscar transações no dia específico
+        // paymentDate é Date, então precisamos buscar pelo dia completo
         const startOfDay = new Date(date);
         startOfDay.setHours(0, 0, 0, 0);
         const endOfDay = new Date(date);
         endOfDay.setHours(23, 59, 59, 999);
-        const transactions = await this.transactionRepository.find({
-            where: {
-                tenantId,
-                status: transaction_entity_1.TransactionStatus.CONFIRMADA,
-                paymentDate: (0, typeorm_1.Between)(startOfDay, endOfDay),
-            },
-        });
+        const transactions = await this.transactionRepository
+            .createQueryBuilder('transaction')
+            .where('transaction.tenantId = :tenantId', { tenantId })
+            .andWhere('transaction.status = :status', { status: transaction_entity_1.TransactionStatus.CONFIRMADA })
+            .andWhere('transaction.paymentDate >= :startOfDay', { startOfDay })
+            .andWhere('transaction.paymentDate <= :endOfDay', { endOfDay })
+            .getMany();
         // Calcular totais
         let totalIncome = 0;
         let totalExpense = 0;
@@ -107,7 +117,7 @@ class CashFlowService {
         let transferAmount = 0;
         let otherAmount = 0;
         for (const t of transactions) {
-            const amount = Number(t.amount);
+            const amount = this.safeAmount(t.amount);
             if (t.type === transaction_entity_1.TransactionType.RECEITA) {
                 totalIncome += amount;
             }
@@ -135,11 +145,11 @@ class CashFlowService {
                     otherAmount += amount;
             }
         }
-        const closingBalance = Number(cashFlow.openingBalance) +
+        const closingBalance = this.safeAmount(cashFlow.openingBalance) +
             totalIncome -
             totalExpense +
-            Number(cashFlow.deposits || 0) -
-            Number(cashFlow.withdrawals || 0);
+            this.safeAmount(cashFlow.deposits) -
+            this.safeAmount(cashFlow.withdrawals);
         await this.cashFlowRepository.update({ id: cashFlow.id }, {
             totalIncome,
             totalExpense,
@@ -161,7 +171,7 @@ class CashFlowService {
         if (cashFlow.isClosed) {
             throw new Error('Fluxo de caixa fechado não pode ser alterado');
         }
-        const currentWithdrawals = Number(cashFlow.withdrawals || 0);
+        const currentWithdrawals = this.safeAmount(cashFlow.withdrawals);
         const newWithdrawals = currentWithdrawals + amount;
         await this.cashFlowRepository.update({ id, tenantId }, {
             type: cash_flow_entity_1.CashFlowType.SANGRIA,
@@ -171,7 +181,9 @@ class CashFlowService {
                 : cashFlow.notes,
         });
         // Recalcular saldo
-        await this.updateCashFlowFromTransactions(cashFlow.date, tenantId);
+        // Convert date to Date object if it's a string (due to dateStrings: true)
+        const dateObj = typeof cashFlow.date === 'string' ? new Date(cashFlow.date) : cashFlow.date;
+        await this.updateCashFlowFromTransactions(dateObj, tenantId);
         return this.getCashFlowById(id, tenantId);
     }
     async recordDeposit(id, tenantId, amount, notes) {
@@ -182,7 +194,7 @@ class CashFlowService {
         if (cashFlow.isClosed) {
             throw new Error('Fluxo de caixa fechado não pode ser alterado');
         }
-        const currentDeposits = Number(cashFlow.deposits || 0);
+        const currentDeposits = this.safeAmount(cashFlow.deposits);
         const newDeposits = currentDeposits + amount;
         await this.cashFlowRepository.update({ id, tenantId }, {
             type: cash_flow_entity_1.CashFlowType.REFORCO,
@@ -192,7 +204,9 @@ class CashFlowService {
                 : cashFlow.notes,
         });
         // Recalcular saldo
-        await this.updateCashFlowFromTransactions(cashFlow.date, tenantId);
+        // Convert date to Date object if it's a string (due to dateStrings: true)
+        const dateObj = typeof cashFlow.date === 'string' ? new Date(cashFlow.date) : cashFlow.date;
+        await this.updateCashFlowFromTransactions(dateObj, tenantId);
         return this.getCashFlowById(id, tenantId);
     }
     async getCashFlowSummary(tenantId, month, year) {
@@ -205,12 +219,12 @@ class CashFlowService {
         const totalDays = cashFlows.length;
         const closedDays = cashFlows.filter((cf) => cf.isClosed).length;
         const openDays = totalDays - closedDays;
-        const totalIncome = cashFlows.reduce((sum, cf) => sum + Number(cf.totalIncome), 0);
-        const totalExpense = cashFlows.reduce((sum, cf) => sum + Number(cf.totalExpense), 0);
-        const totalWithdrawals = cashFlows.reduce((sum, cf) => sum + Number(cf.withdrawals || 0), 0);
-        const totalDeposits = cashFlows.reduce((sum, cf) => sum + Number(cf.deposits || 0), 0);
+        const totalIncome = cashFlows.reduce((sum, cf) => sum + this.safeAmount(cf.totalIncome), 0);
+        const totalExpense = cashFlows.reduce((sum, cf) => sum + this.safeAmount(cf.totalExpense), 0);
+        const totalWithdrawals = cashFlows.reduce((sum, cf) => sum + this.safeAmount(cf.withdrawals), 0);
+        const totalDeposits = cashFlows.reduce((sum, cf) => sum + this.safeAmount(cf.deposits), 0);
         const currentBalance = cashFlows.length > 0
-            ? Number(cashFlows[0].closingBalance)
+            ? this.safeAmount(cashFlows[0].closingBalance)
             : 0;
         return {
             totalDays,

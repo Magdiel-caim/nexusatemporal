@@ -6,6 +6,7 @@ import publicLeadsRoutes from '@/modules/leads/public-leads.routes'; // Public A
 import chatRoutes from '@/modules/chat/chat.routes';
 import appointmentRoutes from '@/modules/agenda/appointment.routes';
 import publicAppointmentRoutes from '@/modules/agenda/public-appointment.routes';
+import googleCalendarRoutes from '@/modules/agenda/google-calendar.routes';
 import medicalRecordRoutes from '@/modules/medical-records/medical-record.routes';
 import financeiroRoutes from '@/modules/financeiro/financeiro.routes';
 import paymentGatewayRoutes from '@/modules/payment-gateway/payment-gateway.routes';
@@ -18,6 +19,7 @@ import marketingRoutes from '@/modules/marketing/marketing.routes'; // Marketing
 import metaRoutes from '@/modules/meta/meta.routes'; // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 import pacientesRoutes from '@/modules/pacientes/routes/patient.routes'; // Patient Management - Complete medical records, images, appointments
 import apiKeyRoutes from '@/modules/integrations/routes/api-key.routes'; // API Keys management for N8N and external integrations
+import notificameRoutes from '@/modules/notificame/routes/notificame.routes'; // Notifica.me Integration - OAuth for Instagram, Facebook, WhatsApp
 // Import other module routes as they are created
 // import colaboracaoRoutes from '@/modules/colaboracao/colaboracao.routes';
 // import configRoutes from '@/modules/config/config.routes';
@@ -41,6 +43,7 @@ router.use('/public/leads', publicLeadsRoutes); // Public API for external integ
 router.use('/chat', chatRoutes);
 router.use('/appointments', appointmentRoutes);
 router.use('/public/appointments', publicAppointmentRoutes); // Public API for external integrations
+router.use('/agenda/google-calendar', googleCalendarRoutes); // Google Calendar Integration
 router.use('/medical-records', medicalRecordRoutes);
 router.use('/financial', financeiroRoutes);
 router.use('/payment-gateway', paymentGatewayRoutes); // Payment gateway integration (Asaas, PagBank)
@@ -53,6 +56,7 @@ router.use('/marketing', marketingRoutes); // Marketing Module - Campaigns, Soci
 router.use('/meta', metaRoutes); // Meta API Direct Integration - Instagram & Messenger (OAuth, Webhooks, Messaging)
 router.use('/pacientes', pacientesRoutes); // Patient Management - Complete medical records, images, appointments
 router.use('/integrations/api-keys', apiKeyRoutes); // API Keys management for N8N and external integrations
+router.use('/notificame', notificameRoutes); // Notifica.me Integration - OAuth for Instagram, Facebook, WhatsApp
 
 // Uncomment as modules are implemented
 // router.use('/colaboracao', colaboracaoRoutes);

@@ -31,6 +31,7 @@ import {
   Mail,
   Globe,
   Bot,
+  AlertCircle,
 } from 'lucide-react';
 import logoFull from '@/assets/images/logo-full.png';
 import logoIcon from '@/assets/images/logo-icon.png';
@@ -71,12 +72,15 @@ const allMenuItems: MenuItem[] = [
     path: '/financeiro',
     roles: ['superadmin', 'owner', 'admin'],
     submenu: [
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/financeiro/dashboard', roles: ['superadmin', 'owner', 'admin'] },
       { icon: Receipt, label: 'Transações', path: '/financeiro/transacoes', roles: ['superadmin', 'owner', 'admin'] },
       { icon: CreditCard, label: 'Contas a Pagar', path: '/financeiro/contas-pagar', roles: ['superadmin', 'owner', 'admin'] },
       { icon: TrendingUp, label: 'Contas a Receber', path: '/financeiro/contas-receber', roles: ['superadmin', 'owner', 'admin'] },
-      { icon: TrendingDown, label: 'Fluxo de Caixa', path: '/financeiro/fluxo-caixa', roles: ['superadmin', 'owner', 'admin'] },
-      { icon: FileSpreadsheet, label: 'Relatórios', path: '/financeiro/relatorios', roles: ['superadmin', 'owner', 'admin'] },
       { icon: Building, label: 'Fornecedores', path: '/financeiro/fornecedores', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: FileText, label: 'Recibos/NF', path: '/financeiro/recibos', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: TrendingDown, label: 'Fluxo de Caixa', path: '/financeiro/fluxo-caixa', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: ShoppingCart, label: 'Ordens de Compra', path: '/financeiro/ordens-compra', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: FileSpreadsheet, label: 'Relatórios', path: '/financeiro/relatorios', roles: ['superadmin', 'owner', 'admin'] },
     ],
   },
   {
@@ -85,7 +89,9 @@ const allMenuItems: MenuItem[] = [
     path: '/vendas',
     roles: ['superadmin', 'owner', 'admin'],
     submenu: [
-      { icon: ShoppingCart, label: 'Vendas', path: '/vendas/lista', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/vendas/dashboard', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: Users, label: 'Vendedores', path: '/vendas/vendedores', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: ShoppingCart, label: 'Vendas', path: '/vendas/vendas', roles: ['superadmin', 'owner', 'admin'] },
       { icon: DollarSign, label: 'Comissões', path: '/vendas/comissoes', roles: ['superadmin', 'owner', 'admin'] },
     ],
   },
@@ -95,9 +101,13 @@ const allMenuItems: MenuItem[] = [
     path: '/estoque',
     roles: ['superadmin', 'owner', 'admin'],
     submenu: [
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/estoque/dashboard', roles: ['superadmin', 'owner', 'admin'] },
       { icon: Package, label: 'Produtos', path: '/estoque/produtos', roles: ['superadmin', 'owner', 'admin'] },
       { icon: TrendingUp, label: 'Movimentações', path: '/estoque/movimentacoes', roles: ['superadmin', 'owner', 'admin'] },
-      { icon: FileText, label: 'Inventário', path: '/estoque/inventario', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: AlertCircle, label: 'Alertas', path: '/estoque/alertas', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: FileSpreadsheet, label: 'Relatórios', path: '/estoque/relatorios', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: FileText, label: 'Procedimentos', path: '/estoque/procedimentos', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: BarChart2, label: 'Inventário', path: '/estoque/inventario', roles: ['superadmin', 'owner', 'admin'] },
     ],
   },
   { icon: Users2, label: 'Colaboração', path: '/colaboracao' },
@@ -123,11 +133,13 @@ const allMenuItems: MenuItem[] = [
     path: '/marketing',
     roles: ['superadmin', 'owner', 'admin'],
     submenu: [
+      { icon: LayoutDashboard, label: 'Dashboard', path: '/marketing/dashboard', roles: ['superadmin', 'owner', 'admin'] },
       { icon: Zap, label: 'Campanhas', path: '/marketing/campanhas', roles: ['superadmin', 'owner', 'admin'] },
-      { icon: Mail, label: 'Mensagens em Massa', path: '/marketing/mensagens', roles: ['superadmin', 'owner', 'admin'] },
       { icon: Globe, label: 'Redes Sociais', path: '/marketing/social', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: Mail, label: 'Mensagens em Massa', path: '/marketing/mensagens', roles: ['superadmin', 'owner', 'admin'] },
       { icon: FileText, label: 'Landing Pages', path: '/marketing/landing-pages', roles: ['superadmin', 'owner', 'admin'] },
       { icon: Bot, label: 'Assistente IA', path: '/marketing/ia', roles: ['superadmin', 'owner', 'admin'] },
+      { icon: BarChart2, label: 'Uso de IA', path: '/marketing/ia-usage', roles: ['superadmin', 'owner', 'admin'] },
       { icon: Zap, label: 'Automações', path: '/marketing/automacoes', roles: ['superadmin', 'owner', 'admin'] },
     ],
   },

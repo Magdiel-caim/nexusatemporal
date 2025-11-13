@@ -8,6 +8,7 @@ const stock_alert_service_1 = require("./stock-alert.service");
 const procedure_product_service_1 = require("./procedure-product.service");
 const inventory_count_service_1 = require("./inventory-count.service");
 const audit_log_service_1 = require("./audit-log.service");
+const stock_batch_service_1 = require("./stock-batch.service");
 const router = (0, express_1.Router)();
 // Lazy initialization of services to avoid circular dependency issues
 let productService;
@@ -16,6 +17,7 @@ let alertService;
 let procedureProductService;
 let inventoryCountService;
 let auditLogService;
+let batchService;
 function getProductService() {
     if (!productService) {
         productService = new product_service_1.ProductService();
@@ -51,6 +53,12 @@ function getAuditLogService() {
         auditLogService = new audit_log_service_1.AuditLogService();
     }
     return auditLogService;
+}
+function getBatchService() {
+    if (!batchService) {
+        batchService = new stock_batch_service_1.StockBatchService();
+    }
+    return batchService;
 }
 // ============================================
 // PUBLIC ROUTES (sem autenticação)
@@ -303,6 +311,119 @@ router.get('/movements/most-used', auth_middleware_1.authenticate, async (req, r
         res.status(500).json({ error: error.message });
     }
 });
+// STOCK BATCHES ROUTES
+router.get('/batches', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { productId, status, expiringSoon, expired, active, limit, offset } = req.query;
+        const result = await getBatchService().findAll({
+            tenantId,
+            productId: productId,
+            status: status,
+            expiringSoon: expiringSoon === 'true',
+            expired: expired === 'true',
+            active: active === 'true',
+            limit: limit ? parseInt(limit) : 50,
+            offset: offset ? parseInt(offset) : 0,
+        });
+        res.json(result);
+    }
+    catch (error) {
+        console.error('Error fetching batches:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+router.post('/batches', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const batchData = { ...req.body, tenantId };
+        const batch = await getBatchService().create(batchData);
+        res.status(201).json(batch);
+    }
+    catch (error) {
+        console.error('Error creating batch:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+router.get('/batches/:id', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { id } = req.params;
+        const batch = await getBatchService().findOne(id, tenantId);
+        res.json(batch);
+    }
+    catch (error) {
+        console.error('Error fetching batch:', error);
+        res.status(404).json({ error: error.message });
+    }
+});
+router.put('/batches/:id', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { id } = req.params;
+        const batch = await getBatchService().update(id, tenantId, req.body);
+        res.json(batch);
+    }
+    catch (error) {
+        console.error('Error updating batch:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+router.delete('/batches/:id', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { id } = req.params;
+        await getBatchService().delete(id, tenantId);
+        res.status(204).send();
+    }
+    catch (error) {
+        console.error('Error deleting batch:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+router.get('/batches/product/:productId', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { productId } = req.params;
+        const { onlyActive } = req.query;
+        const batches = await getBatchService().findByProduct(productId, tenantId, onlyActive !== 'false');
+        res.json(batches);
+    }
+    catch (error) {
+        console.error('Error fetching product batches:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+router.get('/batches/status-report', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const report = await getBatchService().getStatusReport(tenantId);
+        res.json(report);
+    }
+    catch (error) {
+        console.error('Error fetching batch status report:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+router.post('/batches/:id/update-stock', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user?.tenantId || 'default';
+        const { id } = req.params;
+        const { quantity, operation } = req.body;
+        if (!quantity || !operation) {
+            return res.status(400).json({ error: 'quantity and operation are required' });
+        }
+        if (operation !== 'add' && operation !== 'subtract') {
+            return res.status(400).json({ error: 'operation must be "add" or "subtract"' });
+        }
+        const batch = await getBatchService().updateStock(id, tenantId, quantity, operation);
+        res.json(batch);
+    }
+    catch (error) {
+        console.error('Error updating batch stock:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
 // STOCK ALERTS ROUTES
 router.get('/alerts', auth_middleware_1.authenticate, async (req, res, next) => {
     try {
@@ -360,6 +481,48 @@ router.get('/alerts/count', auth_middleware_1.authenticate, async (req, res) => 
     }
     catch (error) {
         console.error('Error getting alerts count:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// CRON JOB MANAGEMENT ROUTES
+const stock_alert_cron_service_1 = require("../../services/stock-alert-cron.service");
+// Verificar status do cron job (admin apenas)
+router.get('/alerts/cron/status', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        // Verificar se é admin/owner
+        const userRole = req.user?.role;
+        if (userRole !== 'owner' && userRole !== 'admin') {
+            return res.status(403).json({ error: 'Apenas administradores podem acessar esta funcionalidade' });
+        }
+        const cronService = (0, stock_alert_cron_service_1.getStockAlertCronService)();
+        const status = cronService.getStatus();
+        res.json(status);
+    }
+    catch (error) {
+        console.error('Error getting cron status:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// Executar verificação manual de alertas (admin apenas)
+router.post('/alerts/cron/run', auth_middleware_1.authenticate, async (req, res) => {
+    try {
+        // Verificar se é admin/owner
+        const userRole = req.user?.role;
+        if (userRole !== 'owner' && userRole !== 'admin') {
+            return res.status(403).json({ error: 'Apenas administradores podem executar esta ação' });
+        }
+        const cronService = (0, stock_alert_cron_service_1.getStockAlertCronService)();
+        // Executar de forma assíncrona para não travar a resposta
+        cronService.executeManually().catch(error => {
+            console.error('Error during manual stock alert check:', error);
+        });
+        res.json({
+            success: true,
+            message: 'Verificação de estoque iniciada. Os alertas serão processados em segundo plano.',
+        });
+    }
+    catch (error) {
+        console.error('Error triggering manual stock alert check:', error);
         res.status(500).json({ error: error.message });
     }
 });

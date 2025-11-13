@@ -130,11 +130,11 @@ export default function MovementList({ refreshKey }: MovementListProps) {
         {showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tipo</label>
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value as MovementType | '')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
               >
                 <option value="">Todos</option>
                 <option value="ENTRADA">Entrada</option>
@@ -146,11 +146,11 @@ export default function MovementList({ refreshKey }: MovementListProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Motivo</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo</label>
               <select
                 value={reasonFilter}
                 onChange={(e) => setReasonFilter(e.target.value as MovementReason | '')}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
               >
                 <option value="">Todos</option>
                 <option value="COMPRA">Compra</option>
@@ -167,23 +167,23 @@ export default function MovementList({ refreshKey }: MovementListProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data Inicial</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Inicial</label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Data Final</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data Final</label>
               <div className="flex space-x-2">
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+                  className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                 />
                 <button
                   onClick={handleDateFilter}
@@ -237,10 +237,10 @@ export default function MovementList({ refreshKey }: MovementListProps) {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {movement.reason}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900 dark:text-white">
                   {movement.quantity} {movement.product?.unit}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-400">
                   {movement.previousStock} → {movement.newStock}
                 </td>
               </tr>

@@ -17,6 +17,8 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
     quantity: 0,
     unitPrice: 0,
     notes: '',
+    batchNumber: '',
+    expirationDate: '',
   });
   const [loading, setLoading] = useState(false);
 
@@ -141,6 +143,46 @@ export default function MovementForm({ onClose, onSave }: MovementFormProps) {
               />
             </div>
           </div>
+
+          {/* Campos de Lote e Validade - principalmente para entradas */}
+          {(formData.type === MovementType.ENTRADA || formData.type === MovementType.DEVOLUCAO) && (
+            <div className="grid grid-cols-2 gap-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="col-span-2">
+                <p className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                  Controle de Lote e Validade
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Número do Lote
+                </label>
+                <input
+                  type="text"
+                  value={formData.batchNumber}
+                  onChange={(e) => setFormData({ ...formData, batchNumber: e.target.value })}
+                  placeholder="Ex: L20240115-001"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700 placeholder-gray-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Data de Validade
+                </label>
+                <input
+                  type="date"
+                  value={formData.expirationDate}
+                  onChange={(e) => setFormData({ ...formData, expirationDate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700"
+                />
+              </div>
+              <div className="col-span-2">
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  ℹ️ Informe o lote e a data de validade para melhor rastreamento do estoque
+                </p>
+              </div>
+            </div>
+          )}
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observações</label>

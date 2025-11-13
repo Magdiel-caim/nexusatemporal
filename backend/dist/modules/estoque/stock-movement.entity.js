@@ -14,6 +14,7 @@ const typeorm_1 = require("typeorm");
 const product_entity_1 = require("./product.entity");
 const user_entity_1 = require("../auth/user.entity");
 const purchase_order_entity_1 = require("../financeiro/purchase-order.entity");
+const stock_batch_entity_1 = require("./stock-batch.entity");
 var MovementType;
 (function (MovementType) {
     MovementType["ENTRADA"] = "entrada";
@@ -57,9 +58,12 @@ let StockMovement = class StockMovement {
     procedureId;
     // Número da NF (se tiver)
     invoiceNumber;
-    // Lote
+    // Lote (campo antigo - mantido para compatibilidade)
     batchNumber;
-    // Validade
+    // Referência ao lote (novo sistema de controle)
+    batchId;
+    batch;
+    // Validade (campo antigo - mantido para compatibilidade)
     expirationDate;
     // Observações
     notes;
@@ -141,6 +145,15 @@ __decorate([
     (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
     __metadata("design:type", String)
 ], StockMovement.prototype, "batchNumber", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ type: 'varchar', nullable: true }),
+    __metadata("design:type", String)
+], StockMovement.prototype, "batchId", void 0);
+__decorate([
+    (0, typeorm_1.ManyToOne)(() => stock_batch_entity_1.StockBatch, (batch) => batch.movements, { nullable: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'batchId' }),
+    __metadata("design:type", stock_batch_entity_1.StockBatch)
+], StockMovement.prototype, "batch", void 0);
 __decorate([
     (0, typeorm_1.Column)({ type: 'date', nullable: true }),
     __metadata("design:type", Date)

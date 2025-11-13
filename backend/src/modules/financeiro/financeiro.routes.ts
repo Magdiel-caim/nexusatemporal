@@ -83,7 +83,7 @@ router.get('/cash-flow/summary', cashFlowController.getCashFlowSummary);
 router.get('/cash-flow/date/:date', cashFlowController.getCashFlowByDate);
 router.get('/cash-flow/:id', cashFlowController.getCashFlow);
 router.patch('/cash-flow/:id/close', cashFlowController.closeCashFlow);
-router.patch('/cash-flow/:id/update', cashFlowController.updateFromTransactions);
+router.patch('/cash-flow/:date/update', cashFlowController.updateFromTransactions);
 router.post('/cash-flow/:id/withdrawal', cashFlowController.recordWithdrawal);
 router.post('/cash-flow/:id/deposit', cashFlowController.recordDeposit);
 

@@ -11,6 +11,7 @@ const public_leads_routes_1 = __importDefault(require("../modules/leads/public-l
 const chat_routes_1 = __importDefault(require("../modules/chat/chat.routes"));
 const appointment_routes_1 = __importDefault(require("../modules/agenda/appointment.routes"));
 const public_appointment_routes_1 = __importDefault(require("../modules/agenda/public-appointment.routes"));
+const google_calendar_routes_1 = __importDefault(require("../modules/agenda/google-calendar.routes"));
 const medical_record_routes_1 = __importDefault(require("../modules/medical-records/medical-record.routes"));
 const financeiro_routes_1 = __importDefault(require("../modules/financeiro/financeiro.routes"));
 const payment_gateway_routes_1 = __importDefault(require("../modules/payment-gateway/payment-gateway.routes"));
@@ -43,6 +44,7 @@ router.use('/public/leads', public_leads_routes_1.default); // Public API for ex
 router.use('/chat', chat_routes_1.default);
 router.use('/appointments', appointment_routes_1.default);
 router.use('/public/appointments', public_appointment_routes_1.default); // Public API for external integrations
+router.use('/agenda/google-calendar', google_calendar_routes_1.default); // Google Calendar Integration
 router.use('/medical-records', medical_record_routes_1.default);
 router.use('/financial', financeiro_routes_1.default);
 router.use('/payment-gateway', payment_gateway_routes_1.default); // Payment gateway integration (Asaas, PagBank)

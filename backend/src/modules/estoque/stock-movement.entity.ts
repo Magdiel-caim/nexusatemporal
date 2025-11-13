@@ -9,6 +9,7 @@ import {
 import { Product } from './product.entity';
 import { User } from '../auth/user.entity';
 import { PurchaseOrder } from '../financeiro/purchase-order.entity';
+import { StockBatch } from './stock-batch.entity';
 
 export enum MovementType {
   ENTRADA = 'entrada',
@@ -92,11 +93,19 @@ export class StockMovement {
   @Column({ type: 'varchar', nullable: true })
   invoiceNumber: string;
 
-  // Lote
+  // Lote (campo antigo - mantido para compatibilidade)
   @Column({ type: 'varchar', nullable: true })
   batchNumber: string;
 
-  // Validade
+  // Referência ao lote (novo sistema de controle)
+  @Column({ type: 'varchar', nullable: true })
+  batchId: string;
+
+  @ManyToOne(() => StockBatch, (batch) => batch.movements, { nullable: true })
+  @JoinColumn({ name: 'batchId' })
+  batch: StockBatch;
+
+  // Validade (campo antigo - mantido para compatibilidade)
   @Column({ type: 'date', nullable: true })
   expirationDate: Date;
 

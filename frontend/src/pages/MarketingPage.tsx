@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { marketingService, Campaign, CampaignStats, SocialPost, BulkMessage } from '@/services/marketingService';
 import {
   Target,
@@ -34,8 +35,39 @@ type ActiveTab = 'dashboard' | 'campaigns' | 'social' | 'bulk-messaging' | 'land
 type SocialView = 'list' | 'calendar';
 
 export default function MarketingPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
+
+  const [activeTab, setActiveTab] = useState<ActiveTab>(() => {
+    const path = location.pathname;
+    // Ordem importante: verificar URLs específicas primeiro
+    if (path.includes('/dashboard')) return 'dashboard';
+    if (path.includes('/campanhas') || path.includes('/campaigns')) return 'campaigns';
+    if (path.includes('/social')) return 'social';
+    if (path.includes('/mensagens') || path.includes('/bulk-messaging')) return 'bulk-messaging';
+    if (path.includes('/landing-pages')) return 'landing-pages';
+    // Suporte para ambas as rotas: /ia e /ai-assistant
+    if (path.includes('/ia-usage') || path.includes('/ai-usage')) return 'ai-usage';
+    if (path.includes('/ia') || path.includes('/ai-assistant')) return 'ai-assistant';
+    if (path.includes('/automacoes') || path.includes('/automacao') || path.includes('/automation')) return 'automation';
+    return 'dashboard';
+  });
+
+  useEffect(() => {
+    const path = location.pathname;
+    // Ordem importante: verificar URLs específicas primeiro
+    if (path.includes('/dashboard')) setActiveTab('dashboard');
+    else if (path.includes('/campanhas') || path.includes('/campaigns')) setActiveTab('campaigns');
+    else if (path.includes('/social')) setActiveTab('social');
+    else if (path.includes('/mensagens') || path.includes('/bulk-messaging')) setActiveTab('bulk-messaging');
+    else if (path.includes('/landing-pages')) setActiveTab('landing-pages');
+    // Suporte para ambas as rotas: /ia e /ai-assistant (ia-usage ANTES de ia para evitar match errado)
+    else if (path.includes('/ia-usage') || path.includes('/ai-usage')) setActiveTab('ai-usage');
+    else if (path.includes('/ia') || path.includes('/ai-assistant')) setActiveTab('ai-assistant');
+    else if (path.includes('/automacoes') || path.includes('/automacao') || path.includes('/automation')) setActiveTab('automation');
+    else if (path === '/marketing') setActiveTab('dashboard');
+  }, [location]);
 
   // Social Media States
   const [socialView, setSocialView] = useState<SocialView>('list');
@@ -136,7 +168,10 @@ export default function MarketingPage() {
         </div>
 
         {/* Tabs */}
-        <Tabs.Root value={activeTab} onValueChange={(value) => setActiveTab(value as ActiveTab)}>
+        <Tabs.Root value={activeTab} onValueChange={(value) => {
+          setActiveTab(value as ActiveTab);
+          navigate(`/marketing/${value === 'dashboard' ? '' : value}`);
+        }}>
           <Tabs.List className="flex gap-2 border-b border-gray-200 dark:border-gray-700 mb-6">
             <Tabs.Trigger
               value="dashboard"
