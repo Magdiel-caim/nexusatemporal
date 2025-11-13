@@ -68,6 +68,13 @@ const AgendaPage: React.FC = () => {
     loadAppointments();
   }, [viewMode]);
 
+  // Quando mudar para modo calendário, garantir que carrega todos os appointments
+  useEffect(() => {
+    if (viewType === 'calendar' && viewMode !== 'all') {
+      setViewMode('all');
+    }
+  }, [viewType]);
+
   // Aplicar filtros sempre que mudar
   useEffect(() => {
     applyFilters();

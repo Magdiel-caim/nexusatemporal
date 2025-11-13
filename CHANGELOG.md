@@ -2,6 +2,90 @@
 
 ---
 
+## 🚀 v151 - CORREÇÃO DO CALENDÁRIO: EXIBIÇÃO COMPLETA E DRAG & DROP (2025-11-13)
+
+### 📝 RESUMO
+**Versão**: v151-calendar-all-patients
+**Data**: 13/11/2025 18:10 BRT
+**Status**: ✅ **IMPLEMENTADO E VALIDADO EM PRODUÇÃO**
+
+### 🎯 OBJETIVO
+Corrigir problema crítico no módulo Agenda onde pacientes desapareciam após drag and drop no calendário, e implementar visualização completa de TODOS os agendamentos independente do status.
+
+### 🐛 PROBLEMA IDENTIFICADO
+- **Causa Raiz**: viewMode padrão configurado como 'today' fazia com que apenas agendamentos do dia fossem carregados
+- **Sintoma**: Ao arrastar um paciente para outro dia no calendário, ele desaparecia após o reload
+- **Impacto**: Perda de visibilidade de agendamentos reagendados, causando confusão operacional
+
+### ✅ IMPLEMENTAÇÕES REALIZADAS
+
+#### 1. **AgendaPage.tsx** - Forçar ViewMode 'All' no Calendário
+```typescript
+// Quando mudar para modo calendário, garantir que carrega todos os appointments
+useEffect(() => {
+  if (viewType === 'calendar' && viewMode !== 'all') {
+    setViewMode('all');
+  }
+}, [viewType]);
+```
+**Resultado**: Calendário sempre mostra TODOS os agendamentos, independente do dia.
+
+#### 2. **CalendarView.tsx** - Suporte a Múltiplos Pacientes no Mesmo Horário
+- ✅ Adicionado `dayLayoutAlgorithm="no-overlap"` - eventos lado a lado
+- ✅ Implementado indicador visual para eventos não-arrastáveis
+- ✅ Melhorada função `eventStyleGetter` com classe CSS condicional
+- ✅ Eventos não-editáveis (finalizado, cancelado) ficam com opacidade 0.7
+
+#### 3. **CalendarView.css** - Otimização Visual
+- ✅ Eventos compactos com `font-size: 0.75rem`
+- ✅ Borda lateral colorida `border-left: 3px solid`
+- ✅ Hover com z-index: 100 para trazer evento para frente
+- ✅ Classe `.non-draggable` para eventos não-editáveis
+- ✅ Texto com `text-overflow: ellipsis` para evitar quebras
+
+#### 4. **Nginx/Dockerfile.prod** - Configuração de Porta
+- ✅ Porta alterada de 80 para 3000 (compatível com Traefik)
+- ✅ Configuração consistente entre Dockerfile e nginx.conf
+
+### 📂 ARQUIVOS MODIFICADOS
+- `/frontend/src/pages/AgendaPage.tsx` - useEffect para forçar viewMode='all'
+- `/frontend/src/components/agenda/CalendarView.tsx` - dayLayoutAlgorithm, eventStyleGetter
+- `/frontend/src/components/agenda/CalendarView.css` - CSS otimizado para múltiplos eventos
+- `/frontend/nginx.conf` - listen 3000
+- `/frontend/Dockerfile.prod` - EXPOSE 3000
+- `/docker-compose.yml` - Imagem atualizada para v151
+
+### 🧪 VALIDAÇÃO
+- ✅ **Drag & Drop funcional**: Pacientes permanecem visíveis após reagendamento
+- ✅ **Exibição completa**: TODOS os pacientes aparecem independente de status/pagamento
+- ✅ **Múltiplos pacientes**: Visualização lado a lado no mesmo horário
+- ✅ **Validações mantidas**: Apenas status editáveis podem ser arrastados
+- ✅ **Zero regressões**: Modo lista permanece intacto (não foi alterado)
+- ✅ **Build limpo**: Compilação TypeScript e Vite sem erros
+- ✅ **Deploy sem downtime**: Rolling update via Docker Swarm
+
+### 🔒 STATUS EDITÁVEIS (DRAG & DROP)
+- ✅ aguardando_pagamento
+- ✅ pagamento_confirmado
+- ✅ aguardando_confirmacao
+- ✅ confirmado
+- ✅ reagendado
+
+### ❌ STATUS NÃO-EDITÁVEIS
+- ❌ em_atendimento
+- ❌ finalizado
+- ❌ cancelado
+- ❌ nao_compareceu
+
+### 📦 DEPLOY
+- **Imagem**: nexus-frontend:v151-calendar-all-patients
+- **Backup**: nexus-backup-v151-calendar-20251113_181101.tar.gz (0.88 MB)
+- **Bucket**: backupsistemaonenexus/nexus-atemporal/releases/
+- **Container**: Up and running ✓
+- **URL**: https://one.nexusatemporal.com.br
+
+---
+
 ## 🚀 v147 - CORREÇÃO DE ROTEAMENTO (VENDAS E MARKETING) (2025-11-12)
 
 ### 📝 RESUMO

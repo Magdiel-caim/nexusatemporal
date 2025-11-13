@@ -80,6 +80,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
     const style = statusColors[event.status] || statusColors.confirmado;
 
+    // Verificar se pode ser arrastado
+    const isDraggable = draggableAccessor ? draggableAccessor(event) : true;
+    const className = isDraggable ? '' : 'non-draggable';
+
     return {
       style: {
         ...style,
@@ -89,6 +93,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         fontSize: '0.875rem',
         fontWeight: '500',
       },
+      className,
     };
   };
 
@@ -133,6 +138,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         min={new Date(2025, 0, 1, 7, 0, 0)}
         max={new Date(2025, 0, 1, 20, 0, 0)}
         scrollToTime={new Date(2025, 0, 1, 8, 0, 0)}
+        dayLayoutAlgorithm="no-overlap"
       />
     </div>
   );
