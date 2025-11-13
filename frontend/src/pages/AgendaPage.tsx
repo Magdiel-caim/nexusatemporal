@@ -16,7 +16,7 @@ const AgendaPage: React.FC = () => {
   const [showEditForm, setShowEditForm] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [selectedAppointment, setSelectedAppointment] = useState<Appointment | null>(null);
-  const [viewMode, setViewMode] = useState<'today' | 'all'>('today');
+  const [viewMode, setViewMode] = useState<'today' | 'all'>('all'); // Sempre 'all' para evitar race condition
   const [viewType, setViewType] = useState<'list' | 'calendar'>('calendar'); // Padrão: calendário
 
   // Filtros
@@ -67,13 +67,6 @@ const AgendaPage: React.FC = () => {
   useEffect(() => {
     loadAppointments();
   }, [viewMode]);
-
-  // Quando mudar para modo calendário, garantir que carrega todos os appointments
-  useEffect(() => {
-    if (viewType === 'calendar' && viewMode !== 'all') {
-      setViewMode('all');
-    }
-  }, [viewType]);
 
   // Aplicar filtros sempre que mudar
   useEffect(() => {

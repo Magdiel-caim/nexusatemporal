@@ -110,7 +110,7 @@ services:
 
   # Frontend
   frontend:
-    image: nexus-frontend:v151-calendar-all-patients
+    image: nexus-frontend:v153-image-download-fix
     networks:
       - nexusatnet
     deploy:
